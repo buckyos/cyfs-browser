@@ -1,0 +1,7 @@
+diff --git a/chrome/app/Extensions/readme.md b/chrome/app/Extensions/readme.md
+index e69de29bb2..c5caefc4bd 100644
+--- a/chrome/app/Extensions/readme.md
++++ b/chrome/app/Extensions/readme.md
+@@ -0,0 +1 @@
++// DON'T EDIT!!
+\ No newline at end of file

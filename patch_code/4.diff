@@ -1,0 +1,179 @@
+diff --git a/chrome/browser/resources/settings/about_page/about_page.html b/chrome/browser/resources/settings/about_page/about_page.html
+index f8b2415164..28c284a581 100644
+--- a/chrome/browser/resources/settings/about_page/about_page.html
++++ b/chrome/browser/resources/settings/about_page/about_page.html
+@@ -56,7 +56,7 @@
+             alt="$i18n{aboutProductLogoAlt}"
+             role="presentation">
+ </if>
+-        <h1 class="product-title">$i18n{aboutProductTitle}</h1>
++        <h1 class="product-title">$i18n{aboutProductTitle} $i18n{aboutCYFSBrowserVersion}</h1>
+       </div>
+       <div class="cr-row two-line">
+         <!-- Set the icon from the iconset (when it's obsolete/EOL and
+diff --git a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+index 7a63cdf64d..3c6569c550 100644
+--- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
++++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+@@ -281,6 +281,8 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
+ 
+   html_source->AddString("managementPage",
+                          ManagementUI::GetManagementPageSubtitle(profile));
++  std::string cyfs_browser_version = chrome::GetCYFSBrowserVersion();
++  html_source->AddString("aboutCYFSBrowserVersion", cyfs_browser_version);
+   html_source->AddString(
+       "aboutUpgradeUpToDate",
+ #if BUILDFLAG(IS_CHROMEOS_ASH)
+diff --git a/chrome/common/channel_info.h b/chrome/common/channel_info.h
+index 839d6e0701..47406046e4 100644
+--- a/chrome/common/channel_info.h
++++ b/chrome/common/channel_info.h
+@@ -57,6 +57,10 @@ std::string GetChannelName(WithExtendedStable with_extended_stable);
+ // version_info::Channel::UNKNOWN.
+ version_info::Channel GetChannel();
+ 
++std::string GetCYFSRuntimeVersion();
++
++std::string GetCYFSBrowserVersion();
++
+ // Returns true if this browser is on the extended stable channel. GetChannel()
+ // will always return version_info::Channel::STABLE when this is true. This
+ // function unconditionally returns false on Chrome OS Ash and Android due to
+diff --git a/chrome/common/channel_info_mac.mm b/chrome/common/channel_info_mac.mm
+index 59da30cbee..17c0e97139 100644
+--- a/chrome/common/channel_info_mac.mm
++++ b/chrome/common/channel_info_mac.mm
+@@ -4,12 +4,17 @@
+ 
+ #include "chrome/common/channel_info.h"
+ 
++#include "base/path_service.h"
++#include "base/files/file_path.h"
++#include <fstream>
++
+ #import <Foundation/Foundation.h>
+ 
+ #include <tuple>
+ 
+ #include "base/check.h"
+ #include "base/mac/bundle_locations.h"
++#include "base/logging.h"
+ #include "base/no_destructor.h"
+ #include "base/strings/sys_string_conversions.h"
+ #include "build/branding_buildflags.h"
+@@ -133,12 +138,71 @@ void CacheChannelInfo() {
+ }
+ 
+ std::string GetChannelName(WithExtendedStable with_extended_stable) {
+-  const auto& channel = GetChannelState();
++  return GetCYFSRuntimeVersion();
++  // const auto& channel = GetChannelState();
++
++  // if (channel.is_extended_stable && with_extended_stable.value())
++  //   return "extended";
+ 
+-  if (channel.is_extended_stable && with_extended_stable.value())
+-    return "extended";
++  // return channel.name;
++}
+ 
+-  return channel.name;
++std::string GetCYFSRuntimeVersion() {
++  std::string version_str("0.0.1");
++  base::FilePath user_data_path;
++  if (!base::PathService::Get(base::DIR_APP_DATA, &user_data_path)) {
++    VLOG(1) << "failed to get user data dir";
++    return version_str;
++  }
++  user_data_path = user_data_path.AppendASCII("cyfs")
++  .AppendASCII("services")
++  .AppendASCII("runtime")
++  .AppendASCII("www")
++  .AppendASCII("version.html");
++
++  std::ifstream input_file(user_data_path.AsUTF8Unsafe(), std::ios::binary);
++  if (!input_file.is_open()) {
++    LOG(INFO) << "failed to open " << user_data_path;
++	  return version_str;
++  }
++
++  std::string().swap(version_str);
++  while (input_file) {
++    std::string buffer(1024, '\0');
++    input_file.read(&buffer.front(), buffer.size());
++    version_str = buffer.substr(0, input_file.gcount());
++  }
++  LOG(INFO) << "Cyfs runtime version " << version_str;
++  return version_str;
++}
++
++std::string GetCYFSBrowserVersion() {
++  std::string version_str("0.0.1");
++  base::FilePath user_data_path;
++  if (!base::PathService::Get(base::DIR_APP_DATA, &user_data_path)) {
++    VLOG(1) << "failed to get user data dir";
++    return version_str;
++  }
++  user_data_path = user_data_path.AppendASCII("cyfs")
++  .AppendASCII("services")
++  .AppendASCII("runtime")
++  .AppendASCII("www")
++  .AppendASCII("browser_version.html");
++
++  std::ifstream input_file(user_data_path.AsUTF8Unsafe(), std::ios::binary);
++  if (!input_file.is_open()) {
++    LOG(INFO) << "failed to open " << user_data_path;
++	  return version_str;
++  }
++
++  std::string().swap(version_str);
++  while (input_file) {
++    std::string buffer(1024, '\0');
++    input_file.read(&buffer.front(), buffer.size());
++    version_str = buffer.substr(0, input_file.gcount());
++  }
++  LOG(INFO) << "Cyfs Browser version " << version_str;
++  return version_str;
+ }
+ 
+ version_info::Channel GetChannelByName(const std::string& channel) {
+diff --git a/content/app/monitor_cyfs_runtime.cc b/content/app/monitor_cyfs_runtime.cc
+index 441d44562a..dac65d8ef5 100644
+--- a/content/app/monitor_cyfs_runtime.cc
++++ b/content/app/monitor_cyfs_runtime.cc
+@@ -104,19 +104,19 @@ std::vector<base::ProcessId> MonitorRuntimeWork::FindProcess(const ExePath& exec
+   return all_pids;
+ }
+ 
+-bool MonitorRuntimeWork::IsRuntimeBinding() {
++bool MonitorRuntimeWork::IsRuntimeBind() {
+   base::FilePath file_path = GetLocalAppData().Append(kCyfsDir).Append("etc").Append("desc");
+   auto desc1 = file_path.AppendASCII("device.desc");
+   auto desc2 = file_path.AppendASCII("device.sec");
+   if (base::PathExists(desc1) && base::PathExists(desc2)) {
+-    LOG(INFO) << "desc file is not exists, current user has't binding runtime";
++    LOG(INFO) << "desc file exists, current user has bind runtime";
+     return true;
+   }
+   return false;
+ }
+ 
+ void MonitorRuntimeWork::StartRuntimeProcess() {
+-  bool anonymous = IsRuntimeBinding();
++  bool anonymous = !IsRuntimeBind();
+   base::Process process = StartRuntimeProcessCore(anonymous, last_runtime_port_);
+   if (process.IsValid()) {
+     LOG(INFO) << "Start runtime process successfully";
+diff --git a/content/app/monitor_cyfs_runtime.h b/content/app/monitor_cyfs_runtime.h
+index fdd0241232..ed335f6f8c 100644
+--- a/content/app/monitor_cyfs_runtime.h
++++ b/content/app/monitor_cyfs_runtime.h
+@@ -42,7 +42,7 @@ private:
+ 
+     std::vector<base::ProcessId> FindProcess(const ExePath& executable_name);
+ 
+-    bool IsRuntimeBinding();
++    bool IsRuntimeBind();
+ 
+     void StartRuntimeProcess();
+ 

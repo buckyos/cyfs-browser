@@ -1,0 +1,127 @@
+diff --git a/chrome/app/chromium_strings.grd b/chrome/app/chromium_strings.grd
+index 31b619ae89..c3079d0eb8 100644
+--- a/chrome/app/chromium_strings.grd
++++ b/chrome/app/chromium_strings.grd
+@@ -277,10 +277,10 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
+       </if>
+ 
+       <message name="IDS_PRODUCT_NAME" desc="The Chrome application name">
+-        Chromium
++        CYFS Browser
+       </message>
+       <message name="IDS_SHORT_PRODUCT_NAME" desc="The Chrome application short name.">
+-        Chromium
++        CYFS Browser
+       </message>
+       <if expr="is_win">
+         <message name="IDS_SXS_SHORTCUT_NAME" desc="Unused in Chromium builds" translateable="false">
+@@ -381,7 +381,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
+         The Chromium Authors
+       </message>
+       <message name="IDS_ABOUT_VERSION_COPYRIGHT" desc="Copyright information on the about pages">
+-        Copyright <ph name="YEAR">{0,date,y}<ex>2016</ex></ph> The Chromium Authors. All rights reserved.
++        Copyright <ph name="YEAR">{0,date,y}<ex>2016</ex></ph> The Cyfs Browser Authors. All rights reserved.
+       </message>
+       <if expr="chromeos_ash">
+         <message name="IDS_ABOUT_CROS_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for ChromeOS.">
+diff --git a/chrome/app/resources/chromium_strings_en-GB.xtb b/chrome/app/resources/chromium_strings_en-GB.xtb
+index 73075878ab..c16ba306f1 100644
+--- a/chrome/app/resources/chromium_strings_en-GB.xtb
++++ b/chrome/app/resources/chromium_strings_en-GB.xtb
+@@ -69,7 +69,7 @@ Permissions that you've already given to websites and apps may apply to this acc
+ <translation id="2847479871509788944">Remove from Chromium...</translation>
+ <translation id="2850691299438350830">Keeps you safe on Chromium and may be used to improve your security in other Google apps when you are signed in</translation>
+ <translation id="2885378588091291677">Task Manager</translation>
+-<translation id="2910007522516064972">About &amp;Chromium</translation>
++<translation id="8634147177990539032">About &amp;CYFS Browser</translation>
+ <translation id="2915996080311180594">Restart later</translation>
+ <translation id="2928420929544864228">Installation complete.</translation>
+ <translation id="2977470724722393594">Chromium is up to date</translation>
+@@ -277,7 +277,7 @@ Some features may be unavailable. Please specify a different profile directory o
+ <translation id="7318036098707714271">Your preferences file is corrupt or invalid.
+ 
+ Google Chrome is unable to recover your settings.</translation>
+-<translation id="7337881442233988129">Chromium</translation>
++<translation id="5969877561795249315">Cyfs Browser</translation>
+ <translation id="7339898014177206373">New window</translation>
+ <translation id="734373864078049451">Your web, bookmarks and other Chromium stuff live here.</translation>
+ <translation id="7349591376906416160">Your system administrator has configured Chromium to open <ph name="ALTERNATIVE_BROWSER_NAME" /> to access <ph name="TARGET_URL_HOSTNAME" />.</translation>
+@@ -334,7 +334,7 @@ Google Chrome is unable to recover your settings.</translation>
+ <translation id="8558383651099478961">Your parent has turned off 'Permissions for sites, apps and extensions' for Chromium. Adding this <ph name="EXTENSION_TYPE_PARAMETER" /> is not allowed.</translation>
+ <translation id="8561285221328166383">To get future Chromium updates, you'll need macOS 10.13 or later. This computer is using macOS 10.12.</translation>
+ <translation id="8568283329061645092">Chromium can check your passwords when you sign in with your Google Account</translation>
+-<translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
++<translation id="6298955232712833087">Copyright <ph name="YEAR" /> The Cyfs Browser Authors. All rights reserved.</translation>
+ <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />How we use this data:<ph name="END_BOLD" /> Sites can store information with Chromium about your interests. For example, if you visit a site to buy shoes for a marathon, the site might define your interest as running marathons. Later, if you visit a different site to register for a race, that site can show you an ad for running shoes based on your interests.</translation>
+ <translation id="8619360774459241877">Launching Chromium...</translation>
+ <translation id="8621669128220841554">Installation failed due to unspecified error. Please download Chromium again.</translation>
+diff --git a/chrome/app/resources/chromium_strings_zh-CN.xtb b/chrome/app/resources/chromium_strings_zh-CN.xtb
+index d42e75a155..8a38608a83 100644
+--- a/chrome/app/resources/chromium_strings_zh-CN.xtb
++++ b/chrome/app/resources/chromium_strings_zh-CN.xtb
+@@ -67,7 +67,7 @@
+ <translation id="2847479871509788944">从Chromium中移除…</translation>
+ <translation id="2850691299438350830">保护您在 Chromium 中免受安全威胁，登录状态下还可让您更安全地使用其他 Google 应用</translation>
+ <translation id="2885378588091291677">任务管理器</translation>
+-<translation id="2910007522516064972">关于 Chromium(&amp;C)</translation>
++<translation id="8634147177990539032">关于 Cyfs Browser(&amp;C)</translation>
+ <translation id="2915996080311180594">暂不重启</translation>
+ <translation id="2928420929544864228">安装完毕。</translation>
+ <translation id="2977470724722393594">Chromium 已是最新版本</translation>
+@@ -274,7 +274,7 @@
+ <translation id="7318036098707714271">您的偏好设置文件已损坏或无效。
+ 
+ Chromium 无法恢复您的设置。</translation>
+-<translation id="7337881442233988129">Chromium</translation>
++<translation id="5969877561795249315">Cyfs Browser</translation>
+ <translation id="7339898014177206373">打开新的窗口</translation>
+ <translation id="734373864078049451">您的上网记录、书签和其他Chromium内容都保存在此处。</translation>
+ <translation id="7349591376906416160">您的系统管理员已将 Chromium 配置为使用<ph name="ALTERNATIVE_BROWSER_NAME" />访问 <ph name="TARGET_URL_HOSTNAME" />。</translation>
+@@ -330,7 +330,7 @@ Chromium 无法恢复您的设置。</translation>
+ <translation id="8558383651099478961">您的家长已为 Chromium 停用“网站、应用和扩展程序的权限”。因此，您无法添加该<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
+ <translation id="8561285221328166383">若要接收后续 Chromium 更新，您需使用 macOS 10.13 或更高版本。该计算机目前使用的是 macOS 10.12。</translation>
+ <translation id="8568283329061645092">您需要先登录 Google 帐号才能使用 Chromium 的密码检查功能。</translation>
+-<translation id="8586442755830160949">版权所有<ph name="YEAR" /> The Chromium Authors。保留所有权利。</translation>
++<translation id="6298955232712833087">版权所有<ph name="YEAR" /> The Cyfs Browser Authors。保留所有权利。</translation>
+ <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />我们会如何使用这些数据<ph name="END_BOLD" />：网站可以将您的兴趣信息存储在 Chromium 中。例如，如果您访问某个网站购买马拉松跑鞋，系统可能会根据该网站推测您对跑马拉松感兴趣。之后，如果您访问其他网站报名参加比赛，相应网站就可以根据您的兴趣向您展示跑鞋广告。</translation>
+ <translation id="8619360774459241877">正在启动 Chromium…</translation>
+ <translation id="8621669128220841554">未指定的错误导致安装失败。请重新下载 Chromium。</translation>
+diff --git a/components/components_chromium_strings.grd b/components/components_chromium_strings.grd
+index 1dddc8586f..4eeae4b8a2 100644
+--- a/components/components_chromium_strings.grd
++++ b/components/components_chromium_strings.grd
+@@ -286,7 +286,7 @@
+       </message>
+ 
+       <message name="IDS_VERSION_UI_LICENSE" desc="The label below the copyright message, containing the URLs.">
+-        Chromium is made possible by the <ph name="BEGIN_LINK_CHROMIUM">&lt;a target="_blank" href="$1"&gt;</ph>Chromium<ph name="END_LINK_CHROMIUM">&lt;/a&gt;</ph> open source project and other <ph name="BEGIN_LINK_OSS">&lt;a target="_blank" href="$2"&gt;</ph>open source software<ph name="END_LINK_OSS">&lt;/a&gt;</ph>.
++        CYFS Browser is made possible by the <ph name="BEGIN_LINK_CHROMIUM">&lt;a target="_blank" href="$1"&gt;</ph>Chromium<ph name="END_LINK_CHROMIUM">&lt;/a&gt;</ph> open source project and other <ph name="BEGIN_LINK_OSS">&lt;a target="_blank" href="$2"&gt;</ph>open source software<ph name="END_LINK_OSS">&lt;/a&gt;</ph>.
+       </message>
+ 
+       <!-- Page Info -->
+diff --git a/components/strings/components_chromium_strings_en-GB.xtb b/components/strings/components_chromium_strings_en-GB.xtb
+index 825eed2ffb..d10a1302d0 100644
+--- a/components/strings/components_chromium_strings_en-GB.xtb
++++ b/components/strings/components_chromium_strings_en-GB.xtb
+@@ -5,7 +5,7 @@
+ <translation id="275588974610408078">Crash reporting is not available in Chromium.</translation>
+ <translation id="3064346599913645280">You're viewing a secure Chromium page</translation>
+ <translation id="358997566136285270">Chromium logo</translation>
+-<translation id="4365115785552740256">Chromium is made possible by the <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> open source project and other <ph name="BEGIN_LINK_OSS" />open source software<ph name="END_LINK_OSS" />.</translation>
++<translation id="6411944759338344357">Cyfs Browser is made possible by the <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> open source project and other <ph name="BEGIN_LINK_OSS" />open source software<ph name="END_LINK_OSS" />.</translation>
+ <translation id="4559775032954821361">Go to
+           the Chromium menu &gt;
+           <ph name="SETTINGS_TITLE" />
+diff --git a/components/strings/components_chromium_strings_zh-CN.xtb b/components/strings/components_chromium_strings_zh-CN.xtb
+index 4296ff5db6..8a345070e8 100644
+--- a/components/strings/components_chromium_strings_zh-CN.xtb
++++ b/components/strings/components_chromium_strings_zh-CN.xtb
+@@ -5,7 +5,7 @@
+ <translation id="275588974610408078">Chromium 未提供崩溃报告。</translation>
+ <translation id="3064346599913645280">您正在查看安全的 Chromium 网页</translation>
+ <translation id="358997566136285270">Chromium 徽标</translation>
+-<translation id="4365115785552740256">Chromium 的诞生离不开 <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> 开放源代码项目以及其他<ph name="BEGIN_LINK_OSS" />开放源代码软件<ph name="END_LINK_OSS" />。</translation>
++<translation id="6411944759338344357">Cyfs Browser 的诞生离不开 <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> 开放源代码项目以及其他<ph name="BEGIN_LINK_OSS" />开放源代码软件<ph name="END_LINK_OSS" />。</translation>
+ <translation id="4559775032954821361">依次转到 Chromium 菜单 &gt;“<ph name="SETTINGS_TITLE" />”&gt;“<ph name="ADVANCED_TITLE" />”&gt;“<ph name="PROXIES_TITLE" />”&gt;“LAN 设置”，然后取消选中“为 LAN 使用代理服务器”复选框。</translation>
+ <translation id="4622039161600275920">此页面已被 Chromium 屏蔽</translation>
+ <translation id="48558539577516920">在防火墙或防病毒设置部分设为允许 Chromium 访问网络。</translation>

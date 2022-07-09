@@ -1,0 +1,32 @@
+diff --git a/chrome/browser/resources/cyfs_init/cyfs_init.js b/chrome/browser/resources/cyfs_init/cyfs_init.js
+index 3fc3f8f605..2134800fcb 100644
+--- a/chrome/browser/resources/cyfs_init/cyfs_init.js
++++ b/chrome/browser/resources/cyfs_init/cyfs_init.js
+@@ -10,11 +10,12 @@ function returnRuntimePorcessStatus(status) {
+     if (status == true) {
+         console.log(`runtime process status is running }`);
+         // window.location.href = "cyfs://static/browser.html";
+-        let browser_url = loadTimeData.getStringF('browser_url');
++        let target_url = loadTimeData.getStringF('browser_url');
+         if (isFirstRun) {
+-            browser_url = browser_url + '?first=true';
++            // browser_url = browser_url + '?first=true';
++            target_url = loadTimeData.getStringF('guide_url');
+         }
+-        window.location.href = browser_url;
++        window.location.href = target_url;
+         if (UpdateIntervalID)
+             clearInterval(UpdateIntervalID);
+     } else {
+diff --git a/chrome/browser/ui/webui/cyfs_init_ui.cc b/chrome/browser/ui/webui/cyfs_init_ui.cc
+index 695fc04219..f9d72098b2 100644
+--- a/chrome/browser/ui/webui/cyfs_init_ui.cc
++++ b/chrome/browser/ui/webui/cyfs_init_ui.cc
+@@ -136,6 +136,7 @@ CyfsInitUI::CyfsInitUI(content::WebUI* web_ui)
+ 
+   html_source->AddString("welcomeMessage", "Welcome to this cyfs page");
+   html_source->AddString("browser_url", "cyfs://static/browser.html");
++  html_source->AddString("guide_url", "cyfs://static/guide.html");
+   html_source->UseStringsJs();
+ 
+   // Add required resources.

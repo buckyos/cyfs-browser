@@ -1,0 +1,1813 @@
+diff --git a/chrome/app/theme/chromium/BRANDING b/chrome/app/theme/chromium/BRANDING
+index ba2026ba0f..7884bd6235 100644
+--- a/chrome/app/theme/chromium/BRANDING
++++ b/chrome/app/theme/chromium/BRANDING
+@@ -5,6 +5,6 @@ PRODUCT_SHORTNAME=Cyfs Browser
+ PRODUCT_INSTALLER_FULLNAME=Cyfs Browser Installer
+ PRODUCT_INSTALLER_SHORTNAME=Cyfs Browser Installer
+ COPYRIGHT=Copyright @LASTCHANGE_YEAR@ The Cyfs Browser Authors. All rights reserved.
+-MAC_BUNDLE_ID=org.chromium.Chromium
++MAC_BUNDLE_ID=com.cyfs.browser
+ MAC_CREATOR_CODE=Cr24
+ MAC_TEAM_ID=
+diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
+index 052b7f0469..36597e5af9 100644
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -1872,6 +1872,8 @@ static_library("browser") {
+     "webid/federated_identity_sharing_permission_context.h",
+     "webid/federated_identity_sharing_permission_context_factory.cc",
+     "webid/federated_identity_sharing_permission_context_factory.h",
++    "cyfs_init/cyfs_init_service_factory.h",
++    "cyfs_init/cyfs_init_service_factory.cc",
+   ]
+ 
+   configs += [
+@@ -2624,6 +2626,8 @@ static_library("browser") {
+     deps += [ "//chrome/browser/ui/webui/connectors_internals:mojo_bindings" ]
+   }
+ 
++  deps += ["//components/cyfs_init"]
++
+   if (is_android) {
+     sources += [
+       "after_startup_task_utils_android.cc",
+diff --git a/chrome/browser/browser_resources.grd b/chrome/browser/browser_resources.grd
+index 53930ac581..9869503e40 100644
+--- a/chrome/browser/browser_resources.grd
++++ b/chrome/browser/browser_resources.grd
+@@ -36,6 +36,10 @@
+         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys\about_sys.html" type="BINDATA" />
+         <include name="IDR_ABOUT_SYS_CSS" file="resources\about_sys\about_sys.css" flattenhtml="true" type="BINDATA" />
+         <include name="IDR_ABOUT_SYS_JS" file="resources\about_sys\about_sys.js" preprocess="true" type="BINDATA" />
++        <include name="IDR_CYFS_INIT_UI_HTML" file="resources\cyfs_init\cyfs_init.html" type="BINDATA" />
++        <include name="IDR_CYFS_INIT_UI_CSS" file="resources\cyfs_init\cyfs_init.css" flattenhtml="true" type="BINDATA"  />
++        <include name="IDR_CYFS_INIT_UI_JS" file="resources\cyfs_init\cyfs_init.js" preprocess="true" type="BINDATA" />
++        <include name="IDR_CYFS_STARTING_H" file="resources\cyfs_init\starting.png" type="BINDATA" />
+       </if>
+       <include name="IDR_AD_NETWORK_HASHES" file="resources\ad_networks.dat" type="BINDATA" />
+       <if expr="is_posix and not is_macosx">
+diff --git a/chrome/browser/cyfs_init/cyfs_init_service_factory.cc b/chrome/browser/cyfs_init/cyfs_init_service_factory.cc
+new file mode 100644
+index 0000000000..15753d6ecc
+--- /dev/null
++++ b/chrome/browser/cyfs_init/cyfs_init_service_factory.cc
+@@ -0,0 +1,60 @@
++
++
++#include "chrome/browser/cyfs_init/cyfs_init_service_factory.h"
++
++#include "chrome/browser/profiles/profile.h"
++#include "components/keyed_service/content/browser_context_dependency_manager.h"
++#include "components/cyfs_init/cyfs_runtime_init_service.h"
++#include "chrome/browser/profiles/incognito_helpers.h"
++
++#include "base/memory/raw_ptr.h"
++#include "components/user_prefs/user_prefs.h"
++#include "content/public/browser/storage_partition.h"
++#include "services/network/public/cpp/shared_url_loader_factory.h"
++
++
++// static
++CyfsRuntimeInitService* CyfsRuntimeInitServiceFactory::GetForProfile(
++    Profile* profile) {
++  return static_cast<CyfsRuntimeInitService*>(
++      GetInstance()->GetServiceForBrowserContext(profile, true));
++}
++
++// static
++CyfsRuntimeInitService* CyfsRuntimeInitServiceFactory::GetForProfileIfExists(
++    Profile* profile) {
++  return static_cast<CyfsRuntimeInitService*>(
++      GetInstance()->GetServiceForBrowserContext(profile, false));
++}
++
++// static
++CyfsRuntimeInitServiceFactory* CyfsRuntimeInitServiceFactory::GetInstance() {
++  return base::Singleton<CyfsRuntimeInitServiceFactory>::get();
++}
++
++CyfsRuntimeInitServiceFactory::CyfsRuntimeInitServiceFactory()
++    : BrowserContextKeyedServiceFactory(
++        "CyfsRuntimeInitService",
++        BrowserContextDependencyManager::GetInstance()) {
++}
++
++CyfsRuntimeInitServiceFactory::~CyfsRuntimeInitServiceFactory() {
++}
++
++KeyedService* CyfsRuntimeInitServiceFactory::BuildServiceInstanceFor(
++    content::BrowserContext* context) const {
++  auto url_loader_factory = context->GetDefaultStoragePartition()
++                                ->GetURLLoaderFactoryForBrowserProcess();
++  return new CyfsRuntimeInitService(user_prefs::UserPrefs::Get(context), std::move(url_loader_factory));
++
++}
++
++void CyfsRuntimeInitServiceFactory::RegisterProfilePrefs(
++    user_prefs::PrefRegistrySyncable* registry) {
++
++}
++
++content::BrowserContext* CyfsRuntimeInitServiceFactory::GetBrowserContextToUse(
++    content::BrowserContext* context) const {
++  return chrome::GetBrowserContextRedirectedInIncognito(context);
++}
+\ No newline at end of file
+diff --git a/chrome/browser/cyfs_init/cyfs_init_service_factory.h b/chrome/browser/cyfs_init/cyfs_init_service_factory.h
+new file mode 100644
+index 0000000000..31380ba77a
+--- /dev/null
++++ b/chrome/browser/cyfs_init/cyfs_init_service_factory.h
+@@ -0,0 +1,42 @@
++// Copyright 2013 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef CHROME_BROWSER_CYFS_RUNTIME_INIT_SERVICE_FACTORY_H_
++#define CHROME_BROWSER_CYFS_RUNTIME_INIT_SERVICE_FACTORY_H_
++
++// #include "base/macros.h"
++#include "base/memory/singleton.h"
++#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
++
++class CyfsRuntimeInitService;
++class Profile;
++
++class CyfsRuntimeInitServiceFactory : public BrowserContextKeyedServiceFactory {
++ public:
++  static CyfsRuntimeInitService* GetForProfile(Profile* profile);
++
++  static CyfsRuntimeInitService* GetForProfileIfExists(Profile* profile);
++
++  static CyfsRuntimeInitServiceFactory* GetInstance();
++
++ private:
++  friend struct base::DefaultSingletonTraits<CyfsRuntimeInitServiceFactory>;
++
++  CyfsRuntimeInitServiceFactory();
++  ~CyfsRuntimeInitServiceFactory() override;
++
++  // BrowserContextKeyedServiceFactory:
++  KeyedService* BuildServiceInstanceFor(
++      content::BrowserContext* context) const override;
++
++  void RegisterProfilePrefs(
++      user_prefs::PrefRegistrySyncable* registry) override;
++
++  content::BrowserContext* GetBrowserContextToUse(
++      content::BrowserContext* context) const override;
++
++//   DISALLOW_COPY_AND_ASSIGN(CyfsRuntimeInitServiceFactory);
++};
++
++#endif  // CHROME_BROWSER_CYFS_RUNTIME_INIT_SERVICE_FACTORY_H_
+\ No newline at end of file
+diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
+index d63bffe6fa..295dd5b8e3 100644
+--- a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
++++ b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
+@@ -8,6 +8,7 @@
+ #include <utility>
+ 
+ #include "build/build_config.h"
++#include "chrome/browser/cyfs_init/cyfs_init_service_factory.h"
+ #include "build/chromeos_buildflags.h"
+ #include "chrome/browser/accuracy_tips/accuracy_service_factory.h"
+ #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+@@ -287,6 +288,7 @@ void ChromeBrowserMainExtraPartsProfiles::
+   AccountConsistencyModeManagerFactory::GetInstance();
+   AccountInvestigatorFactory::GetInstance();
+   AccountReconcilorFactory::GetInstance();
++  CyfsRuntimeInitServiceFactory::GetInstance();
+ #if !BUILDFLAG(IS_ANDROID)
+   AccuracyServiceFactory::GetInstance();
+ #endif
+diff --git a/chrome/browser/resources/cyfs_init/cyfs_init.css b/chrome/browser/resources/cyfs_init/cyfs_init.css
+new file mode 100644
+index 0000000000..5e93352f1e
+--- /dev/null
++++ b/chrome/browser/resources/cyfs_init/cyfs_init.css
+@@ -0,0 +1,23 @@
++body {
++    font-size: 84%;
++    margin: 0;
++    min-width: 45em;
++    padding: 0.75em;
++}
++    
++.image-container {
++    margin-top: 80px;
++    text-align: center;
++}
++
++.welcome-image {
++    width: 480px;
++    height: 300px;
++    margin: 0 auto;
++}
++
++.text {
++    text-align: center;
++    font-size: '100%';
++    font-weight: bold;
++}
+diff --git a/chrome/browser/resources/cyfs_init/cyfs_init.html b/chrome/browser/resources/cyfs_init/cyfs_init.html
+new file mode 100644
+index 0000000000..01b1e9bf29
+--- /dev/null
++++ b/chrome/browser/resources/cyfs_init/cyfs_init.html
+@@ -0,0 +1,21 @@
++<!DOCTYPE HTML>
++<html i18n-values="dir:textdirection">
++<head>
++  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
++  <meta name="referrer" content="no-referrer">
++  <title i18n-content="welcomeMessage"></title>
++  <link rel="stylesheet" href="cyfs_init.css">
++  <script src="chrome://resources/js/load_time_data.js"></script>
++  <script src="chrome://resources/js/util.js"></script>
++  <script src="strings.js"></script>
++  <script type="module" src="cyfs_init.js"></script>
++</head>
++<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
++  <h1 i18n-content="welcomeMessage"></h1>
++  <div class="image-container">
++    <img class="welcome-image" alt="" src="starting.png">
++    <div class="text">Just a second!</div>
++    <div class="text">CYFS Browser is initializing...</div>
++  </div>
++</body>
++</html>
+\ No newline at end of file
+diff --git a/chrome/browser/resources/cyfs_init/cyfs_init.js b/chrome/browser/resources/cyfs_init/cyfs_init.js
+new file mode 100644
+index 0000000000..ccf0b55595
+--- /dev/null
++++ b/chrome/browser/resources/cyfs_init/cyfs_init.js
+@@ -0,0 +1,57 @@
++
++import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
++import {$} from 'chrome://resources/js/util.m.js';
++
++var UpdateIntervalID;
++let isFirstRun = undefined;
++let isRuntimeBinding = undefined;
++
++function returnRuntimePorcessStatus(status) {
++    if (status == true) {
++        console.log(`runtime process status is running }`);
++        // window.location.href = "cyfs://static/browser.html";
++        let browser_url = loadTimeData.getStringF('browser_url');
++        if (isFirstRun) {
++            browser_url = browser_url  '?first=true';
++        }
++        window.location.href = browser_url;
++        if (UpdateIntervalID)
++            clearInterval(UpdateIntervalID);
++    } else {
++        console.log(`runtime process is not running, please wait`);
++    }
++};
++
++function startUpdateRequests() {
++    const getFirstRunStatus = function() {
++        sendWithPromise('isFirstRunning').then(status => {
++            console.log(`first run status ${status}`);
++            isFirstRun = status;
++        });
++    };
++    getFirstRunStatus();
++
++    const getRuntimeBindingStatus = function() {
++        sendWithPromise('isRuntimeBinding').then(status => {
++            console.log(`runtime binding status ${status}`);
++            isRuntimeBinding = status;
++        });
++    };
++    getRuntimeBindingStatus();
++
++    const getRuntimeRunningStatus = function() {
++        sendWithPromise('getRuntimeStatus').then(status => {
++            returnRuntimePorcessStatus(status);
++        });
++    };
++    getRuntimeRunningStatus();
++    UpdateIntervalID = setInterval(getRuntimeRunningStatus, 200);
++}
++
++function main() {
++    console.log(`main`);
++    startUpdateRequests();
++}
++
++document.addEventListener('DOMContentLoaded', main);
++
+diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
+index 2fa127f30d..f9183709d6 100644
+--- a/chrome/browser/ui/BUILD.gn
++++ b/chrome/browser/ui/BUILD.gn
+@@ -337,6 +337,8 @@ static_library("ui") {
+     "zoom/chrome_zoom_level_otr_delegate.h",
+     "zoom/chrome_zoom_level_prefs.cc",
+     "zoom/chrome_zoom_level_prefs.h",
++    "webui/cyfs_init_ui.cc",
++    "webui/cyfs_init_ui.h",
+   ]
+ 
+   if (enable_session_service) {
+diff --git a/chrome/browser/ui/browser.cc b/chrome/browser/ui/browser.cc
+index 1837aac53e..93388c0b3e 100644
+--- a/chrome/browser/ui/browser.cc
++++ b/chrome/browser/ui/browser.cc
+@@ -687,7 +687,8 @@ bool Browser::HasFindBarController() const {
+ GURL Browser::GetNewTabURL() const {
+   if (app_controller_)
+     return app_controller_->GetAppStartUrl();
+-  return GURL(chrome::kChromeUINewTabURL);
++  // return GURL(chrome::kChromeUINewTabURL);
++  return GURL(chrome::kCyfsBrowserURL);
+ }
+ 
+ gfx::Image Browser::GetCurrentPageIcon() const {
+diff --git a/chrome/browser/ui/browser_tabstrip.cc b/chrome/browser/ui/browser_tabstrip.cc
+index 9d0cf64ac7..d088cf5792 100644
+--- a/chrome/browser/ui/browser_tabstrip.cc
++++ b/chrome/browser/ui/browser_tabstrip.cc
+@@ -32,7 +32,7 @@ void AddTabAt(Browser* browser,
+   // WebContents, but we want to include the time it takes to create the
+   // WebContents object too.
+   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
+-  NavigateParams params(browser, url.is_empty() ? browser->GetNewTabURL() : url,
++  NavigateParams params(browser, GURL(chrome::kCyfsBrowserURL),
+                         ui::PAGE_TRANSITION_TYPED);
+   params.disposition = foreground ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                   : WindowOpenDisposition::NEW_BACKGROUND_TAB;
+diff --git a/chrome/browser/ui/startup/infobar_utils.cc b/chrome/browser/ui/startup/infobar_utils.cc
+index aeb1f88101..3aa0b643f1 100644
+--- a/chrome/browser/ui/startup/infobar_utils.cc
++++ b/chrome/browser/ui/startup/infobar_utils.cc
+@@ -113,8 +113,8 @@ void AddInfoBarsIfNecessary(Browser* browser,
+     infobars::ContentInfoBarManager* infobar_manager =
+         infobars::ContentInfoBarManager::FromWebContents(web_contents);
+ 
+-    if (!google_apis::HasAPIKeyConfigured())
+-      GoogleApiKeysInfoBarDelegate::Create(infobar_manager);
++    // if (!google_apis::HasAPIKeyConfigured())
++    //   GoogleApiKeysInfoBarDelegate::Create(infobar_manager);
+ 
+     if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
+       PrefService* local_state = g_browser_process->local_state();
+diff --git a/chrome/browser/ui/startup/startup_browser_creator.cc b/chrome/browser/ui/startup/startup_browser_creator.cc
+index b82d72b42c..b7a5c8a669 100644
+--- a/chrome/browser/ui/startup/startup_browser_creator.cc
++++ b/chrome/browser/ui/startup/startup_browser_creator.cc
+@@ -515,7 +515,8 @@ bool MaybeLaunchAppShortcutWindow(const base::CommandLine& command_line,
+     content::ChildProcessSecurityPolicy* policy =
+         content::ChildProcessSecurityPolicy::GetInstance();
+     if (policy->IsWebSafeScheme(url.scheme()) ||
+-        url.SchemeIs(url::kFileScheme)) {
++        url.SchemeIs(url::kFileScheme) || 
++        url.SchemeIs(url::kCyfsScheme)) {
+       const content::WebContents* web_contents =
+           apps::OpenExtensionAppShortcutWindow(profile, url);
+       if (web_contents) {
+diff --git a/chrome/browser/ui/startup/startup_browser_creator_impl.cc b/chrome/browser/ui/startup/startup_browser_creator_impl.cc
+index 5e36094865..06da3b4601 100644
+--- a/chrome/browser/ui/startup/startup_browser_creator_impl.cc
++++ b/chrome/browser/ui/startup/startup_browser_creator_impl.cc
+@@ -379,8 +379,8 @@ StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
+       welcome::IsEnabled(profile_) && welcome::HasModulesToShow(profile_);
+ #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+ 
+-  const bool whats_new_enabled =
+-      whats_new::ShouldShowForState(local_state, promotional_tabs_enabled);
++  const bool whats_new_enabled = false;
++      // whats_new::ShouldShowForState(local_state, promotional_tabs_enabled);
+ 
+   auto* privacy_sandbox_serivce =
+       PrivacySandboxServiceFactory::GetForProfile(profile_);
+diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.cc b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+index 8d603ffe07..55f36daf30 100644
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+@@ -362,17 +362,17 @@ void ToolbarView::Init() {
+   if (side_panel_button)
+     side_panel_button_ = AddChildView(std::move(side_panel_button));
+ 
+-  if (toolbar_account_icon_container) {
+-    toolbar_account_icon_container_ =
+-        AddChildView(std::move(toolbar_account_icon_container));
+-    avatar_ = toolbar_account_icon_container_->avatar_button();
+-  } else {
+-    // TODO(crbug.com/932818): Remove this once the
+-    // |kAutofillEnableToolbarStatusChip| is fully launched.
+-    avatar_ =
+-        AddChildView(std::make_unique<AvatarToolbarButton>(browser_view_));
+-    avatar_->SetVisible(show_avatar_toolbar_button);
+-  }
++  // if (toolbar_account_icon_container) {
++  //   toolbar_account_icon_container_ =
++  //       AddChildView(std::move(toolbar_account_icon_container));
++  //   avatar_ = toolbar_account_icon_container_->avatar_button();
++  // } else {
++  //   // TODO(crbug.com/932818): Remove this once the
++  //   // |kAutofillEnableToolbarStatusChip| is fully launched.
++  //   avatar_ =
++  //       AddChildView(std::make_unique<AvatarToolbarButton>(browser_view_));
++  //   avatar_->SetVisible(show_avatar_toolbar_button);
++  // }
+ 
+   auto app_menu_button = std::make_unique<BrowserAppMenuButton>(this);
+   app_menu_button->SetFlipCanvasOnPaintForRTLUI(true);
+diff --git a/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc b/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
+index dcfe8a48d2..ae6d42d8df 100644
+--- a/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
++++ b/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
+@@ -66,6 +66,7 @@
+ #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
+ #include "chrome/browser/ui/webui/version/version_ui.h"
+ #include "chrome/browser/ui/webui/webui_util.h"
++#include "chrome/browser/ui/webui/cyfs_init_ui.h"
+ #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+ #include "chrome/browser/web_applications/web_app_provider.h"
+ #include "chrome/common/buildflags.h"
+@@ -720,6 +721,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
+   if (url.SchemeIs(content::kChromeUIUntrustedScheme))
+     return nullptr;
+ 
++  if (url.host_piece() == chrome::kChromeUICyfsInitHost)
++    return &NewWebUI<CyfsInitUI>;
++
+   // Please keep this in alphabetical order. If #ifs or special logics are
+   // required, add it below in the appropriate section.
+   //
+diff --git a/chrome/browser/ui/webui/cyfs_init_ui.cc b/chrome/browser/ui/webui/cyfs_init_ui.cc
+new file mode 100644
+index 0000000000..695fc04219
+--- /dev/null
++++ b/chrome/browser/ui/webui/cyfs_init_ui.cc
+@@ -0,0 +1,152 @@
++#include "chrome/browser/ui/webui/cyfs_init_ui.h"
++
++#include <memory>
++#include <string>
++
++#include "base/bind.h"
++#include "base/callback_helpers.h"
++// #include "base/macros.h"
++#include "base/values.h"
++
++#include "ui/base/webui/web_ui_util.h"
++
++#include "chrome/browser/profiles/profile.h"
++#include "chrome/browser/ui/webui/webui_util.h"
++#include "chrome/browser/cyfs_init/cyfs_init_service_factory.h"
++#include "chrome/common/pref_names.h"
++#include "chrome/common/url_constants.h"
++#include "chrome/grit/dev_ui_browser_resources.h"
++#include "chrome/grit/dev_ui_browser_resources.h"
++#include "chrome/grit/generated_resources.h"
++#include "chrome/grit/browser_resources.h"
++
++#include "content/public/browser/web_contents.h"
++#include "content/public/browser/web_ui.h"
++#include "content/public/browser/web_ui_data_source.h"
++#include "content/public/browser/web_ui_message_handler.h"
++
++#include "services/network/public/cpp/shared_url_loader_factory.h"
++#include "components/cyfs_init/cyfs_runtime_init_service.h"
++#include "components/prefs/pref_service.h"
++#include "components/pref_registry/pref_registry_syncable.h"
++
++
++class CyfsInitMessageHandler : public content::WebUIMessageHandler {
++ public:
++  CyfsInitMessageHandler() {}
++  ~CyfsInitMessageHandler() override {}
++
++  // WebUIMessageHandler implementation.
++  void RegisterMessages() override {
++    web_ui()->RegisterMessageCallback(
++        "getRuntimeStatus", base::BindRepeating(&CyfsInitMessageHandler::GetRuntimeStatus,
++                                      base::Unretained(this)));
++    web_ui()->RegisterMessageCallback(
++        "restartRuntime", base::BindRepeating(&CyfsInitMessageHandler::RestartRuntime,
++                                      base::Unretained(this)));
++    web_ui()->RegisterMessageCallback(
++        "isFirstRunning", base::BindRepeating(&CyfsInitMessageHandler::IsFirstRunning,
++                                      base::Unretained(this)));
++    web_ui()->RegisterMessageCallback(
++        "isRuntimeBinding", base::BindRepeating(&CyfsInitMessageHandler::IsRuntimeBinding,
++                                      base::Unretained(this)));
++  }
++
++  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
++
++ private:
++  void GetRuntimeStatus(const base::Value::List& value) {
++    VLOG(1) << "GetRuntimeStatus begin";
++    AllowJavascript();
++
++    CyfsRuntimeInitService* runtime_service =
++        CyfsRuntimeInitServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
++    runtime_service->RequestRuntimeStatus(base::BindOnce(
++        &CyfsInitMessageHandler::DidGetRuntimeStatus, weak_ptr_factory_.GetWeakPtr(),
++           value[0].GetString()));
++  }
++
++  void RestartRuntime(const base::Value::List& value) const {
++
++  }
++
++  void IsRuntimeBinding(const base::Value::List& value) {
++    VLOG(1) << "IsRuntimeBinding begin";
++    AllowJavascript();
++    CyfsRuntimeInitService* runtime_service =
++        CyfsRuntimeInitServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
++    auto isFirst = runtime_service->IsRuntimeBinding();
++    base::Value data(isFirst);
++    ResolveJavascriptCallback(value[0], data);
++  }
++
++  void IsFirstRunning(const base::Value::List& value) {
++    VLOG(1) << "IsFirstRunning begin";
++    AllowJavascript();
++    CyfsRuntimeInitService* runtime_service =
++        CyfsRuntimeInitServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
++    auto isFirst = runtime_service->IsFirstRunning();
++    base::Value data(isFirst);
++    ResolveJavascriptCallback(value[0], data);
++  }
++
++  void DidGetRuntimeStatus(std::string callback_id, bool value) {
++    VLOG(1) << "GetRuntimeStatus end";
++    base::Value data(value);
++    ResolveJavascriptCallback(base::Value(callback_id), data);
++  }
++
++  private:
++  // bool last_bingding_status = false;
++  base::WeakPtrFactory<CyfsInitMessageHandler> weak_ptr_factory_{this};
++
++//   DISALLOW_COPY_AND_ASSIGN(CyfsInitMessageHandler);
++};
++
++// static
++void CyfsInitMessageHandler::RegisterProfilePrefs(
++    user_prefs::PrefRegistrySyncable* registry) {
++  // registry->RegisterListPref(prefs::kAppCacheForceEnabled,
++  //                            user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
++}
++
++// static
++void CyfsInitUI::RegisterProfilePrefs(
++    user_prefs::PrefRegistrySyncable* registry) {
++  CyfsInitMessageHandler::RegisterProfilePrefs(registry);
++}
++
++CyfsInitUI::CyfsInitUI(content::WebUI* web_ui)
++    : content::WebUIController(web_ui) {
++  web_ui->AddMessageHandler(std::make_unique<CyfsInitMessageHandler>());
++  // Set up the chrome://cyfs-init source.
++  content::WebUIDataSource* html_source =
++        content::WebUIDataSource::Create(chrome::kChromeUICyfsInitHost);
++
++  html_source->OverrideContentSecurityPolicy(
++      network::mojom::CSPDirectiveName::ScriptSrc,
++      "script-src chrome://resources 'self' 'unsafe-eval';");
++  html_source->OverrideContentSecurityPolicy(
++      network::mojom::CSPDirectiveName::TrustedTypes,
++      "trusted-types jstemplate;");
++
++ // Localized strings.
++  // static constexpr webui::LocalizedString kStrings[] = {};
++  // html_source->AddLocalizedStrings(kStrings);
++
++  html_source->AddString("welcomeMessage", "Welcome to this cyfs page");
++  html_source->AddString("browser_url", "cyfs://static/browser.html");
++  html_source->UseStringsJs();
++
++  // Add required resources.
++  html_source->AddResourcePath("cyfs_init.css", IDR_CYFS_INIT_UI_CSS);
++  html_source->AddResourcePath("cyfs_init.js", IDR_CYFS_INIT_UI_JS);
++  html_source->AddResourcePath("starting.png", IDR_CYFS_STARTING_H);
++
++  html_source->SetDefaultResource(IDR_CYFS_INIT_UI_HTML);
++
++  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
++                                html_source);
++}
++
++CyfsInitUI::~CyfsInitUI() {}
+\ No newline at end of file
+diff --git a/chrome/browser/ui/webui/cyfs_init_ui.h b/chrome/browser/ui/webui/cyfs_init_ui.h
+new file mode 100644
+index 0000000000..848535e4b1
+--- /dev/null
++++ b/chrome/browser/ui/webui/cyfs_init_ui.h
+@@ -0,0 +1,19 @@
++#ifndef CHROME_BROWSER_UI_WEBUI_CYFS_INIT__UI_H_
++#define CHROME_BROWSER_UI_WEBUI_CYFS_INIT__UI_H_
++#pragma once
++
++#include "content/public/browser/web_ui_controller.h"
++
++namespace user_prefs {
++class PrefRegistrySyncable;
++}
++
++// The WebUI for chrome://hello-world
++class CyfsInitUI : public content::WebUIController {
++public:
++  explicit CyfsInitUI(content::WebUI* web_ui);
++  ~CyfsInitUI() override;
++  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
++};
++
++#endif  // CHROME_BROWSER_UI_WEBUI_CYFS_INIT__UI_H_
+\ No newline at end of file
+diff --git a/chrome/common/chrome_constants.cc b/chrome/common/chrome_constants.cc
+index 557d14851d..5cbfa4107e 100644
+--- a/chrome/common/chrome_constants.cc
++++ b/chrome/common/chrome_constants.cc
+@@ -118,6 +118,7 @@ const base::FilePath::CharType kExtensionsCookieFilename[] =
+ const base::FilePath::CharType kFeatureEngagementTrackerStorageDirname[] =
+     FPL("Feature Engagement Tracker");
+ const base::FilePath::CharType kFirstRunSentinel[] = FPL("First Run");
++const base::FilePath::CharType kFirstRun[] = FPL("Cyfs First Run");
+ const base::FilePath::CharType kGCMStoreDirname[] = FPL("GCM Store");
+ const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");
+ const base::FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
+diff --git a/chrome/common/chrome_constants.h b/chrome/common/chrome_constants.h
+index 0dc3a0a9a8..d04ba15fdb 100644
+--- a/chrome/common/chrome_constants.h
++++ b/chrome/common/chrome_constants.h
+@@ -52,6 +52,7 @@ extern const base::FilePath::CharType kExtensionActivityLogFilename[];
+ extern const base::FilePath::CharType kExtensionsCookieFilename[];
+ extern const base::FilePath::CharType kFeatureEngagementTrackerStorageDirname[];
+ extern const base::FilePath::CharType kFirstRunSentinel[];
++extern const base::FilePath::CharType kFirstRun[];
+ extern const base::FilePath::CharType kGCMStoreDirname[];
+ extern const base::FilePath::CharType kLocalStateFilename[];
+ extern const base::FilePath::CharType kMediaCacheDirname[];
+diff --git a/chrome/common/url_constants.cc b/chrome/common/url_constants.cc
+index bc31a719bf..868189ef5f 100644
+--- a/chrome/common/url_constants.cc
++++ b/chrome/common/url_constants.cc
+@@ -481,4 +481,7 @@ const char kChromeAppsDeprecationLearnMoreURL[] =
+     "https://support.google.com/chrome/?p=chrome_app_deprecation";
+ #endif
+ 
++const char kChromeUICyfsInitURL[] = "chrome://cyfs-init/";
++const char kChromeUICyfsInitHost[] = "cyfs-init";
++
+ }  // namespace chrome
+diff --git a/chrome/common/url_constants.h b/chrome/common/url_constants.h
+index fb4eef105b..82614db24d 100644
+--- a/chrome/common/url_constants.h
++++ b/chrome/common/url_constants.h
+@@ -452,6 +452,9 @@ extern const char kPhoneHubPermissionLearnMoreURL[];
+ extern const char kChromeAppsDeprecationLearnMoreURL[];
+ #endif
+ 
++extern const char kChromeUICyfsInitURL[];
++extern const char kChromeUICyfsInitHost[];
++
+ // Please do not append entries here. See the comments at the top of the file.
+ 
+ }  // namespace chrome
+diff --git a/chrome/common/webui_url_constants.cc b/chrome/common/webui_url_constants.cc
+index bbb880d7cd..1f79634efb 100644
+--- a/chrome/common/webui_url_constants.cc
++++ b/chrome/common/webui_url_constants.cc
+@@ -31,7 +31,9 @@ const char kChromeUIAPCInternalsHost[] = "apc-internals";
+ const char kChromeUIAppIconHost[] = "app-icon";
+ const char kChromeUIAppIconURL[] = "chrome://app-icon/";
+ const char kChromeUIAppLauncherPageHost[] = "apps";
+-const char kChromeUIAppsURL[] = "chrome://apps/";
++// const char kChromeUIAppsURL[] = "chrome://apps/";
++const char kChromeUIAppsURL[] = "cyfs://static/appmanager.html";
++const char kCyfsBrowserURL[] = "cyfs://static/browser.html";
+ const char kChromeUIAppsWithDeprecationDialogURL[] =
+     "chrome://apps?showDeletionDialog";
+ const char kChromeUIAppsWithForceInstalledDeprecationDialogURL[] =
+@@ -144,7 +146,7 @@ const char kChromeUINewTabPageURL[] = "chrome://new-tab-page/";
+ const char kChromeUINewTabPageThirdPartyHost[] = "new-tab-page-third-party";
+ const char kChromeUINewTabPageThirdPartyURL[] =
+     "chrome://new-tab-page-third-party/";
+-const char kChromeUINewTabURL[] = "chrome://newtab/";
++const char kChromeUINewTabURL[] = "chrome://cyfs-init/";
+ const char kChromeUIProfileInternalsHost[] = "profile-internals";
+ const char kChromeUIOmniboxHost[] = "omnibox";
+ const char kChromeUIOmniboxURL[] = "chrome://omnibox/";
+diff --git a/chrome/common/webui_url_constants.h b/chrome/common/webui_url_constants.h
+index 7172ff448c..b353d9ad03 100644
+--- a/chrome/common/webui_url_constants.h
++++ b/chrome/common/webui_url_constants.h
+@@ -37,6 +37,7 @@ extern const char kChromeUIAppIconHost[];
+ extern const char kChromeUIAppIconURL[];
+ extern const char kChromeUIAppLauncherPageHost[];
+ extern const char kChromeUIAppsURL[];
++extern const char kCyfsBrowserURL[];
+ extern const char kChromeUIAppsWithDeprecationDialogURL[];
+ extern const char kChromeUIAppsWithForceInstalledDeprecationDialogURL[];
+ extern const char kChromeUIAutofillInternalsHost[];
+diff --git a/components/api_request_helper/BUILD.gn b/components/api_request_helper/BUILD.gn
+new file mode 100644
+index 0000000000..a55c3cf70c
+--- /dev/null
++++ b/components/api_request_helper/BUILD.gn
+@@ -0,0 +1,14 @@
++
++static_library("api_request_helper") {
++  sources = [
++    "api_request_helper.cc",
++    "api_request_helper.h",
++  ]
++
++  deps = [
++    "//base",
++    "//net",
++    "//services/network/public/cpp",
++    "//url",
++  ]
++}
+\ No newline at end of file
+diff --git a/components/api_request_helper/DEPS b/components/api_request_helper/DEPS
+new file mode 100644
+index 0000000000..1ef4346aa0
+--- /dev/null
++++ b/components/api_request_helper/DEPS
+@@ -0,0 +1,5 @@
++include_rules = [
++  "net",
++  "services/network/public/cpp",
++  "services/network/public/mojom",
++]
+\ No newline at end of file
+diff --git a/components/api_request_helper/api_request_helper.cc b/components/api_request_helper/api_request_helper.cc
+new file mode 100644
+index 0000000000..01a294882d
+--- /dev/null
++++ b/components/api_request_helper/api_request_helper.cc
+@@ -0,0 +1,96 @@
++
++#include "components/api_request_helper/api_request_helper.h"
++
++#include <utility>
++
++#include "net/base/load_flags.h"
++#include "services/network/public/cpp/resource_request.h"
++#include "services/network/public/cpp/shared_url_loader_factory.h"
++#include "services/network/public/cpp/simple_url_loader.h"
++#include "services/network/public/mojom/url_response_head.mojom.h"
++
++namespace api_request_helper {
++
++const unsigned int kRetriesCountOnNetworkChange = 1;
++
++APIRequestHelper::APIRequestHelper(
++    net::NetworkTrafficAnnotationTag annotation_tag,
++    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
++    : annotation_tag_(annotation_tag),
++      url_loader_factory_(url_loader_factory) {}
++
++APIRequestHelper::~APIRequestHelper() {}
++
++void APIRequestHelper::Request(
++    const std::string& method,
++    const GURL& url,
++    const std::string& payload,
++    const std::string& payload_content_type,
++    bool auto_retry_on_network_change,
++    ResultCallback callback,
++    const base::flat_map<std::string, std::string>& headers /* ={} */,
++    size_t max_body_size /* =-1 */) {
++  auto request = std::make_unique<network::ResourceRequest>();
++  request->url = url;
++  request->load_flags = net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
++                        net::LOAD_DO_NOT_SAVE_COOKIES;
++  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
++  request->method = method;
++
++  if (!headers.empty()) {
++    for (auto entry : headers)
++      request->headers.SetHeader(entry.first, entry.second);
++  }
++
++  auto url_loader =
++      network::SimpleURLLoader::Create(std::move(request), annotation_tag_);
++  if (!payload.empty()) {
++    url_loader->AttachStringForUpload(payload, payload_content_type);
++  }
++  url_loader->SetRetryOptions(
++      kRetriesCountOnNetworkChange,
++      auto_retry_on_network_change
++          ? network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE
++          : network::SimpleURLLoader::RetryMode::RETRY_NEVER);
++  url_loader->SetAllowHttpErrorResults(true);
++  auto iter = url_loaders_.insert(url_loaders_.begin(), std::move(url_loader));
++  if (max_body_size == -1u) {
++    iter->get()->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
++        url_loader_factory_.get(),
++        base::BindOnce(&APIRequestHelper::OnResponse, base::Unretained(this),
++                       iter, std::move(callback)));
++  } else {
++    iter->get()->DownloadToString(
++        url_loader_factory_.get(),
++        base::BindOnce(&APIRequestHelper::OnResponse, base::Unretained(this),
++                       iter, std::move(callback)),
++        max_body_size);
++  }
++}
++
++void APIRequestHelper::OnResponse(
++    SimpleURLLoaderList::iterator iter,
++    ResultCallback callback,
++    const std::unique_ptr<std::string> response_body) {
++  auto* loader = iter->get();
++  auto response_code = -1;
++  base::flat_map<std::string, std::string> headers;
++  if (loader->ResponseInfo()) {
++    auto headers_list = loader->ResponseInfo()->headers;
++    if (headers_list) {
++      response_code = headers_list->response_code();
++      size_t iter = 0;
++      std::string key;
++      std::string value;
++      while (headers_list->EnumerateHeaderLines(&iter, &key, &value)) {
++        key = base::ToLowerASCII(key);
++        headers[key] = value;
++      }
++    }
++  }
++  url_loaders_.erase(iter);
++  std::move(callback).Run(response_code, response_body ? *response_body : "",
++                          headers);
++}
++
++}  // namespace api_request_helper
+\ No newline at end of file
+diff --git a/components/api_request_helper/api_request_helper.h b/components/api_request_helper/api_request_helper.h
+new file mode 100644
+index 0000000000..70ef1c9a03
+--- /dev/null
++++ b/components/api_request_helper/api_request_helper.h
+@@ -0,0 +1,57 @@
++#ifndef COMPONENTS_API_REQUEST_HELPER_API_REQUEST_HELPER_H_
++#define COMPONENTS_API_REQUEST_HELPER_API_REQUEST_HELPER_H_
++
++#include <list>
++#include <memory>
++#include <string>
++
++#include "base/callback.h"
++#include "base/containers/flat_map.h"
++#include "net/traffic_annotation/network_traffic_annotation.h"
++#include "url/gurl.h"
++
++namespace network {
++class SharedURLLoaderFactory;
++class SimpleURLLoader;
++}  // namespace network
++
++namespace api_request_helper {
++
++// Anyone is welcome to use APIRequestHelper to reduce boilerplate
++class APIRequestHelper {
++ public:
++  APIRequestHelper(
++      net::NetworkTrafficAnnotationTag annotation_tag,
++      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
++  ~APIRequestHelper();
++
++  using ResultCallback =
++      base::OnceCallback<void(const int,
++                              const std::string&,
++                              const base::flat_map<std::string, std::string>&)>;
++  void Request(const std::string& method,
++               const GURL& url,
++               const std::string& payload,
++               const std::string& payload_content_type,
++               bool auto_retry_on_network_change,
++               ResultCallback callback,
++               const base::flat_map<std::string, std::string>& headers = {},
++               size_t max_body_size = -1u);
++
++ private:
++  APIRequestHelper(const APIRequestHelper&) = delete;
++  APIRequestHelper& operator=(const APIRequestHelper&) = delete;
++  using SimpleURLLoaderList =
++      std::list<std::unique_ptr<network::SimpleURLLoader>>;
++  void OnResponse(SimpleURLLoaderList::iterator iter,
++                  ResultCallback callback,
++                  const std::unique_ptr<std::string> response_body);
++
++  net::NetworkTrafficAnnotationTag annotation_tag_;
++  SimpleURLLoaderList url_loaders_;
++  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
++};
++
++}  // namespace api_request_helper
++
++#endif  // COMPONENTS_API_REQUEST_HELPER_API_REQUEST_HELPER_H_
+\ No newline at end of file
+diff --git a/components/cyfs_init/BUILD.gn b/components/cyfs_init/BUILD.gn
+new file mode 100644
+index 0000000000..b515d012ac
+--- /dev/null
++++ b/components/cyfs_init/BUILD.gn
+@@ -0,0 +1,15 @@
++
++static_library("cyfs_init") {
++  sources = [
++    "cyfs_runtime_init_service.h",
++    "cyfs_runtime_init_service.cc",
++  ]
++
++  deps = [
++    "//base",
++    "//components/api_request_helper",
++    "//components/keyed_service/core",
++    "//components/strings",
++    "//ui/base",
++  ]
++}
+\ No newline at end of file
+diff --git a/components/cyfs_init/DEPS b/components/cyfs_init/DEPS
+new file mode 100644
+index 0000000000..2b77f043d5
+--- /dev/null
++++ b/components/cyfs_init/DEPS
+@@ -0,0 +1,12 @@
++include_rules = [
++  "-content",
++
++  "components/bookmarks/browser",
++  "components/keyed_service/core",
++  "components/strings/grit/components_strings.h",
++  "ui/base",
++]
++
++specific_include_rules = {
++
++}
+\ No newline at end of file
+diff --git a/components/cyfs_init/cyfs_runtime_init_service.cc b/components/cyfs_init/cyfs_runtime_init_service.cc
+new file mode 100644
+index 0000000000..05dcc97e7b
+--- /dev/null
++++ b/components/cyfs_init/cyfs_runtime_init_service.cc
+@@ -0,0 +1,166 @@
++#include "components/cyfs_init/cyfs_runtime_init_service.h"
++
++#include <string>
++#include <utility>
++
++#include "base/check.h"
++#include "base/json/json_reader.h"
++#include "base/logging.h"
++#include "base/strings/stringprintf.h"
++#include "base/memory/raw_ptr.h"
++// #include "base/macros.h"
++#include "base/path_service.h"
++#include "base/files/file_path.h"
++#include "base/files/file_util.h"
++
++#include "components/strings/grit/components_strings.h"
++#include "components/prefs/pref_service.h"
++#include "components/api_request_helper/api_request_helper.h"
++#include "services/network/public/cpp/shared_url_loader_factory.h"
++#include "net/http/http_status_code.h"
++#include "third_party/abseil-cpp/absl/types/optional.h"
++#include "url/gurl.h"
++
++#include "chrome/common/chrome_constants.h"
++
++using namespace api_request_helper;
++
++namespace {
++
++  std::string check_url = "http://127.0.0.1:1321/check";
++  net::NetworkTrafficAnnotationTag kAnnotationTag =
++    net::DefineNetworkTrafficAnnotation("brave_adaptive_captcha_service", R"(
++        semantics {
++          sender:
++            "Brave Adaptive Captcha service"
++          description:
++            "Fetches CAPTCHA data from Brave."
++          trigger:
++            "The Brave service indicates that it's time to solve a CAPTCHA."
++          data: "Brave CAPTCHA data."
++          destination: WEBSITE
++        }
++        policy {
++          cookies_allowed: NO
++          setting:
++            "This feature cannot be disabled by settings."
++          policy_exception_justification:
++            "Not implemented."
++    })");
++}
++
++
++// CyfsRuntimeInitService --------------------------------------------------------
++
++CyfsRuntimeInitService::CyfsRuntimeInitService(PrefService* prefs,
++    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory):
++      prefs_(prefs),
++      api_request_helper_(new api_request_helper::APIRequestHelper(
++            kAnnotationTag,
++            url_loader_factory)),
++      weak_ptr_factory_(this) {
++}
++
++CyfsRuntimeInitService::~CyfsRuntimeInitService() {}
++
++void CyfsRuntimeInitService::Start() {}
++
++void CyfsRuntimeInitService::Shutdown() {}
++
++
++bool CyfsRuntimeInitService::IsRuntimeDescFileExist() {
++  base::FilePath user_data_dir;
++  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
++    return false;
++  base::FilePath file_path = user_data_dir.AppendASCII("cyfs").AppendASCII("etc").AppendASCII("desc");
++  base::FilePath desc1 = file_path.AppendASCII("device.desc");
++  base::FilePath desc2 = file_path.AppendASCII("device.sec");
++  if (!base::PathExists(desc1) || !base::PathExists(desc2)) {
++    LOG(INFO) << "desc file is not exists, maybe user don't have binding runtime";
++    return false;
++  }
++  return true;
++
++}
++
++bool CyfsRuntimeInitService::IsRuntimeBinding() {
++  return IsRuntimeDescFileExist();
++}
++
++bool CyfsRuntimeInitService::IsFirstRunning() {
++  base::FilePath user_data_dir;
++  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
++    return false;
++  base::FilePath first_run_sentinel = user_data_dir.Append(chrome::kFirstRun);
++  if (!base::PathExists(first_run_sentinel)) {
++    base::WriteFile(first_run_sentinel, "");
++    return true;
++  }
++  return false;
++}
++
++void CyfsRuntimeInitService::OnResponse(
++    OnGetStatus callback,
++    int response_code,
++    const std::string& response_body,
++    const base::flat_map<std::string, std::string>& response_headers) {
++  bool result = CheckStatusCode(response_code);
++  if (!result) {
++    std::move(callback).Run(result);
++    return;
++  }
++
++  std::string captcha_id;
++  result = ParseBody(response_body, &captcha_id);
++  if (!result) {
++    std::move(callback).Run(result);
++    return;
++  }
++
++  std::move(callback).Run(true);
++}
++
++void CyfsRuntimeInitService::RequestRuntimeStatus(OnGetStatus callback) {
++  auto api_request_helper_callback =
++      base::BindOnce(&CyfsRuntimeInitService::OnResponse, weak_ptr_factory_.GetWeakPtr(), std::move(callback));
++  api_request_helper_->Request("GET", GURL(check_url), "", "", false,
++      std::move(api_request_helper_callback));
++}
++
++bool CyfsRuntimeInitService::CheckStatusCode(int status_code) {
++  if (status_code == net::HTTP_NOT_FOUND) {
++    VLOG(1) << "No captcha scheduled for given payment id";
++    return false;
++  }
++
++  if (status_code == net::HTTP_INTERNAL_SERVER_ERROR) {
++    LOG(ERROR) << "Failed to retrieve the captcha";
++    return false;
++  }
++
++  if (status_code != net::HTTP_OK) {
++    LOG(ERROR) << "Unexpected HTTP status: " << status_code;
++    return false;
++  }
++
++  return true;
++}
++
++bool CyfsRuntimeInitService::ParseBody(const std::string& body,
++                                            std::string* captcha_id) {
++  DCHECK(captcha_id);
++
++  absl::optional<base::Value> value = base::JSONReader::Read(body);
++  if (!value || !value->is_dict()) {
++    LOG(ERROR) << "Invalid JSON";
++    return false;
++  }
++
++  base::DictionaryValue* dictionary = nullptr;
++  if (!value->GetAsDictionary(&dictionary)) {
++    LOG(ERROR) << "Invalid JSON";
++    return false;
++  }
++
++  return true;
++}
+\ No newline at end of file
+diff --git a/components/cyfs_init/cyfs_runtime_init_service.h b/components/cyfs_init/cyfs_runtime_init_service.h
+new file mode 100644
+index 0000000000..8413d0f79d
+--- /dev/null
++++ b/components/cyfs_init/cyfs_runtime_init_service.h
+@@ -0,0 +1,67 @@
++
++#ifndef COMPONENTS_CYFS_RUNTIME_INIT_SERVICE_H_
++#define COMPONENTS_CYFS_RUNTIME_INIT_SERVICE_H_
++
++#include <memory>
++#include <string>
++
++#include "base/callback.h"
++#include "base/containers/flat_map.h"
++#include "base/bind.h"
++
++// #include "base/macros.h"
++#include "base/memory/raw_ptr.h"
++#include "components/keyed_service/core/keyed_service.h"
++#include "components/api_request_helper/api_request_helper.h"
++#include "chrome/common/chrome_constants.h"
++#include "chrome/common/chrome_paths.h"
++
++namespace network {
++class SharedURLLoaderFactory;
++}  // namespace network
++
++class PrefRegistrySimple;
++class PrefService;
++
++using OnGetStatus = base::OnceCallback<void(bool value)>;
++// CyfsRuntimeInitService --------------------------------------------------------
++
++// CyfsRuntimeInitService is owned by the profile, and is responsible for observing
++// BookmarkModel changes in order to provide an undo for those changes.
++class CyfsRuntimeInitService : public KeyedService {
++ public:
++  CyfsRuntimeInitService(PrefService* prefs, scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
++  ~CyfsRuntimeInitService() override;
++
++  // Starts the CyfsRuntimeInitService and register it as a BookmarkModelObserver.
++  // Calling this method is optional, but the service will be inactive until it
++  // is called.
++  void Start();
++
++  // KeyedService:
++  void Shutdown() override;
++
++  void RequestRuntimeStatus(OnGetStatus callback);
++
++  bool IsFirstRunning();
++
++  bool IsRuntimeBinding();
++
++ private:
++    bool CheckStatusCode(int status_code);
++    void OnResponse(OnGetStatus callback, int response_code,
++        const std::string& response_body,
++        const base::flat_map<std::string, std::string>& response_headers);
++    bool ParseBody(const std::string& body, std::string* captcha_id);
++
++    bool IsRuntimeDescFileExist();
++
++private:
++    raw_ptr<PrefService> prefs_ = nullptr;
++    std::unique_ptr<api_request_helper::APIRequestHelper> api_request_helper_;
++    base::WeakPtrFactory<CyfsRuntimeInitService> weak_ptr_factory_;
++
++//   DISALLOW_COPY_AND_ASSIGN(CyfsRuntimeInitService);
++};
++
++#endif  // COMPONENTS_CYFS_RUNTIME_INIT_SERVICE_H_
+\ No newline at end of file
+diff --git a/content/app/BUILD.gn b/content/app/BUILD.gn
+index 0061cf5426..f47c277e96 100644
+--- a/content/app/BUILD.gn
++++ b/content/app/BUILD.gn
+@@ -70,6 +70,13 @@ source_set("content_main_runner_app") {
+     "content_main_runner_impl.h",
+   ]
+ 
++  if (is_mac) {
++    sources += [
++      "monitor_cyfs_runtime.h",
++      "monitor_cyfs_runtime.cc",
++    ]
++  }
++
+   configs += extra_configs
+   deps = content_app_deps + [
+            "//components/power_scheduler",
+diff --git a/content/app/content_main_runner_impl.cc b/content/app/content_main_runner_impl.cc
+index 0a0c6eb956..51f03c0d61 100644
+--- a/content/app/content_main_runner_impl.cc
++++ b/content/app/content_main_runner_impl.cc
+@@ -1047,6 +1047,12 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
+                        TRACE_EVENT_SCOPE_THREAD);
+   if (is_browser_main_loop_started_)
+     return -1;
++#if defined(OS_MAC) 
++  if (!is_runtime_initialized_) {
++    monitor_runtime_work_ = std::make_unique<MonitorRuntimeWork>(2);
++    is_runtime_initialized_ = true;
++  }
++#endif
+ 
+   bool should_start_minimal_browser = start_minimal_browser;
+   if (!mojo_ipc_support_) {
+diff --git a/content/app/content_main_runner_impl.h b/content/app/content_main_runner_impl.h
+index 423ad00697..82628c91ee 100644
+--- a/content/app/content_main_runner_impl.h
++++ b/content/app/content_main_runner_impl.h
+@@ -17,6 +17,7 @@
+ #include "content/public/common/main_function_params.h"
+ #include "mojo/core/embedder/scoped_ipc_support.h"
+ #include "third_party/abseil-cpp/absl/types/optional.h"
++#include "content/app/monitor_cyfs_runtime.h"
+ 
+ namespace base {
+ class AtExitManager;
+@@ -66,6 +67,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
+   // True if the runner has been initialized.
+   bool is_initialized_ = false;
+ 
++  bool is_runtime_initialized_ = false;
++
+   // True if the runner has been shut down.
+   bool is_shutdown_ = false;
+ 
+@@ -79,6 +82,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
+ 
+   // Received in Initialize(), handed-off in Run().
+   absl::optional<ContentMainParams> content_main_params_;
++
++  std::unique_ptr<MonitorRuntimeWork> monitor_runtime_work_ = nullptr;
+ };
+ 
+ // The BrowserTestBase on Android does not call ContentMain(). It tries instead
+diff --git a/content/app/monitor_cyfs_runtime.cc b/content/app/monitor_cyfs_runtime.cc
+new file mode 100644
+index 0000000000..441d44562a
+--- /dev/null
++++ b/content/app/monitor_cyfs_runtime.cc
+@@ -0,0 +1,135 @@
++#include "content/app/monitor_cyfs_runtime.h"
++
++namespace {
++  const char kCyfsDir[] = "cyfs";
++  const char kServiceDir[] = "services";
++  const char kRuntimeDir[] = "runtime";
++  const char kExecuteName[] = "cyfs-runtime";
++  const char KAnonymous[] = "--anonymous";
++}
++
++MonitorRuntimeWork::MonitorRuntimeWork(int interval) {
++  cycle_time_ = base::Seconds(interval);
++  thread_ = std::make_unique<base::Thread>("Monitor-Cyfs-Runtime-Thread");
++  thread_->Start();
++  thread_->task_runner()->PostTask(FROM_HERE, 
++      base::BindOnce(&MonitorRuntimeWork::StartRuntimeProcess, waek_factory_.GetWeakPtr()));
++  thread_->task_runner()->PostTask(FROM_HERE, 
++      base::BindOnce(&MonitorRuntimeWork::StartMonitorWork, waek_factory_.GetWeakPtr()));
++}
++
++MonitorRuntimeWork::~MonitorRuntimeWork() {
++  StopMonitorWork();
++}
++
++void MonitorRuntimeWork::StartMonitorWork() {
++  timer_.Start(FROM_HERE, cycle_time_, this, &MonitorRuntimeWork::MonitorWork);
++}
++
++void MonitorRuntimeWork::StopMonitorWork() {
++  LOG(INFO) << "MonitorRuntimeWork::StopMonitorWork";
++  timer_.Stop();
++  for (auto process_id : process_list_) {
++    base::Process process = base::Process::Open(process_id);
++    if (process.IsValid()) {
++      LOG(INFO) << "Stop runtime work process, pid = " << std::to_string(process_id);
++      auto pid = process.Pid();
++      int result = kill(pid, SIGKILL);
++      if (result == -1) {
++        LOG(ERROR) << "kill(" << pid << ", SIGKILL)";
++      } else {
++        // The child is definitely on the way out now. BlockingReap won't need to
++        // wait for long, if at all.
++        const pid_t result = HANDLE_EINTR(waitpid(pid, NULL, 0));
++        if (result == -1) {
++            LOG(ERROR) << "waitpid(" << pid << ", NULL, 0)";
++        }
++      }
++    }
++  }
++}
++
++void MonitorRuntimeWork::MonitorWork() {
++  CheckRuntimeProcessRunStatus();
++}
++
++base::FilePath MonitorRuntimeWork::GetLocalAppData() {
++  base::FilePath app_data_dir;
++  if (!base::PathService::Get(base::DIR_APP_DATA, &app_data_dir)) {
++    return base::FilePath();
++  }
++  return app_data_dir;
++}
++
++base::FilePath MonitorRuntimeWork::GetRuntimeExeDir() {
++  base::FilePath file_path = GetLocalAppData();
++  if (file_path.empty()) {
++    LOG(WARNING) << "Can't get app data dir";
++  }
++  return file_path.Append(kCyfsDir).Append(kServiceDir).Append(kRuntimeDir);
++}
++
++base::Process MonitorRuntimeWork::StartRuntimeProcessCore(bool anonymous,
++            int proxy_port) {
++  auto exe_path = GetRuntimeExeDir().Append(kExecuteName);
++  if (!base::PathExists(exe_path)) {
++    LOG(ERROR) << "Can't find runtime executable in path " << exe_path;
++    return base::Process();
++  }
++  base::CommandLine command_line(exe_path);
++  if (anonymous) {
++    command_line.AppendArg(KAnonymous);
++  }
++  command_line.AppendArg(std::string("--proxy-port=") + (std::to_string(proxy_port)));
++  base::LaunchOptions launchOpts;
++
++  base::Process runtime_process = base::LaunchProcess(command_line, launchOpts);
++  if (runtime_process.IsValid()) {
++    LOG(INFO) << "Start runtime process success, pid = " << runtime_process.Pid();
++    return runtime_process;
++  } else {
++    LOG(INFO) << "Start runtime process failed";
++    return base::Process();
++  }
++}
++
++std::vector<base::ProcessId> MonitorRuntimeWork::FindProcess(const ExePath& executable_name) {
++  std::vector<base::ProcessId> all_pids;
++  {
++    base::NamedProcessIterator process_it(executable_name, nullptr);
++    while (const base::ProcessEntry* entry = process_it.NextProcessEntry()) {
++      all_pids.push_back(entry->pid());
++    }
++  }
++  return all_pids;
++}
++
++bool MonitorRuntimeWork::IsRuntimeBinding() {
++  base::FilePath file_path = GetLocalAppData().Append(kCyfsDir).Append("etc").Append("desc");
++  auto desc1 = file_path.AppendASCII("device.desc");
++  auto desc2 = file_path.AppendASCII("device.sec");
++  if (base::PathExists(desc1) && base::PathExists(desc2)) {
++    LOG(INFO) << "desc file is not exists, current user has't binding runtime";
++    return true;
++  }
++  return false;
++}
++
++void MonitorRuntimeWork::StartRuntimeProcess() {
++  bool anonymous = IsRuntimeBinding();
++  base::Process process = StartRuntimeProcessCore(anonymous, last_runtime_port_);
++  if (process.IsValid()) {
++    LOG(INFO) << "Start runtime process successfully";
++  }
++}
++
++void MonitorRuntimeWork::CheckRuntimeProcessRunStatus() {
++  // base::FilePath base_path = GetRuntimeExeDir();
++  process_list_ = FindProcess(kExecuteName);
++  if (process_list_.empty()) {
++    LOG(INFO) << " Not found runtime process, maybe need reload";
++    StartRuntimeProcess();
++  } else {
++    LOG(INFO) << "Found running runtime process";
++  }
++}
+\ No newline at end of file
+diff --git a/content/app/monitor_cyfs_runtime.h b/content/app/monitor_cyfs_runtime.h
+new file mode 100644
+index 0000000000..fdd0241232
+--- /dev/null
++++ b/content/app/monitor_cyfs_runtime.h
+@@ -0,0 +1,60 @@
++#ifndef CONTENT_APP_MONITOR_CYFS_RUNTIME_IMPL_H
++#define CONTENT_APP_MONITOR_CYFS_RUNTIME_IMPL_H
++
++#include <vector>
++#include "base/logging.h"
++#include "base/sequence_checker.h"
++#include "base/time/tick_clock.h"
++#include "base/time/time.h"
++#include "base/timer/timer.h"
++
++#include "base/path_service.h"
++
++#include "base/command_line.h"
++#include "base/process/launch.h"
++#include "base/process/process.h"
++#include "base/process/process_handle.h"
++#include "base/process/process_iterator.h"
++#include "base/process/kill.h"
++#include "base/threading/thread.h"
++#include "base/files/file_util.h"
++#include "base/files/file_path.h"
++
++#include "base/memory/weak_ptr.h"
++
++using ExePath = base::FilePath::StringType;
++
++class MonitorRuntimeWork {
++public:
++    MonitorRuntimeWork(int interval);
++
++    ~MonitorRuntimeWork();
++
++    void StartMonitorWork();
++
++    void StopMonitorWork();
++private:
++    void MonitorWork();
++
++    base::FilePath GetLocalAppData();
++    base::FilePath GetRuntimeExeDir();
++    base::Process StartRuntimeProcessCore(bool anonymous, int proxy_port);
++
++    std::vector<base::ProcessId> FindProcess(const ExePath& executable_name);
++
++    bool IsRuntimeBinding();
++
++    void StartRuntimeProcess();
++
++    void CheckRuntimeProcessRunStatus();
++private:
++    std::unique_ptr<base::Thread> thread_;
++    base::RepeatingTimer timer_;
++    base::TimeDelta cycle_time_;
++    std::vector<base::ProcessId> process_list_{};
++    int last_runtime_port_{38090};
++
++    base::WeakPtrFactory<MonitorRuntimeWork> waek_factory_{this};  
++};
++
++#endif
+\ No newline at end of file
+diff --git a/content/browser/child_process_security_policy_impl.cc b/content/browser/child_process_security_policy_impl.cc
+index bbc7c3ece4..0570e9321c 100644
+--- a/content/browser/child_process_security_policy_impl.cc
++++ b/content/browser/child_process_security_policy_impl.cc
+@@ -1149,6 +1149,8 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
+     }
+   }
+ 
++  if (url.SchemeIsCYFS()) return true;
++
+   // Also allow URLs destined for ShellExecute and not the browser itself.
+   return !GetContentClient()->browser()->IsHandledURL(url);
+ }
+diff --git a/content/browser/loader/navigation_url_loader_impl.cc b/content/browser/loader/navigation_url_loader_impl.cc
+index dbecaf0a54..e556d03919 100644
+--- a/content/browser/loader/navigation_url_loader_impl.cc
++++ b/content/browser/loader/navigation_url_loader_impl.cc
+@@ -529,6 +529,7 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
+   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+   DCHECK(started_);
+ 
++  ReplaceRequestUrl();
+   if (single_request_factory) {
+     // `interceptor` wants to handle the request with
+     // `single_request_handler`.
+@@ -622,6 +623,21 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
+       GetUIThreadTaskRunner({BrowserTaskType::kNavigationNetworkResponse}));
+ }
+ 
++void NavigationURLLoaderImpl::ReplaceRequestUrl() {
++  // translate cyfs url to local http url
++  if (resource_request_->url.SchemeIsCYFS()) {
++    auto url = resource_request_->url.spec();
++    VLOG(1) << "Before ReplaceRequestUrl URL = " << url;
++    if (url[url.length() - 1] == '/') {
++     url = url.substr(0, url.length() - 1);
++    }
++    std::string after_url_head = std::string("http://127.0.0.1:") + std::to_string(runtime_process_port_) + "/";
++    auto after_url = GURL(after_url_head + url.substr(7));
++    LOG(INFO) << "After ReplaceRequestUrl URL = " << after_url;
++    resource_request_->url = after_url;
++  }
++}
++
+ void NavigationURLLoaderImpl::FallbackToNonInterceptedRequest(
+     bool reset_subresource_loader_params) {
+   if (reset_subresource_loader_params)
+@@ -656,6 +672,8 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
+   // further refactor the factory getters to avoid this.
+   scoped_refptr<network::SharedURLLoaderFactory> factory;
+ 
++  ReplaceRequestUrl();
++
+   const bool should_be_handled_by_network_service =
+       network::IsURLHandledByNetworkService(resource_request_->url) ||
+       resource_request_->web_bundle_token_params.has_value();
+diff --git a/content/browser/loader/navigation_url_loader_impl.h b/content/browser/loader/navigation_url_loader_impl.h
+index bc1e84ec8e..3d4dda970e 100644
+--- a/content/browser/loader/navigation_url_loader_impl.h
++++ b/content/browser/loader/navigation_url_loader_impl.h
+@@ -219,6 +219,8 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
+   // Records UKM for the navigation load.
+   void RecordReceivedResponseUkmForOutermostMainFrame();
+ 
++  void ReplaceRequestUrl();
++
+   raw_ptr<NavigationURLLoaderDelegate> delegate_;
+   raw_ptr<BrowserContext> browser_context_;
+   raw_ptr<StoragePartitionImpl> storage_partition_;
+@@ -322,6 +324,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
+ 
+   std::unique_ptr<NavigationEarlyHintsManager> early_hints_manager_;
+ 
++  int runtime_process_port_{38090};
+   // Set on the constructor and runs in Start(). This is used for transferring
+   // parameters prepared in the constructor to Start().
+   base::OnceClosure start_closure_;
+diff --git a/content/browser/renderer_host/code_cache_host_impl.cc b/content/browser/renderer_host/code_cache_host_impl.cc
+index 364a513fd3..6844476021 100644
+--- a/content/browser/renderer_host/code_cache_host_impl.cc
++++ b/content/browser/renderer_host/code_cache_host_impl.cc
+@@ -82,6 +82,8 @@ bool CheckSecurityForAccessingCodeCacheData(const GURL& resource_url,
+     return true;
+   }
+ 
++  if (resource_url.SchemeIsCYFS()) return true;
++
+   if (operation == Operation::kWrite) {
+     mojo::ReportBadMessage("Invalid URL scheme for code cache.");
+   }
+diff --git a/net/url_request/url_request.cc b/net/url_request/url_request.cc
+index af554caadb..4881fe9ecc 100644
+--- a/net/url_request/url_request.cc
++++ b/net/url_request/url_request.cc
+@@ -548,19 +548,19 @@ void URLRequest::Start() {
+   load_timing_info_.request_start_time = response_info_.request_time;
+   load_timing_info_.request_start = base::TimeTicks::Now();
+ 
+-  if (network_delegate()) {
+-    OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_BEFORE_URL_REQUEST);
+-    int error = network_delegate()->NotifyBeforeURLRequest(
+-        this,
+-        base::BindOnce(&URLRequest::BeforeRequestComplete,
+-                       base::Unretained(this)),
+-        &delegate_redirect_url_);
+-    // If ERR_IO_PENDING is returned, the delegate will invoke
+-    // |BeforeRequestComplete| later.
+-    if (error != ERR_IO_PENDING)
+-      BeforeRequestComplete(error);
+-    return;
+-  }
++  // if (network_delegate()) {
++  //   OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_BEFORE_URL_REQUEST);
++  //   int error = network_delegate()->NotifyBeforeURLRequest(
++  //       this,
++  //       base::BindOnce(&URLRequest::BeforeRequestComplete,
++  //                      base::Unretained(this)),
++  //       &delegate_redirect_url_);
++  //   // If ERR_IO_PENDING is returned, the delegate will invoke
++  //   // |BeforeRequestComplete| later.
++  //   if (error != ERR_IO_PENDING)
++  //     BeforeRequestComplete(error);
++  //   return;
++  // }
+ 
+   StartJob(context_->job_factory()->CreateJob(this));
+ }
+diff --git a/net/url_request/url_request.h b/net/url_request/url_request.h
+index 4a4d0a87ba..880f63b582 100644
+--- a/net/url_request/url_request.h
++++ b/net/url_request/url_request.h
+@@ -226,6 +226,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
+   // started. Once it was set to block all cookies, it cannot be changed back.
+   static void SetDefaultCookiePolicyToBlock();
+ 
++  void PushURL(const GURL& url) { url_chain_.push_back(url); }
++
+   // The original url is the url used to initialize the request, and it may
+   // differ from the url if the request was redirected.
+   const GURL& original_url() const { return url_chain_.front(); }
+diff --git a/net/url_request/url_request_job_factory.cc b/net/url_request/url_request_job_factory.cc
+index 079187d608..edfa7d8f3e 100644
+--- a/net/url_request/url_request_job_factory.cc
++++ b/net/url_request/url_request_job_factory.cc
+@@ -107,6 +107,12 @@ std::unique_ptr<URLRequestJob> URLRequestJobFactory::CreateJob(
+       return job;
+   }
+ 
++  if (request->url().SchemeIsCYFS()) {
++    auto url = request->url().spec();
++    VLOG(1) << "before url " << url;
++    request->PushURL(GURL(std::string("http://127.0.0.1:38090/") + url.substr(7)));
++  }
++
+   auto it = protocol_handler_map_.find(request->url().scheme());
+   if (it == protocol_handler_map_.end()) {
+     return std::make_unique<URLRequestErrorJob>(request,
+diff --git a/services/network/network_service_network_delegate.cc b/services/network/network_service_network_delegate.cc
+index 70a6cb13e0..f58e664717 100644
+--- a/services/network/network_service_network_delegate.cc
++++ b/services/network/network_service_network_delegate.cc
+@@ -271,6 +271,7 @@ bool NetworkServiceNetworkDelegate::
+   // NetworkDelegate. Can just have a DCHECK in URLRequest instead.
+   if (!validate_referrer_policy_on_initial_request_)
+     return false;
++  return false;
+ 
+   LOG(ERROR) << "Cancelling request to " << target_url
+              << " with invalid referrer " << referrer_url;
+diff --git a/third_party/blink/renderer/platform/weborigin/kurl.cc b/third_party/blink/renderer/platform/weborigin/kurl.cc
+index 87eb3cf4eb..e165f713aa 100644
+--- a/third_party/blink/renderer/platform/weborigin/kurl.cc
++++ b/third_party/blink/renderer/platform/weborigin/kurl.cc
+@@ -955,6 +955,8 @@ void KURL::InitProtocolMetadata() {
+     protocol_ = WTF::g_https_atom;
+   } else if (protocol == WTF::g_http_atom) {
+     protocol_ = WTF::g_http_atom;
++  } else if (protocol == WTF::g_cyfs_atom) {
++    protocol_ = WTF::g_cyfs_atom;
+   } else {
+     protocol_ = protocol.ToAtomicString();
+     protocol_is_in_http_family_ = false;
+diff --git a/third_party/blink/renderer/platform/weborigin/scheme_registry.cc b/third_party/blink/renderer/platform/weborigin/scheme_registry.cc
+index cb1543a669..30bf1a43e6 100644
+--- a/third_party/blink/renderer/platform/weborigin/scheme_registry.cc
++++ b/third_party/blink/renderer/platform/weborigin/scheme_registry.cc
+@@ -67,8 +67,8 @@ class URLSchemesRegistry final {
+          // is considered secure. Additional checks are performed to ensure that
+          // other http pages are filtered out.
+         service_worker_schemes({"http", "https"}),
+-        fetch_api_schemes({"http", "https"}),
+-        allowed_in_referrer_schemes({"http", "https"}) {
++        fetch_api_schemes({"http", "https", "cyfs"}),
++        allowed_in_referrer_schemes({"http", "https", "cyfs"}) {
+     for (auto& scheme : url::GetCorsEnabledSchemes())
+       cors_enabled_schemes.insert(scheme.c_str());
+     for (auto& scheme : url::GetCSPBypassingSchemes()) {
+diff --git a/third_party/blink/renderer/platform/wtf/text/atomic_string.h b/third_party/blink/renderer/platform/wtf/text/atomic_string.h
+index 064d53f0a0..d1869c1935 100644
+--- a/third_party/blink/renderer/platform/wtf/text/atomic_string.h
++++ b/third_party/blink/renderer/platform/wtf/text/atomic_string.h
+@@ -288,6 +288,7 @@ WTF_EXPORT extern const AtomicString& g_xml_atom;
+ WTF_EXPORT extern const AtomicString& g_xmlns_atom;
+ WTF_EXPORT extern const AtomicString& g_xlink_atom;
+ WTF_EXPORT extern const AtomicString& g_http_atom;
++WTF_EXPORT extern const AtomicString& g_cyfs_atom;
+ WTF_EXPORT extern const AtomicString& g_https_atom;
+ 
+ // AtomicStringHash is the default hash for AtomicString
+diff --git a/third_party/blink/renderer/platform/wtf/text/string_statics.cc b/third_party/blink/renderer/platform/wtf/text/string_statics.cc
+index aeb0d1d2d0..41bf103187 100644
+--- a/third_party/blink/renderer/platform/wtf/text/string_statics.cc
++++ b/third_party/blink/renderer/platform/wtf/text/string_statics.cc
+@@ -40,6 +40,7 @@ WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_xml_atom);
+ WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_xmlns_atom);
+ WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_xlink_atom);
+ WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_http_atom);
++WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_cyfs_atom);
+ WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_https_atom);
+ 
+ // This is not an AtomicString because it is unlikely to be used as an
+@@ -93,6 +94,8 @@ void StringStatics::Init() {
+   new (NotNullTag::kNotNull, (void*)&g_xmlns_with_colon) String("xmlns:");
+   new (NotNullTag::kNotNull, (void*)&g_http_atom)
+       AtomicString(AddStaticASCIILiteral("http"));
++  new (NotNullTag::kNotNull, (void*)&g_cyfs_atom)
++      AtomicString(AddStaticASCIILiteral("cyfs"));
+   new (NotNullTag::kNotNull, (void*)&g_https_atom)
+       AtomicString(AddStaticASCIILiteral("https"));
+ }
+diff --git a/url/gurl.cc b/url/gurl.cc
+index e01364690e..adfee77d6c 100644
+--- a/url/gurl.cc
++++ b/url/gurl.cc
+@@ -352,6 +352,9 @@ bool GURL::SchemeIs(base::StringPiece lower_ascii_scheme) const {
+   return scheme_piece() == lower_ascii_scheme;
+ }
+ 
++bool GURL::SchemeIsCYFS() const {
++  return SchemeIs(url::kCyfsScheme); }
++
+ bool GURL::SchemeIsHTTPOrHTTPS() const {
+   return SchemeIs(url::kHttpScheme) || SchemeIs(url::kHttpsScheme);
+ }
+diff --git a/url/gurl.h b/url/gurl.h
+index 8f4884c7a5..34c61ef03e 100644
+--- a/url/gurl.h
++++ b/url/gurl.h
+@@ -232,6 +232,8 @@ class COMPONENT_EXPORT(URL) GURL {
+   // colon.
+   bool SchemeIs(base::StringPiece lower_ascii_scheme) const;
+ 
++  bool SchemeIsCYFS() const;
++
+   // Returns true if the scheme is "http" or "https".
+   bool SchemeIsHTTPOrHTTPS() const;
+ 
+@@ -465,6 +467,10 @@ class COMPONENT_EXPORT(URL) GURL {
+ 
+   void InitializeFromCanonicalSpec();
+ 
++  void SetSpec(std::string spec) { spec_ = std::move(spec); }
++
++  void SetVaild() { is_valid_ = true; }
++
+   // Helper used by IsAboutBlank and IsAboutSrcdoc.
+   bool IsAboutUrl(base::StringPiece allowed_path) const;
+ 
+diff --git a/url/url_constants.cc b/url/url_constants.cc
+index 96850982c9..1c56ccea88 100644
+--- a/url/url_constants.cc
++++ b/url/url_constants.cc
+@@ -32,6 +32,8 @@ const char kFileSystemScheme[] = "filesystem";
+ const char16_t kFileSystemScheme16[] = u"filesystem";
+ const char kFtpScheme[] = "ftp";
+ const char16_t kFtpScheme16[] = u"ftp";
++const char kCyfsScheme[] = "cyfs";
++const char16_t kCyfsScheme16[] = u"cyfs";
+ const char kHttpScheme[] = "http";
+ const char16_t kHttpScheme16[] = u"http";
+ const char kHttpsScheme[] = "https";
+diff --git a/url/url_constants.h b/url/url_constants.h
+index 1722666424..5bcc93402e 100644
+--- a/url/url_constants.h
++++ b/url/url_constants.h
+@@ -38,6 +38,8 @@ COMPONENT_EXPORT(URL) extern const char kFileSystemScheme[];
+ COMPONENT_EXPORT(URL) extern const char16_t kFileSystemScheme16[];
+ COMPONENT_EXPORT(URL) extern const char kFtpScheme[];
+ COMPONENT_EXPORT(URL) extern const char16_t kFtpScheme16[];
++COMPONENT_EXPORT(URL) extern const char kCyfsScheme[];
++COMPONENT_EXPORT(URL) extern const char16_t kCyfsScheme16[];
+ COMPONENT_EXPORT(URL) extern const char kHttpScheme[];
+ COMPONENT_EXPORT(URL) extern const char16_t kHttpScheme16[];
+ COMPONENT_EXPORT(URL) extern const char kHttpsScheme[];
+diff --git a/url/url_util.cc b/url/url_util.cc
+index 0fe4e301c7..57296cd522 100644
+--- a/url/url_util.cc
++++ b/url/url_util.cc
+@@ -35,6 +35,7 @@ struct SchemeRegistry {
+   std::vector<SchemeWithType> standard_schemes = {
+       {kHttpsScheme, SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},
+       {kHttpScheme, SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},
++      {kCyfsScheme, SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},
+       // Yes, file URLs can have a hostname, so file URLs should be handled as
+       // "standard". File URLs never have a port as specified by the SchemeType
+       // field.  Unlike other SCHEME_WITH_HOST schemes, the 'host' in a file
+@@ -59,6 +60,7 @@ struct SchemeRegistry {
+   std::vector<SchemeWithType> referrer_schemes = {
+       {kHttpsScheme, SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},
+       {kHttpScheme, SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},
++      {kCyfsScheme, SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},
+   };
+ 
+   // Schemes that do not trigger mixed content warning.
+@@ -84,16 +86,19 @@ struct SchemeRegistry {
+   std::vector<std::string> cors_enabled_schemes = {
+       kHttpsScheme,
+       kHttpScheme,
++      kCyfsScheme,
+       kDataScheme,
++      kFileScheme,
+   };
+ 
+   // Schemes that can be used by web to store data (local storage, etc).
+   std::vector<std::string> web_storage_schemes = {
+-      kHttpsScheme, kHttpScheme, kFileScheme, kFtpScheme, kWssScheme, kWsScheme,
++      // kHttpsScheme, kHttpScheme, kFileScheme, kFtpScheme, kWssScheme, kWsScheme,
++      kHttpsScheme, kCyfsScheme, kHttpScheme, kFileScheme, kFtpScheme, kWssScheme, kWsScheme,
+   };
+ 
+   // Schemes that can bypass the Content-Security-Policy (CSP) checks.
+-  std::vector<std::string> csp_bypassing_schemes = {};
++  std::vector<std::string> csp_bypassing_schemes = { kCyfsScheme };
+ 
+   // Schemes that are strictly empty documents, allowing them to commit
+   // synchronously.

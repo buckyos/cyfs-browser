@@ -1,0 +1,39 @@
+diff --git a/chrome/BUILD.gn b/chrome/BUILD.gn
+index 70d05939c2..dbf5933677 100644
+--- a/chrome/BUILD.gn
++++ b/chrome/BUILD.gn
+@@ -51,6 +51,7 @@ if (is_android) {
+   import("//content/public/app/mac_helpers.gni")
+   import("//media/cdm/library_cdm/cdm_paths.gni")
+   import("//third_party/icu/config.gni")
++  import("//chrome/app/Extensions/cyfs_extension.gni")
+ }
+ 
+ declare_args() {
+@@ -603,7 +604,12 @@ if (is_win) {
+ 
+     # Add the metamask extension in the Extension of Cyfs Browser.app
+   bundle_data("metamask_extension") {
+-    sources = [ "app/Extensions/metamask-chrome-10.9.3.zip" ]
++    sources = []
++    foreach(extension, cyfs_default_extenions) {
++      sources += [ "app/Extensions/${extension}"]
++    }
++
++    # sources = [ "app/Extensions/metamask-chrome-10.9.3.zip" ]
+     outputs = [ "{{bundle_contents_dir}}/Extensions/{{source_file_part}}" ]
+   }
+ 
+diff --git a/chrome/app/Extensions/cyfs_extension.gni b/chrome/app/Extensions/cyfs_extension.gni
+new file mode 100644
+index 0000000000..80938a691a
+--- /dev/null
++++ b/chrome/app/Extensions/cyfs_extension.gni
+@@ -0,0 +1,3 @@
++cyfs_default_extenions = [
++    "readme.md",
++]
+\ No newline at end of file
+diff --git a/chrome/app/Extensions/readme.md b/chrome/app/Extensions/readme.md
+new file mode 100644
+index 0000000000..e69de29bb2
