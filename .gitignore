@@ -23,5 +23,10 @@ cyfs-runtime
 /dmg/ARM/tools
 /dmg/X86/tools
 
-/dmg/ARM/www/package/build
-/dmg/X86/www/package/build
+/dmg/ARM/www/package/build/
+/dmg/X86/www/package/build/
+
+
+.cipd
+.gclient
+.gclient_entries

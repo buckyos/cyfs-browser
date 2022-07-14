@@ -6,8 +6,6 @@ sys.path.append(os.path.dirname(__file__))
 from common import (
     build_target_dir,
     get_log_fd,
-    # build_application_path,
-    # package_application_path,
     get_last_args_file,
     toolchain_ninja_file,
     target
@@ -31,7 +29,6 @@ def check_map_equals(a, b):
         return True
     except:
         return False
-
 
 def get_deafult_macos_gn_args_array(target_cpu):
     platforms = [ "X86", "ARM" ]
@@ -76,7 +73,6 @@ def get_deafult_macos_gn_args_array(target_cpu):
         default_args_array.append('target_cpu="arm64"')
     return default_args_array
 
-
 class Build():
     def __init__(self, src_root, target_cpu, project_name, app_name):
         self._target = target()
@@ -93,16 +89,17 @@ class Build():
 
     def get_last_args_map(self):
         last_args_file = get_last_args_file(self._src_root, self._build_dir)
+        if not os.path.exists(last_args_file):
+            return {}
+
         last_args_map = {}
-        if os.path.exists(last_args_file):
-            with open(last_args_file, "r+") as f:
-                lines = f.readlines()
-                if not len(lines):
-                    return True
-                for line in lines:
-                    values = list(map(lambda x: x.strip(), line.split("=")))
-                    if len(values[0]) and len(values[1]):
-                        last_args_map[values[0]] = values[1]
+        with open(last_args_file, "r+") as f:
+            lines = [l.strip() for l in f.readlines()]
+            for line in lines:
+                values = list(map(lambda x: x.strip(), line.split("=")))
+                assert len(values) == 2
+                if len(values[0]) and len(values[1]):
+                    last_args_map[values[0]] = values[1]
         return last_args_map
 
 
@@ -157,10 +154,12 @@ class Build():
 
 
     def need_generate_project(self):
-        if self.is_ninja_file_exists():
-            return False
+        # if self.is_ninja_file_exists():
+        #     return False
         last_args_map = self.get_last_args_map()
         current_args_map = self.get_default_args_map()
+        print("last_args_map = %s" %last_args_map)
+        print("current_args_map = %s" %current_args_map)
         return not check_map_equals(last_args_map, current_args_map)
 
 
@@ -195,24 +194,9 @@ class Build():
         print("End execute compile script")
 
 
-    # def copy_app_for_package(self):
-    #     src = build_application_path(self._root, self._build_dir, self._app_name)
-    #     dst = package_application_path(self._root, self._target_cpu, self._app_name)
-    #     assert not os.path.exists(dst)
-    #     if not is_dir_exists(src):
-    #         print("Generator application %s failed" %src)
-    #         sys.exit(-1)
-
-    #     print("Copy application %s to %s" %(src, dst))
-    #     copy_dir(src, dst)
-    #     if not is_dir_exists(dst):
-    #         print("%s is not available, please check!" %dst)
-    #         sys.exit(-1)
-
 def build_browser(src_root, target_cpu, project_name, app_name):
     build = Build(src_root, target_cpu, project_name, app_name)
     build.start_build()
-    # build.copy_app_for_package()
 
 
 

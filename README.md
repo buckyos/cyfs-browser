@@ -36,24 +36,29 @@ export DEPOT_TOOLS_UPDATE=0
 
 2.Get Cyfs Browser and Chromium source
 ```bash
-git git@github.com:buckyos/cyfs-browser.git path-to-your-project-folder
-cd path-to-your-project-folder
+git git@github.com:buckyos/cyfs-browser.git ${root}
+
+cd ${root}
 
 fetch chromium
-```
 
-3.Checkout chromium code to special tag
+gclient sync --force --nohooks --with_branch_heads
 
-```bash
-    cd src
-    git checkout 2839da9a719287e08fad7bc9de4bfcc87a4bb87b
+cd ${root}/src
 
+git fetch --tags
+
+git checkout -b cyfs_branch 103.0.5047.0
+
+gclient sync --with_branch_heads --with_tags
 ```
 
 ## Build Cyfs Browser
 
 1. Update and compile Cyfs componment
 ```bash
+cd ${root}/script
+
 python prepare_cyfs_dependency.py
 ```
 
@@ -61,5 +66,7 @@ python prepare_cyfs_dependency.py
 [note] if you build machine is macos, you must to set target-cpu argument like `ARM` and `X86`
 ARM is mean m1 cpu machine, and X86 is mean x86 cpu machine
 ```bash
-python build.py --project-name=${Browser} --version=${version} --target-cpu=ARM
+cd ${root}/script
+
+python build.py --project-name=${project_name} --version=${version} --target-cpu=ARM
 ```
