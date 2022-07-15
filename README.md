@@ -1,4 +1,4 @@
-# Cyfs Browser
+# Cyfs Browser(Macos)
 
 
 ## Install prerequisites
@@ -7,6 +7,8 @@ Follow the instructions for your platform:
 
 rust 1.57+
 node 14+
+Xcode 13.1+
+macOS SDK 12.0+
 [Packages](http://s.sudre.free.fr/Software/Packages/about.html)
 
 
@@ -18,7 +20,7 @@ Once you have the prerequisites installed, you can get the code and initialize t
 ```bash
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
-export PATH="$PATH:%{path_to_depot_tools}
+export PATH="$PATH:${path_to_depot_tools}"
 ```
 
 ##### disadble update chromium source background
