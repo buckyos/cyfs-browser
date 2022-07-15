@@ -158,8 +158,8 @@ class Build():
         #     return False
         last_args_map = self.get_last_args_map()
         current_args_map = self.get_default_args_map()
-        print("last_args_map = %s" %last_args_map)
-        print("current_args_map = %s" %current_args_map)
+        # print("last_args_map = %s" %last_args_map)
+        # print("current_args_map = %s" %current_args_map)
         return not check_map_equals(last_args_map, current_args_map)
 
 

@@ -1,13 +1,4 @@
-# cyfs-browser
-
-## Cyfs Browser
-
-## Overview
-
-This repository holds the build tools needed to build the Cyfs desktop browser for macOS.
-  - [Chromium](https://chromium.googlesource.com/chromium/src.git)
-    - Fetches code via `depot_tools`.
-    - sets the branch for Chromium (ex: 65.0.3325.181).
+# Cyfs Browser
 
 
 ## Install prerequisites
@@ -16,6 +7,7 @@ Follow the instructions for your platform:
 
 rust 1.57+
 node 14+
+[Packages](http://s.sudre.free.fr/Software/Packages/about.html)
 
 
 ## Clone and initialize the repo
@@ -24,8 +16,9 @@ Once you have the prerequisites installed, you can get the code and initialize t
 
 1. downlaod depot_tools and set env variables
 ```bash
-    git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-    export PATH="$PATH:/path/to/depot_tools
+git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+
+export PATH="$PATH:%{path_to_depot_tools}
 ```
 
 ##### disadble update chromium source background
@@ -36,7 +29,7 @@ export DEPOT_TOOLS_UPDATE=0
 
 2.Get Cyfs Browser and Chromium source
 ```bash
-git git@github.com:buckyos/cyfs-browser.git ${root}
+git https://github.com/buckyos/cyfs-browser.git ${root}
 
 cd ${root}
 
@@ -59,7 +52,7 @@ gclient sync --with_branch_heads --with_tags
 ```bash
 cd ${root}/script
 
-python prepare_cyfs_dependency.py
+python(python3) prepare_cyfs_dependency.py
 ```
 
 2. Compile Cyfs Browser source code
@@ -68,5 +61,11 @@ ARM is mean m1 cpu machine, and X86 is mean x86 cpu machine
 ```bash
 cd ${root}/script
 
-python build.py --project-name=${project_name} --version=${version} --target-cpu=ARM
+python(python3) build.py --project-name=${project_name} --version=${version} --target-cpu=${target_cpu}
+
+### like this: python(python3) build.py --project-name=Browser --version=1 --target-cpu=ARM
 ```
+
+3.Find the Cyfs Browser installation package
+
+${root}/dmg/${target_cpu}/cyfs-browser-installer-${version}.dmg
