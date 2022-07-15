@@ -70,4 +70,4 @@ python(python3) build.py --project-name=${project_name} --version=${version} --t
 
 3.Find the Cyfs Browser installation package
 
-${root}/dmg/${target_cpu}/cyfs-browser-installer-${version}.dmg
+`${root}/dmg/${target_cpu}/cyfs-browser-installer-${version}.dmg`
