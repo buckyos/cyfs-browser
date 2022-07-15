@@ -5,11 +5,11 @@
 
 Follow the instructions for your platform:
 
-rust 1.57+
-node 14+
-Xcode 13.1+
-macOS SDK 12.0+
-[Packages](http://s.sudre.free.fr/Software/Packages/about.html)
+rust 1.57+  
+node 14+  
+Xcode 13.1+  
+macOS SDK 12.0+  
+[Packages](http://s.sudre.free.fr/Software/Packages/about.html)  
 
 
 ## Clone and initialize the repo
@@ -31,7 +31,7 @@ export DEPOT_TOOLS_UPDATE=0
 
 2.Get Cyfs Browser and Chromium source
 ```bash
-git https://github.com/buckyos/cyfs-browser.git ${root}
+git clone https://github.com/buckyos/cyfs-browser.git ${root}
 
 cd ${root}
 
