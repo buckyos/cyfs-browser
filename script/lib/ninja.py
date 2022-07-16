@@ -150,7 +150,7 @@ class Build():
             execute_cmd(cmd_args, ninja_log_fd)
         except Exception as e:
             print("Start ninja %s failed, error: %s" %(self._build_dir, e))
-            raise
+            sys.exit(-1)
 
 
     def need_generate_project(self):
@@ -171,7 +171,7 @@ class Build():
             execute_cmd(cmd_args, gn_log_fd)
         except Exception as e:
             print("Start gn %s failed, error: %s" %(self._build_dir, e))
-            raise
+            sys.exit(-1)
 
         if not self.is_ninja_file_exists():
             print("Gn gen %s failed, please check" %(self._build_dir))

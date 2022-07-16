@@ -53,7 +53,7 @@ def build_cyfs_runtime():
 
     except Exception as e:
         print("Build CYFS RUNTIME failed, with %s" % e)
-        raise
+        sys.exit(-1)
 
 
 def copy_runtime_target():
@@ -95,7 +95,7 @@ def build_cyfs_tools():
         execute_cmd(build_cmd_args)
     except Exception as e:
         print("Build CYFS TOOLS failed, with %s" % e)
-        raise
+        sys.exit(-1)
 
 
 def copy_tools_target():
@@ -144,7 +144,7 @@ def build_cyfs_ts_sdk():
 
     except Exception as e:
         print("Build CYFS TS SDK failed, with %s" % e)
-        raise
+        sys.exit(-1)
 
 def copy_cyfs_ts_target():
     target_file_path = os.path.join(ROOT_PATH, "cyfs-ts-sdk", "out")
@@ -190,7 +190,7 @@ def build_cyfs_browser_webpage():
 
     except Exception as e:
         print("Build CYFS BROWSER PAGE failed, with %s" % e)
-        raise
+        sys.exit(-1)
 
 
 def copy_cyfs_browser_page_target():

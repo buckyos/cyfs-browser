@@ -11,6 +11,12 @@ Xcode 13.1+
 macOS SDK 12.0+  
 [Packages](http://s.sudre.free.fr/Software/Packages/about.html)  
 
+[note]
+Build Cyfs Browser code must be use Xcode Developer tool
+```bash
+xcode-select -s /Applications/Xcode.app/Contents/Developer
+```
+
 
 ## Clone and initialize the repo
 
