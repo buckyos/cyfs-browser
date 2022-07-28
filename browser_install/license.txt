@@ -1,0 +1,47 @@
+Thank you for using Cyfs Browser developed by Bucky, Inc.
+Before you officially use it, please be sure to sign this agreement with us,  to prevent us, as ordinary human beings, from not being able to resist the temptation of interests to infringe upon you, including but not limited to privacy invasion, restricting service usage, personal data theft, content ownership encroachment, spying, algorithm manipulation, etc. We consider these behaviors unethical, although many of our peers are doing it without being ashamed.
+
+As for you, you are the owner of the service, there should be no agreements restricting your use and violating your interests that force you to sign, except for public laws and non-violation of the freedom of others.
+Maybe you can't believe it right now, or even think it's possible for you to recieve such treatment, but it is what you deserve. In the past, free software proposed what freedom a free software should provide, and internet services, as a special kind of software, should also allow users (owners) to have the same freedom. So, please accept these rights with peace of mind. I believe that in the near future, providing these rights will become a common sense of an internet service, so does the following constraints that are imposed on us.
+
+1.Service be Open Source
+We must provide full source code for the service you are using. Not only the client code, but also the server code. This is the most important term for it guarantees that all the argeements to us have actually be implemented, and you can check it through the source code. If you don't have programming knowledge, you can invite friends to double check.
+
+2.Full Contents to Everyone
+We need to provide users with full content of service. We cannot and not able to treat users separately , based on age, gender, race, nationality, religion, etc. Users should only be restricted by local laws when using the  service.
+
+3.Account
+The DID you use are available on all free internets services, and these accounts are permanently owned by you. Your private key is only stored in your device encrypted  and we should never transfer it to anyone. No one (including the developer of the service) cannot limit or delete your account as long as you keep your private key.
+Your decentralized ID does not contain any personal information, and we shall not ask you to provide relevant personal privacy data. For specific protection of private data, please refer to the Privacy Policy below.
+
+4.Privacy Policy
+There is no separate document for Privacy Policy because our Privacy Policy is simple, with no complicated terms and hidden agreements: we cannot and have no way of obtaining any of your private data. We cannot because it is unethical, we have no way, because our technical architecture ensures that no one can obtain your private data without your permission.
+Your user data only stored in your OOD, and the service you use do not rely on cetralized background server. It communicate with the client software running on your device, when you need to exchange data with other users , It is transferred in a point-to-point manner. No information between you and others is forwarded by cetralized background server, so it is impossible for us to see any non-public data and store it. These data include:
+
+Account info: Your ID is public on the whole network with a string, which does not contain any personal information. Your private key is only owned by you and only encrypted and stored in your own OOD with no others can access.
+Privacy data: your address book, personal chat history, your local behavior data, usage records, etc. Only the data-related parties have a copy, with no others can access.
+Content you post: If the content  is posted publicly, it is available to everyone, but you own this content. We do not have the right to use or monetize your content without your permission, nor do we have the right to remove or hide it.
+
+Behavioral data: We have no right to secretly collect your behavioral data such as likes, favorites, storage, time on sites, etc. These are also your personal privacy, which we have no right to violate.
+It is worth noting that blockchain-based transaction data is public data. Your transaction data using ECC, BCC or other tokens will be recorded on the blockchain. These data are public, not private data, and can be viewed by anyone who knows your DID.
+
+5.Free Use of service
+You can use the service with freedom, and the freedom includes:
+
+You can register multiple decentralized IDs in the product, and these accounts are permanently owned by you. As long as you keep your private key properly, no one including us can restrict, control or delete your accounts.
+You have full control over the services you use. We must guarantee that you have the complete content of the service, and we cannot stop, modify, etc. your service as long as you run it on your OOD. If we want to improve the service function, we can only provide you with an upgradeable new version and recommend for your use, but you also have the right not to accept the new version and still use the original version, just like a fork of in blockchain.
+We must ensure that you have full knowledge of the services you use, which must be achieved by making the service open source. This ensures that we cannot add malicious code that is unfavorable to you, and also guarantees that the function provided by our service, such as content distribution logic, advertising operation logic (if any), profit distribution model, etc., everything is open and transparent. Even if our service has restrictions on your use, they must be implemented under completely transparent rules.
+
+If you are not satisfied with the service, you can make improvements on our code and release your own version freely  for others to use. We have no right to interfere.
+
+6.One basic principle of this agreements
+Always remember that you are the owner of this internet service. It is your own Internet service.
+
+
+
+
+
+
+
+
+

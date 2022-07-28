@@ -6,60 +6,65 @@ import argparse
 import platform
 
 
-from lib.check_ci import CheckForCIBuild
+from lib.check_ci import CheckFactory
 from lib.patch import apply_patchs
 from lib.ninja import build_browser
-from lib.pack import make_installer
-from lib.common import (app_name, src_path)
+from lib.pack_ci import make_installer
+from lib.common import src_path, MAC_CPUS
 
 
-root = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
+root = os.path.normpath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), os.pardir))
 
+IS_MAC = platform.system() == "Darwin"
+IS_WIN = platform.system() == "Windows"
 
 def _parse_args(args):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--project-name", help="The project name.", type=str, required=True)
-    parser.add_argument("--version", help="The build version.", type=str, required=True)
-    parser.add_argument("--target-cpu", help="The target cpu, like X86 and ARM", type=str, required=True)
-    # parser.add_argument("--local-resource-path", help="local resource path like dtool", type=str)
+    parser.add_argument("--project-name",
+                        help="The project name.",
+                        type=str,
+                        required=True)
+    parser.add_argument("--version",
+                        help="The build version.",
+                        type=str,
+                        required=True)
+    parser.add_argument("--target-cpu",
+                        help="The target cpu, like X86 and ARM, just for Macos",
+                        type=str,
+                        default='ARM',
+                        required=False)
     opt = parser.parse_args(args)
-    if opt.project_name == None or opt.project_name == "":
-        print("Please provide current project name!!")
-        sys.exit(-1)
 
-    if opt.version == None or opt.version == "":
-        print("Please provide current build version!!")
-        sys.exit(-1)
-
-    if opt.target_cpu == None or opt.target_cpu == "":
-        print("Please provide current target cpu, like X86 and ARM!!")
-        sys.exit(-1)
-
-    if platform.system() == "Darwin":
-        assert opt.target_cpu in [ "X86", "ARM" ]
+    assert opt.project_name.strip()
+    assert opt.version.strip()
+    if IS_MAC:
+        assert opt.target_cpu.strip()
+        assert opt.target_cpu in MAC_CPUS
+    else:
+        opt.target_cpu = None
 
     return opt
 
 
 def main(args):
     opt = _parse_args(args)
-    app = app_name()
-    check = CheckForCIBuild(root, opt.target_cpu, opt.project_name, app)
-    check.clean_trash_package_file()
+    current_os = platform.system()
+    assert current_os in ['Windows', 'Darwin']
+    check = CheckFactory(current_os, root, opt.target_cpu,
+                         opt.project_name, opt.version)
     if not check.get_match_build_cache():
         check.check_requirements()
-        ### patch => ninja
+        ### patch
         apply_patchs(root)
         ### use chromium gn and ninja tool compile source code
-        build_browser(src_path(root), opt.target_cpu, opt.project_name, app)
-        ### if is_ci is true, then we need update build cache to LAN shared directory
-        check.update_build_cache_and_version()
+        build_browser(src_path(root), opt.target_cpu, opt.project_name)
     else:
         print("Get match build cache, so not need compile")
 
-
     ### pack
-    make_installer(root, opt.target_cpu, opt.project_name, opt.version, app)
+    make_installer(root, opt.target_cpu, opt.project_name, opt.version)
+    check.update_build_cache_and_version()
 
     print("Build finished!!")
 

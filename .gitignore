@@ -14,9 +14,11 @@ cyfs-runtime
 *.pkg
 *.tar.gz
 *.zip
+*.7z
 *.exe
 *.app
 *.pyc
+*.patchinfo
 
 /dmg/ARM/www
 /dmg/X86/www
@@ -30,3 +32,8 @@ cyfs-runtime
 .cipd
 .gclient
 .gclient_entries
+
+/browser_install/Cyfs_Browser/
+/browser_install/cyfs-runtime-pack/www/
+/browser_install/cyfs-runtime-pack/tools
+/browser_install/cyfs-runtime-pack/*.exe
