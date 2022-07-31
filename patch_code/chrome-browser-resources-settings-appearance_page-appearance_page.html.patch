@@ -1,0 +1,22 @@
+diff --git a/chrome/browser/resources/settings/appearance_page/appearance_page.html b/chrome/browser/resources/settings/appearance_page/appearance_page.html
+index a770f7b00076402f81fb1a75570706035eb8b631..c06f23478982c5634d094ff1d50d497ebef14e84 100644
+--- a/chrome/browser/resources/settings/appearance_page/appearance_page.html
++++ b/chrome/browser/resources/settings/appearance_page/appearance_page.html
+@@ -22,7 +22,7 @@
+     <settings-animated-pages id="pages" section="appearance"
+         focus-config="[[focusConfig_]]">
+       <div route-path="default">
+-        <div class="settings-row first" id="themeRow"
++        <!-- <div class="settings-row first" id="themeRow"
+             hidden="[[!pageVisibility.setTheme]]">
+           <cr-link-row class="first" hidden="[[!pageVisibility.setTheme]]"
+               label="$i18n{themes}" sub-label="[[themeSublabel_]]"
+@@ -60,7 +60,7 @@
+             class="hr"
+             hidden="[[!showHr_(
+                 pageVisibility.setTheme, pageVisibility.homeButton)]]">
+-        </div>
++        </div> -->
+         <settings-toggle-button elide-label
+             hidden="[[!pageVisibility.homeButton]]"
+             pref="{{prefs.browser.show_home_button}}"

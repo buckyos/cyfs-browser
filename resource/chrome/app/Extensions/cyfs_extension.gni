@@ -1,0 +1,3 @@
+cyfs_default_extenions = [
+    "readme.md",
+]

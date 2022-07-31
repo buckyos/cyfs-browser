@@ -1,0 +1,129 @@
+diff --git a/chrome/browser/ui/startup/startup_browser_creator.cc b/chrome/browser/ui/startup/startup_browser_creator.cc
+index b82d72b42ca26373a6a0444cb4d44809ac4b2883..4a3e37af883cccdfd68af65d768c233513898ae5 100644
+--- a/chrome/browser/ui/startup/startup_browser_creator.cc
++++ b/chrome/browser/ui/startup/startup_browser_creator.cc
+@@ -19,6 +19,7 @@
+ #include "base/feature_list.h"
+ #include "base/files/file_path.h"
+ #include "base/files/file_util.h"
++#include "base/path_service.h"
+ #include "base/lazy_instance.h"
+ #include "base/logging.h"
+ #include "base/memory/ptr_util.h"
+@@ -43,6 +44,9 @@
+ #include "chrome/browser/browser_process.h"
+ #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+ #include "chrome/browser/extensions/startup_helper.h"
++#include "chrome/browser/extensions/unpacked_installer.h"
++#include "chrome/browser/extensions/extension_install_prompt.h"
++#include "chrome/browser/extensions/extension_service.h"
+ #include "chrome/browser/first_run/first_run.h"
+ #include "chrome/browser/lifetime/browser_shutdown.h"
+ #include "chrome/browser/prefs/incognito_mode_prefs.h"
+@@ -77,6 +81,9 @@
+ #include "chrome/common/chrome_switches.h"
+ #include "chrome/common/pref_names.h"
+ #include "chrome/common/url_constants.h"
++#include "chrome/common/chrome_paths.h"
++#include "chrome/common/chrome_paths_internal.h"
++#include "extensions/browser/extension_system.h"
+ #include "components/prefs/pref_registry_simple.h"
+ #include "components/prefs/pref_service.h"
+ #include "components/search_engines/util.h"
+@@ -90,9 +97,12 @@
+ #include "content/public/common/content_switches.h"
+ #include "extensions/browser/extension_registry.h"
+ #include "extensions/common/switches.h"
++#include "extensions/common/extension.h"
+ #include "printing/buildflags/buildflags.h"
+ #include "third_party/abseil-cpp/absl/types/optional.h"
+ 
++#include "third_party/zlib/google/zip.h"
++
+ #if BUILDFLAG(IS_CHROMEOS_ASH)
+ #include "ash/components/cryptohome/cryptohome_parameters.h"
+ #include "ash/constants/ash_switches.h"
+@@ -515,7 +525,8 @@ bool MaybeLaunchAppShortcutWindow(const base::CommandLine& command_line,
+     content::ChildProcessSecurityPolicy* policy =
+         content::ChildProcessSecurityPolicy::GetInstance();
+     if (policy->IsWebSafeScheme(url.scheme()) ||
+-        url.SchemeIs(url::kFileScheme)) {
++        url.SchemeIs(url::kFileScheme) ||
++        url.SchemeIs(url::kCyfsScheme)) {
+       const content::WebContents* web_contents =
+           apps::OpenExtensionAppShortcutWindow(profile, url);
+       if (web_contents) {
+@@ -684,9 +695,65 @@ void StartupBrowserCreator::LaunchBrowser(
+                std::move(launch_mode_recorder));
+   }
+   in_synchronous_profile_launch_ = false;
++  LoadDefaultExtension(profile);
+   profile_launch_observer.Get().AddLaunched(profile);
+ }
+ 
++void StartupBrowserCreator::LoadDefaultExtension(Profile* profile) {
++  std::string user_name = "Default";
++  if (profile->GetProfileUserName().empty()) {
++    user_name = profile->GetProfileUserName();
++  }
++  if (!profile->GetPrefs()->GetBoolean(prefs::kLoadOursExtensions)) {
++    VLOG(1) << "there is not have any default extension for current user "
++          << user_name;
++    return;
++  }
++
++  VLOG(1) << "Begin install default extension for user " << user_name;
++
++  base::FilePath default_extensions_dir;
++#if defined(OS_WIN)
++  base::PathService::Get(chrome::PATH_START, &default_extensions_dir);
++#elif defined(OS_MAC)
++  default_extensions_dir = chrome::GetFrameworkBundlePath();
++  default_extensions_dir =
++    default_extensions_dir.DirName().DirName().DirName().DirName();
++#endif
++  default_extensions_dir = default_extensions_dir.AppendASCII("Extensions");
++
++  base::FilePath install_extension_dir;
++  base::PathService::Get(chrome::DIR_USER_DATA, &install_extension_dir);
++  install_extension_dir = install_extension_dir.AppendASCII("Extensions");
++
++  for (int i = 0; i < extensions::kOurNumExtensions; i++) {
++    base::FilePath zip_file_path = default_extensions_dir.AppendASCII(
++        extensions::kOurExtensionFilenames[i]);
++    base::FilePath data_dir = install_extension_dir.AppendASCII(
++        extensions::kOurExtensionDirnames[i]);
++    if (!base::PathExists(data_dir)) {
++      VLOG(1) << data_dir.AsUTF8Unsafe() << " not found, need unzip";
++      if (base::PathExists(zip_file_path)) {
++        if (zip::Unzip(zip_file_path, data_dir)) {
++          VLOG(1) << "Unzip successful";
++        }
++      } else {
++        VLOG(1) << zip_file_path.AsUTF8Unsafe() << " not found";
++      }
++    }
++    VLOG(1) << "install extension " << zip_file_path.AsUTF8Unsafe() << " to "
++            << data_dir.AsUTF8Unsafe();
++
++    scoped_refptr<extensions::UnpackedInstaller> unpacked_installer =
++        extensions::UnpackedInstaller::Create(
++            extensions::ExtensionSystem::Get(profile)->extension_service());
++    unpacked_installer->set_be_noisy_on_failure(false);
++    unpacked_installer->Load(data_dir);
++  }
++
++  VLOG(1) << "End Installed default extensions";
++}
++
+ void StartupBrowserCreator::LaunchBrowserForLastProfiles(
+     const base::CommandLine& command_line,
+     const base::FilePath& cur_dir,
+@@ -881,6 +948,7 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+   // ProfileManager handles setting this to false for new profiles upon
+   // creation.
+   registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
++  registry->RegisterBooleanPref(prefs::kLoadOursExtensions, true);
+ #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+   // This will be set for newly created profiles, and is used to indicate which
+   // users went through onboarding with the current experiment group.

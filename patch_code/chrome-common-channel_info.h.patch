@@ -1,0 +1,15 @@
+diff --git a/chrome/common/channel_info.h b/chrome/common/channel_info.h
+index 839d6e07018293b517acef9364720486a99180d6..47406046e4e50bde0b5771a49df13c7eb5c08185 100644
+--- a/chrome/common/channel_info.h
++++ b/chrome/common/channel_info.h
+@@ -57,6 +57,10 @@ std::string GetChannelName(WithExtendedStable with_extended_stable);
+ // version_info::Channel::UNKNOWN.
+ version_info::Channel GetChannel();
+ 
++std::string GetCYFSRuntimeVersion();
++
++std::string GetCYFSBrowserVersion();
++
+ // Returns true if this browser is on the extended stable channel. GetChannel()
+ // will always return version_info::Channel::STABLE when this is true. This
+ // function unconditionally returns false on Chrome OS Ash and Android due to

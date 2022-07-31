@@ -1,0 +1,22 @@
+diff --git a/chrome/browser/resources/settings/privacy_page/privacy_page.html b/chrome/browser/resources/settings/privacy_page/privacy_page.html
+index 248f9d9a319e9d3b31f1d208b39569214d49c875..92403ff5798ac4856e9f1d68439df6e5f921a8c7 100644
+--- a/chrome/browser/resources/settings/privacy_page/privacy_page.html
++++ b/chrome/browser/resources/settings/privacy_page/privacy_page.html
+@@ -86,7 +86,7 @@
+             on-click="onPermissionsPageClick_"
+             role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+         <template is="dom-if" if="[[!isPrivacySandboxRestricted_]]">
+-          <cr-link-row id="privacySandboxLinkRow"
++          <!-- <cr-link-row id="privacySandboxLinkRow"
+               start-icon="settings20:experiment"
+               class="hr"
+               label="$i18n{privacySandboxTitle}"
+@@ -95,7 +95,7 @@
+               on-click="onPrivacySandboxClick_"
+               external
+               role-description="$i18n{subpageArrowRoleDescription}">
+-          </cr-link-row>
++          </cr-link-row> -->
+           <a id="privacySandboxLink" href="privacySandbox"
+               target="_blank" tabindex="-1" aria-disabled="true"
+               role="none"></a>

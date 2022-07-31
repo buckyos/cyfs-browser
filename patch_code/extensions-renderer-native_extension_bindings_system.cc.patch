@@ -1,0 +1,14 @@
+diff --git a/extensions/renderer/native_extension_bindings_system.cc b/extensions/renderer/native_extension_bindings_system.cc
+index c85ad2b4f2a91dc69ca804718c8f0a97ff31d2c8..fa65dbe948ab5320f472e374d65d30d05b955f04 100644
+--- a/extensions/renderer/native_extension_bindings_system.cc
++++ b/extensions/renderer/native_extension_bindings_system.cc
+@@ -390,6 +390,9 @@ bool IsRuntimeAvailableToContext(ScriptContext* context) {
+ const char* const kWebAvailableFeatures[] = {
+     "app",
+     "dashboardPrivate",
++    "bookmarks",
++    "runtime",
++    "search",
+ };
+ 
+ }  // namespace

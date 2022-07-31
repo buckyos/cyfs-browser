@@ -1,0 +1,56 @@
+{
+    "Add": {
+        "update_time": "2022-07-30 23:51:14.275439",
+        "files": [
+            "chrome/app/Extensions/cyfs_extension.gni",
+            "chrome/app/Extensions/readme.md",
+            "chrome/browser/cyfs_init/DIR_METADATA",
+            "chrome/browser/cyfs_init/cyfs_init_service_factory.cc",
+            "chrome/browser/cyfs_init/cyfs_init_service_factory.h",
+            "chrome/browser/resources/cyfs_init/cyfs_init.css",
+            "chrome/browser/resources/cyfs_init/cyfs_init.html",
+            "chrome/browser/resources/cyfs_init/cyfs_init.js",
+            "chrome/browser/ui/webui/cyfs_init_ui.cc",
+            "chrome/browser/ui/webui/cyfs_init_ui.h",
+            "components/api_request_helper/BUILD.gn",
+            "components/api_request_helper/DEPS",
+            "components/api_request_helper/api_request_helper.cc",
+            "components/api_request_helper/api_request_helper.h",
+            "components/cyfs_init/BUILD.gn",
+            "components/cyfs_init/DEPS",
+            "components/cyfs_init/cyfs_runtime_init_service.cc",
+            "components/cyfs_init/cyfs_runtime_init_service.h",
+            "content/app/monitor_cyfs_runtime.cc",
+            "content/app/monitor_cyfs_runtime.h",
+            "chrome/browser/resources/cyfs_init/starting.png"
+        ]
+    },
+    "Update": {
+        "update_time": "2022-07-30 23:51:16.436076",
+        "files": [
+            "chrome/app/theme/chromium/mac/app.icns",
+            "chrome/app/theme/chromium/product_logo_128.png",
+            "chrome/app/theme/chromium/product_logo_22_mono.png",
+            "chrome/app/theme/chromium/product_logo_24.png",
+            "chrome/app/theme/chromium/product_logo_256.png",
+            "chrome/app/theme/chromium/product_logo_48.png",
+            "chrome/app/theme/chromium/product_logo_64.png",
+            "chrome/app/theme/chromium/win/chromium.ico",
+            "chrome/app/theme/chromium/win/tiles/Logo.png",
+            "chrome/app/theme/chromium/win/tiles/SmallLogo.png",
+            "chrome/app/theme/default_100_percent/chromium/product_logo_16.png",
+            "chrome/app/theme/default_100_percent/chromium/product_logo_32.png",
+            "chrome/app/theme/default_100_percent/chromium/product_logo_name_22.png",
+            "chrome/app/theme/default_100_percent/chromium/product_logo_name_22_white.png",
+            "chrome/app/theme/default_200_percent/chromium/product_logo_16.png",
+            "chrome/app/theme/default_200_percent/chromium/product_logo_32.png",
+            "chrome/app/theme/default_200_percent/chromium/product_logo_name_22.png",
+            "chrome/app/theme/default_200_percent/chromium/product_logo_name_22_white.png",
+            "chrome/browser/browser_resources.grd",
+            "components/resources/default_100_percent/chromium/product_logo.png",
+            "components/resources/default_100_percent/chromium/product_logo_white.png",
+            "components/resources/default_200_percent/chromium/product_logo.png",
+            "components/resources/default_200_percent/chromium/product_logo_white.png"
+        ]
+    }
+}

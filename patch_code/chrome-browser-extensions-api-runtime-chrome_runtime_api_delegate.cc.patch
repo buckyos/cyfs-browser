@@ -1,0 +1,23 @@
+diff --git a/chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.cc b/chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.cc
+index f3b5d90dbd5aab5cd9f751479cbf5c910371132e..de960f594d965399e44f69095efad3b563fc957e 100644
+--- a/chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.cc
++++ b/chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.cc
+@@ -27,6 +27,7 @@
+ #include "chrome/browser/ui/browser_navigator.h"
+ #include "chrome/browser/ui/browser_navigator_params.h"
+ #include "chrome/browser/ui/browser_window.h"
++#include "chrome/browser/lifetime/application_lifetime.h"
+ #include "components/update_client/update_query_params.h"
+ #include "content/public/browser/notification_service.h"
+ #include "extensions/browser/extension_system.h"
+@@ -349,8 +350,8 @@ bool ChromeRuntimeAPIDelegate::RestartDevice(std::string* error_message) {
+     return true;
+   }
+ #endif
+-  *error_message = "Function available only for ChromeOS kiosk mode.";
+-  return false;
++  chrome::AttemptRestart();
++  return true;
+ }
+ 
+ bool ChromeRuntimeAPIDelegate::OpenOptionsPage(

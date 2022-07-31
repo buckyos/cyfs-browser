@@ -1,0 +1,14 @@
+diff --git a/url/gurl.h b/url/gurl.h
+index 8f4884c7a59f8fdae0f24c410b55a55fe701c029..29ebce0cc8ef1727a4b35f56a4a6a37090dcd0ec 100644
+--- a/url/gurl.h
++++ b/url/gurl.h
+@@ -232,6 +232,9 @@ class COMPONENT_EXPORT(URL) GURL {
+   // colon.
+   bool SchemeIs(base::StringPiece lower_ascii_scheme) const;
+ 
++  // Returns true if the scheme is "cyfs".
++  bool SchemeIsCYFS() const;
++
+   // Returns true if the scheme is "http" or "https".
+   bool SchemeIsHTTPOrHTTPS() const;
+ 

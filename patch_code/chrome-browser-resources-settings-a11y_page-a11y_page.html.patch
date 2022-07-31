@@ -1,0 +1,17 @@
+diff --git a/chrome/browser/resources/settings/a11y_page/a11y_page.html b/chrome/browser/resources/settings/a11y_page/a11y_page.html
+index 7b3696b735cdb85669a86c9e9809f7f7cc349203..49ff98977763272975a2fea4782c4de439ae80b1 100644
+--- a/chrome/browser/resources/settings/a11y_page/a11y_page.html
++++ b/chrome/browser/resources/settings/a11y_page/a11y_page.html
+@@ -51,10 +51,10 @@
+             label="$i18n{accessibleImageLabelsTitle}"
+             sub-label="$i18n{accessibleImageLabelsSubtitle}">
+         </settings-toggle-button>
+-        <cr-link-row class="hr" label="$i18n{moreFeaturesLink}"
++        <!-- <cr-link-row class="hr" label="$i18n{moreFeaturesLink}"
+             on-click="onMoreFeaturesLinkClick_" sub-label="$i18n{a11yWebStore}"
+             external>
+-        </cr-link-row>
++        </cr-link-row> -->
+       </div>
+ <if expr="not chromeos_ash">
+       <template is="dom-if" if="[[!captionSettingsOpensExternally_]]">

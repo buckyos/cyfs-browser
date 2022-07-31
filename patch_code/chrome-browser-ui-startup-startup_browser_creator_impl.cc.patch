@@ -1,0 +1,16 @@
+diff --git a/chrome/browser/ui/startup/startup_browser_creator_impl.cc b/chrome/browser/ui/startup/startup_browser_creator_impl.cc
+index 5e36094865df680847aa80d3389568bf93c4af1b..4c345c59bba5de9c0c0938195ddb72d85d665601 100644
+--- a/chrome/browser/ui/startup/startup_browser_creator_impl.cc
++++ b/chrome/browser/ui/startup/startup_browser_creator_impl.cc
+@@ -379,8 +379,9 @@ StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
+       welcome::IsEnabled(profile_) && welcome::HasModulesToShow(profile_);
+ #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+ 
+-  const bool whats_new_enabled =
+-      whats_new::ShouldShowForState(local_state, promotional_tabs_enabled);
++  const bool whats_new_enabled = false;
++  // const bool whats_new_enabled =
++  //     whats_new::ShouldShowForState(local_state, promotional_tabs_enabled);
+ 
+   auto* privacy_sandbox_serivce =
+       PrivacySandboxServiceFactory::GetForProfile(profile_);

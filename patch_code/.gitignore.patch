@@ -1,0 +1,11 @@
+diff --git a/.gitignore b/.gitignore
+index b58c0d6e0a610837436ba0f45d31738edcc46a4f..0cb2d5da5a30a09e9b3e8dcddffccda23ae28b8b 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -348,3 +348,5 @@ vs-chromium-project.txt
+ 
+ # Ignore the default results output directory for tools/run-swarmed.py
+ /results
++
++*.png
+\ No newline at end of file

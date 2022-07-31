@@ -1,0 +1,20 @@
+diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
+index d63bffe6fac5fe8af08b17c47c909b851786cdd2..cd6a80bf9174cd4f4b19bcaa2bf763895f738336 100644
+--- a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
++++ b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
+@@ -112,6 +112,7 @@
+ #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+ #include "chrome/browser/undo/bookmark_undo_service_factory.h"
+ #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
++#include "chrome/browser/cyfs_init/cyfs_init_service_factory.h"
+ #include "chrome/browser/web_data_service_factory.h"
+ #include "chrome/common/buildflags.h"
+ #include "chrome/common/chrome_features.h"
+@@ -287,6 +288,7 @@ void ChromeBrowserMainExtraPartsProfiles::
+   AccountConsistencyModeManagerFactory::GetInstance();
+   AccountInvestigatorFactory::GetInstance();
+   AccountReconcilorFactory::GetInstance();
++  CyfsRuntimeInitServiceFactory::GetInstance();
+ #if !BUILDFLAG(IS_ANDROID)
+   AccuracyServiceFactory::GetInstance();
+ #endif

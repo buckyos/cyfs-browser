@@ -1,0 +1,24 @@
+diff --git a/chrome/browser/resources/settings/about_page/about_page.html b/chrome/browser/resources/settings/about_page/about_page.html
+index f8b241516418220fb2cdd10ad47d3ac832e491b1..f11989f2c60689b7848ad3de8916ba477dcf1567 100644
+--- a/chrome/browser/resources/settings/about_page/about_page.html
++++ b/chrome/browser/resources/settings/about_page/about_page.html
+@@ -56,7 +56,7 @@
+             alt="$i18n{aboutProductLogoAlt}"
+             role="presentation">
+ </if>
+-        <h1 class="product-title">$i18n{aboutProductTitle}</h1>
++        <h1 class="product-title">$i18n{aboutProductTitle} $i18n{aboutCYFSBrowserVersion}</h1>
+       </div>
+       <div class="cr-row two-line">
+         <!-- Set the icon from the iconset (when it's obsolete/EOL and
+@@ -131,8 +131,8 @@
+         </div>
+       </template>
+ </if>
+-      <cr-link-row class="hr" id="help" on-click="onHelpTap_"
+-          label="$i18n{aboutGetHelpUsingChrome}" external></cr-link-row>
++      <!-- <cr-link-row class="hr" id="help" on-click="onHelpTap_"
++          label="$i18n{aboutGetHelpUsingChrome}" external></cr-link-row> -->
+ <if expr="_google_chrome">
+       <cr-link-row class="hr" id="reportIssue" on-click="onReportIssueTap_"
+           hidden="[[!prefs.feedback_allowed.value]]"

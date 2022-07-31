@@ -1,0 +1,15 @@
+diff --git a/third_party/blink/renderer/platform/weborigin/scheme_registry.cc b/third_party/blink/renderer/platform/weborigin/scheme_registry.cc
+index cb1543a669eaf8070512c5cb716083b7792215b1..30bf1a43e6c3daf31006200a39a94a65dfbe10fa 100644
+--- a/third_party/blink/renderer/platform/weborigin/scheme_registry.cc
++++ b/third_party/blink/renderer/platform/weborigin/scheme_registry.cc
+@@ -67,8 +67,8 @@ class URLSchemesRegistry final {
+          // is considered secure. Additional checks are performed to ensure that
+          // other http pages are filtered out.
+         service_worker_schemes({"http", "https"}),
+-        fetch_api_schemes({"http", "https"}),
+-        allowed_in_referrer_schemes({"http", "https"}) {
++        fetch_api_schemes({"http", "https", "cyfs"}),
++        allowed_in_referrer_schemes({"http", "https", "cyfs"}) {
+     for (auto& scheme : url::GetCorsEnabledSchemes())
+       cors_enabled_schemes.insert(scheme.c_str());
+     for (auto& scheme : url::GetCSPBypassingSchemes()) {

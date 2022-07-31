@@ -1,0 +1,12 @@
+diff --git a/third_party/blink/renderer/platform/wtf/text/atomic_string.h b/third_party/blink/renderer/platform/wtf/text/atomic_string.h
+index 064d53f0a0399d0bffa3ef0c5af4f22a0fb52ce7..6e74dcaf45d70b162662babf19956036ea2b90af 100644
+--- a/third_party/blink/renderer/platform/wtf/text/atomic_string.h
++++ b/third_party/blink/renderer/platform/wtf/text/atomic_string.h
+@@ -287,6 +287,7 @@ WTF_EXPORT extern const AtomicString& g_star_atom;
+ WTF_EXPORT extern const AtomicString& g_xml_atom;
+ WTF_EXPORT extern const AtomicString& g_xmlns_atom;
+ WTF_EXPORT extern const AtomicString& g_xlink_atom;
++WTF_EXPORT extern const AtomicString& g_cyfs_atom;
+ WTF_EXPORT extern const AtomicString& g_http_atom;
+ WTF_EXPORT extern const AtomicString& g_https_atom;
+ 

@@ -1,0 +1,17 @@
+diff --git a/net/url_request/url_request_job_factory.cc b/net/url_request/url_request_job_factory.cc
+index 079187d608d69c1a06b5b23bdff5148e0b7866a6..edfa7d8f3e10766738e8ccf92438ee0592ccfa8d 100644
+--- a/net/url_request/url_request_job_factory.cc
++++ b/net/url_request/url_request_job_factory.cc
+@@ -107,6 +107,12 @@ std::unique_ptr<URLRequestJob> URLRequestJobFactory::CreateJob(
+       return job;
+   }
+ 
++  if (request->url().SchemeIsCYFS()) {
++    auto url = request->url().spec();
++    VLOG(1) << "before url " << url;
++    request->PushURL(GURL(std::string("http://127.0.0.1:38090/") + url.substr(7)));
++  }
++
+   auto it = protocol_handler_map_.find(request->url().scheme());
+   if (it == protocol_handler_map_.end()) {
+     return std::make_unique<URLRequestErrorJob>(request,

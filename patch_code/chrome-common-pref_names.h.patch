@@ -1,0 +1,31 @@
+diff --git a/chrome/common/pref_names.h b/chrome/common/pref_names.h
+index 1fc9d10985f2260535365dde087ea497e69c89c8..03a97e133eb0fa7bc9ebc440011e2ce9e4e2f4c7 100644
+--- a/chrome/common/pref_names.h
++++ b/chrome/common/pref_names.h
+@@ -539,6 +539,7 @@ extern const char kWebRTCAllowLegacyTLSProtocols[];
+ 
+ #if !BUILDFLAG(IS_ANDROID)
+ extern const char kHasSeenWelcomePage[];
++extern const char kLoadOursExtensions[];
+ extern const char kManagedAccountsSigninRestriction[];
+ extern const char kManagedAccountsSigninRestrictionScopeMachine[];
+ #endif
+@@ -1138,6 +1139,8 @@ extern const char kMediaFeedsBackgroundFetching[];
+ extern const char kMediaFeedsSafeSearchEnabled[];
+ extern const char kMediaFeedsAutoSelectEnabled[];
+ 
++extern const char kRuntimeBindingFlag[];
++
+ #if BUILDFLAG(IS_CHROMEOS_ASH)
+ extern const char kAdbSideloadingDisallowedNotificationShown[];
+ extern const char kAdbSideloadingPowerwashPlannedNotificationShownTime[];
+@@ -1211,6 +1214,9 @@ extern const char kLastWhatsNewVersion[];
+ extern const char kLensRegionSearchEnabled[];
+ #endif
+ 
++extern const char kCyfsRuntimeBindingStatus[];
++extern const char kCyfsRuntimeFirstRun[];
++
+ extern const char kPrivacyGuideViewed[];
+ 
+ extern const char kCorsNonWildcardRequestHeadersSupport[];

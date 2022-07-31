@@ -1,0 +1,22 @@
+diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
+index 87931d738887476b3fa64141cc2a11268c7cd3e5..23f13b7091568401309043a5cf72523c7037965f 100644
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -1872,6 +1872,8 @@ static_library("browser") {
+     "webid/federated_identity_sharing_permission_context.h",
+     "webid/federated_identity_sharing_permission_context_factory.cc",
+     "webid/federated_identity_sharing_permission_context_factory.h",
++    "cyfs_init/cyfs_init_service_factory.h",
++    "cyfs_init/cyfs_init_service_factory.cc",
+   ]
+ 
+   configs += [
+@@ -2624,6 +2626,8 @@ static_library("browser") {
+     deps += [ "//chrome/browser/ui/webui/connectors_internals:mojo_bindings" ]
+   }
+ 
++  deps += ["//components/cyfs_init"]
++
+   if (is_android) {
+     sources += [
+       "after_startup_task_utils_android.cc",

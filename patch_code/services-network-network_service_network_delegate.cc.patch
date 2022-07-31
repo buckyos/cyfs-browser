@@ -1,0 +1,13 @@
+diff --git a/services/network/network_service_network_delegate.cc b/services/network/network_service_network_delegate.cc
+index 70a6cb13e0e948dbeeeaca435dbbe0051c7c2f5a..295ef46560d480e0570c14344565b27aacf0e229 100644
+--- a/services/network/network_service_network_delegate.cc
++++ b/services/network/network_service_network_delegate.cc
+@@ -272,6 +272,8 @@ bool NetworkServiceNetworkDelegate::
+   if (!validate_referrer_policy_on_initial_request_)
+     return false;
+ 
++  return false;
++
+   LOG(ERROR) << "Cancelling request to " << target_url
+              << " with invalid referrer " << referrer_url;
+   // Record information to help debug issues like http://crbug.com/422871.

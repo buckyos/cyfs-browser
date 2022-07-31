@@ -1,0 +1,22 @@
+diff --git a/content/browser/loader/navigation_url_loader_impl.h b/content/browser/loader/navigation_url_loader_impl.h
+index bc1e84ec8eb13775f057e188bb2eab97c4152bd5..34445fb0b592add46188587726641a689243c1c7 100644
+--- a/content/browser/loader/navigation_url_loader_impl.h
++++ b/content/browser/loader/navigation_url_loader_impl.h
+@@ -219,6 +219,8 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
+   // Records UKM for the navigation load.
+   void RecordReceivedResponseUkmForOutermostMainFrame();
+ 
++  void ReplaceRequestUrl();
++
+   raw_ptr<NavigationURLLoaderDelegate> delegate_;
+   raw_ptr<BrowserContext> browser_context_;
+   raw_ptr<StoragePartitionImpl> storage_partition_;
+@@ -322,6 +324,8 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
+ 
+   std::unique_ptr<NavigationEarlyHintsManager> early_hints_manager_;
+ 
++  int runtime_process_port_{38090};
++
+   // Set on the constructor and runs in Start(). This is used for transferring
+   // parameters prepared in the constructor to Start().
+   base::OnceClosure start_closure_;

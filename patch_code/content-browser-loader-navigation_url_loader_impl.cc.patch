@@ -1,0 +1,43 @@
+diff --git a/content/browser/loader/navigation_url_loader_impl.cc b/content/browser/loader/navigation_url_loader_impl.cc
+index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..e556d03919c7f234c58080255032163757cd5ef2 100644
+--- a/content/browser/loader/navigation_url_loader_impl.cc
++++ b/content/browser/loader/navigation_url_loader_impl.cc
+@@ -529,6 +529,7 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
+   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+   DCHECK(started_);
+ 
++  ReplaceRequestUrl();
+   if (single_request_factory) {
+     // `interceptor` wants to handle the request with
+     // `single_request_handler`.
+@@ -622,6 +623,21 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
+       GetUIThreadTaskRunner({BrowserTaskType::kNavigationNetworkResponse}));
+ }
+ 
++void NavigationURLLoaderImpl::ReplaceRequestUrl() {
++  // translate cyfs url to local http url
++  if (resource_request_->url.SchemeIsCYFS()) {
++    auto url = resource_request_->url.spec();
++    VLOG(1) << "Before ReplaceRequestUrl URL = " << url;
++    if (url[url.length() - 1] == '/') {
++     url = url.substr(0, url.length() - 1);
++    }
++    std::string after_url_head = std::string("http://127.0.0.1:") + std::to_string(runtime_process_port_) + "/";
++    auto after_url = GURL(after_url_head + url.substr(7));
++    LOG(INFO) << "After ReplaceRequestUrl URL = " << after_url;
++    resource_request_->url = after_url;
++  }
++}
++
+ void NavigationURLLoaderImpl::FallbackToNonInterceptedRequest(
+     bool reset_subresource_loader_params) {
+   if (reset_subresource_loader_params)
+@@ -656,6 +672,8 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
+   // further refactor the factory getters to avoid this.
+   scoped_refptr<network::SharedURLLoaderFactory> factory;
+ 
++  ReplaceRequestUrl();
++
+   const bool should_be_handled_by_network_service =
+       network::IsURLHandledByNetworkService(resource_request_->url) ||
+       resource_request_->web_bundle_token_params.has_value();

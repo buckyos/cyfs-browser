@@ -1,0 +1,12 @@
+diff --git a/chrome/common/url_constants.cc b/chrome/common/url_constants.cc
+index bc31a719bf740d172bc2d1154f7613bf7cf7cb33..868189ef5f367314701da9adc9bd44bf565639c0 100644
+--- a/chrome/common/url_constants.cc
++++ b/chrome/common/url_constants.cc
+@@ -481,4 +481,7 @@ const char kChromeAppsDeprecationLearnMoreURL[] =
+     "https://support.google.com/chrome/?p=chrome_app_deprecation";
+ #endif
+ 
++const char kChromeUICyfsInitURL[] = "chrome://cyfs-init/";
++const char kChromeUICyfsInitHost[] = "cyfs-init";
++
+ }  // namespace chrome

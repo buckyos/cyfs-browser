@@ -1,0 +1,22 @@
+diff --git a/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc b/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
+index dcfe8a48d2af1e6022dc408660e4ff0035c537b7..ae6d42d8df1822f707c0a472f647a5cfa5cb3471 100644
+--- a/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
++++ b/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
+@@ -66,6 +66,7 @@
+ #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
+ #include "chrome/browser/ui/webui/version/version_ui.h"
+ #include "chrome/browser/ui/webui/webui_util.h"
++#include "chrome/browser/ui/webui/cyfs_init_ui.h"
+ #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+ #include "chrome/browser/web_applications/web_app_provider.h"
+ #include "chrome/common/buildflags.h"
+@@ -720,6 +721,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
+   if (url.SchemeIs(content::kChromeUIUntrustedScheme))
+     return nullptr;
+ 
++  if (url.host_piece() == chrome::kChromeUICyfsInitHost)
++    return &NewWebUI<CyfsInitUI>;
++
+   // Please keep this in alphabetical order. If #ifs or special logics are
+   // required, add it below in the appropriate section.
+   //

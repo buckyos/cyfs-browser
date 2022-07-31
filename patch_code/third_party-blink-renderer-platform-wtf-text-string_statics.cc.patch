@@ -1,0 +1,21 @@
+diff --git a/third_party/blink/renderer/platform/wtf/text/string_statics.cc b/third_party/blink/renderer/platform/wtf/text/string_statics.cc
+index aeb0d1d2d0a96672ecd63b94eda8b3e19ae5cc49..41bf10318754508860c1b3b57c6b05e6557597d5 100644
+--- a/third_party/blink/renderer/platform/wtf/text/string_statics.cc
++++ b/third_party/blink/renderer/platform/wtf/text/string_statics.cc
+@@ -40,6 +40,7 @@ WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_xml_atom);
+ WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_xmlns_atom);
+ WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_xlink_atom);
+ WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_http_atom);
++WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_cyfs_atom);
+ WTF_EXPORT DEFINE_GLOBAL(AtomicString, g_https_atom);
+ 
+ // This is not an AtomicString because it is unlikely to be used as an
+@@ -93,6 +94,8 @@ void StringStatics::Init() {
+   new (NotNullTag::kNotNull, (void*)&g_xmlns_with_colon) String("xmlns:");
+   new (NotNullTag::kNotNull, (void*)&g_http_atom)
+       AtomicString(AddStaticASCIILiteral("http"));
++  new (NotNullTag::kNotNull, (void*)&g_cyfs_atom)
++      AtomicString(AddStaticASCIILiteral("cyfs"));
+   new (NotNullTag::kNotNull, (void*)&g_https_atom)
+       AtomicString(AddStaticASCIILiteral("https"));
+ }

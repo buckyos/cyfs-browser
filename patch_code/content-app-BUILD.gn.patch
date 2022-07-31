@@ -1,0 +1,18 @@
+diff --git a/content/app/BUILD.gn b/content/app/BUILD.gn
+index 0061cf54266142e9740792253d3d80b7d11b11f2..1c81f600dfcfb00a269c3dd3ebfd2b512a426f23 100644
+--- a/content/app/BUILD.gn
++++ b/content/app/BUILD.gn
+@@ -70,6 +70,13 @@ source_set("content_main_runner_app") {
+     "content_main_runner_impl.h",
+   ]
+ 
++  if (is_mac || is_win) {
++    sources += [
++      "monitor_cyfs_runtime.h",
++      "monitor_cyfs_runtime.cc",
++    ]
++  }
++
+   configs += extra_configs
+   deps = content_app_deps + [
+            "//components/power_scheduler",

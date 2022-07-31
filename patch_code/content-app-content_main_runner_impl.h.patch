@@ -1,0 +1,30 @@
+diff --git a/content/app/content_main_runner_impl.h b/content/app/content_main_runner_impl.h
+index 423ad00697648babc8a14d16c94a4590c07421bb..82628c91ee0ed828a6c260a6fbf981bda68ae76d 100644
+--- a/content/app/content_main_runner_impl.h
++++ b/content/app/content_main_runner_impl.h
+@@ -17,6 +17,7 @@
+ #include "content/public/common/main_function_params.h"
+ #include "mojo/core/embedder/scoped_ipc_support.h"
+ #include "third_party/abseil-cpp/absl/types/optional.h"
++#include "content/app/monitor_cyfs_runtime.h"
+ 
+ namespace base {
+ class AtExitManager;
+@@ -66,6 +67,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
+   // True if the runner has been initialized.
+   bool is_initialized_ = false;
+ 
++  bool is_runtime_initialized_ = false;
++
+   // True if the runner has been shut down.
+   bool is_shutdown_ = false;
+ 
+@@ -79,6 +82,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
+ 
+   // Received in Initialize(), handed-off in Run().
+   absl::optional<ContentMainParams> content_main_params_;
++
++  std::unique_ptr<MonitorRuntimeWork> monitor_runtime_work_ = nullptr;
+ };
+ 
+ // The BrowserTestBase on Android does not call ContentMain(). It tries instead

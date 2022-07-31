@@ -1,0 +1,8 @@
+diff --git a/chrome/app/chrome_exe.ver b/chrome/app/chrome_exe.ver
+index a2d39013f5a5d73f35f63223bbc9d44019604a43..86411def6cd1105a696f1027b73e51861e4fa498 100644
+--- a/chrome/app/chrome_exe.ver
++++ b/chrome/app/chrome_exe.ver
+@@ -1,2 +1,2 @@
+ INTERNAL_NAME=chrome_exe
+-ORIGINAL_FILENAME=chrome.exe
++ORIGINAL_FILENAME=Cyfs_Browser.exe

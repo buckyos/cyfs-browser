@@ -1,0 +1,61 @@
+diff --git a/chrome/BUILD.gn b/chrome/BUILD.gn
+index 5c564fe889ca6621ff33d31d8d2fff93563093eb..cedf9c92e9497ee7375518b4829dcf38fec8b462 100644
+--- a/chrome/BUILD.gn
++++ b/chrome/BUILD.gn
+@@ -51,6 +51,7 @@ if (is_android) {
+   import("//content/public/app/mac_helpers.gni")
+   import("//media/cdm/library_cdm/cdm_paths.gni")
+   import("//third_party/icu/config.gni")
++  import("//chrome/app/Extensions/cyfs_extension.gni")
+ }
+ 
+ declare_args() {
+@@ -72,10 +73,10 @@ if (is_win) {
+ 
+     # See comment in chrome_dll.gypi in the hardlink_to_output
+     # target for why this cannot be 'initial' like the DLL.
+-    inputs = [ "$root_out_dir/initialexe/chrome.exe" ]
++    inputs = [ "$root_out_dir/initialexe/Cyfs_Browser.exe" ]
+     outputs = [
+-      "$root_out_dir/chrome.exe",
+-      "$root_out_dir/chrome.exe.pdb",
++      "$root_out_dir/Cyfs_Browser.exe",
++      "$root_out_dir/Cyfs_Browser.exe.pdb",
+     ]
+     args = [
+       "-i",
+@@ -136,7 +137,7 @@ if (!is_android && !is_mac) {
+     configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
+     configs += [ "//build/config/compiler:thinlto_optimize_max" ]
+     if (is_win) {
+-      output_name = "initialexe/chrome"
++      output_name = "initialexe/Cyfs_Browser"
+     } else {
+       output_name = "chrome"
+     }
+@@ -601,6 +602,17 @@ if (is_win) {
+     outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+   }
+ 
++  # Add the metamask extension in the Extension of Cyfs Browser.app
++  bundle_data("default_extension") {
++    sources = []
++    foreach(extension, cyfs_default_extenions) {
++      sources += [ "app/Extensions/${extension}"]
++    }
++
++    # sources = [ "app/Extensions/metamask-chrome-10.9.3.zip" ]
++    outputs = [ "{{bundle_contents_dir}}/Extensions/{{source_file_part}}" ]
++  }
++
+   bundle_data("chrome_resources") {
+     sources = [
+       "$root_out_dir/$chrome_mac_bundle_id.manifest",
+@@ -609,6 +621,7 @@ if (is_win) {
+     ]
+     outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+     public_deps = [
++      ":default_extension",
+       ":chrome_app_icon",
+       ":chrome_app_strings",
+       "//components/policy:chrome_manifest_bundle",

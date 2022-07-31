@@ -1,0 +1,13 @@
+diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
+index 2fa127f30d328e240eea80fd8ea9debcda81ea05..f9183709d65109da9809612c2de5df8e09da4d04 100644
+--- a/chrome/browser/ui/BUILD.gn
++++ b/chrome/browser/ui/BUILD.gn
+@@ -337,6 +337,8 @@ static_library("ui") {
+     "zoom/chrome_zoom_level_otr_delegate.h",
+     "zoom/chrome_zoom_level_prefs.cc",
+     "zoom/chrome_zoom_level_prefs.h",
++    "webui/cyfs_init_ui.cc",
++    "webui/cyfs_init_ui.h",
+   ]
+ 
+   if (enable_session_service) {

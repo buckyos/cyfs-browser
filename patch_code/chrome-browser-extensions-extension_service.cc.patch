@@ -1,0 +1,29 @@
+diff --git a/chrome/browser/extensions/extension_service.cc b/chrome/browser/extensions/extension_service.cc
+index 40f44b412069077deeb218727d99afac62646ae4..5a8dbfe39bed4eb7cbbb13c25c7ae04447b566c0 100644
+--- a/chrome/browser/extensions/extension_service.cc
++++ b/chrome/browser/extensions/extension_service.cc
+@@ -73,6 +73,7 @@
+ #include "chrome/common/extensions/extension_constants.h"
+ #include "chrome/common/pref_names.h"
+ #include "chrome/common/url_constants.h"
++#include "chrome/common/pref_names.h"
+ #include "components/crx_file/id_util.h"
+ #include "components/favicon_base/favicon_url_parser.h"
+ #include "content/public/browser/browser_thread.h"
+@@ -779,6 +780,16 @@ bool ExtensionService::UninstallExtension(
+   // Callers should not send us nonexistent extensions.
+   CHECK(extension.get());
+ 
++  VLOG(1) << "uninstall extension, path = " << extension->path()
++          << " id = " << extension->id();
++  std::string extension_path_name = extension->path().BaseName().AsUTF8Unsafe();
++  VLOG(1) << "extension_path_name " << extension_path_name;
++  if (!extension_path_name.compare("metamask-chrome")) {
++    VLOG(1) << "uninstall extension " << extension_path_name
++            << ", set browser.load_ours_extensions false";
++    profile()->GetPrefs()->SetBoolean(prefs::kLoadOursExtensions, false);
++  }
++
+   ManagementPolicy* by_policy = system_->management_policy();
+   // Policy change which triggers an uninstall will always set
+   // |external_uninstall| to true so this is the only way to uninstall

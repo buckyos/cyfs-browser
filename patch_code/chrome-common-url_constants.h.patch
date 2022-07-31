@@ -1,0 +1,14 @@
+diff --git a/chrome/common/url_constants.h b/chrome/common/url_constants.h
+index fb4eef105be556291790caf29f1f5bbeed981134..82614db24d467c474b35e8767edd1938b6448130 100644
+--- a/chrome/common/url_constants.h
++++ b/chrome/common/url_constants.h
+@@ -452,6 +452,9 @@ extern const char kPhoneHubPermissionLearnMoreURL[];
+ extern const char kChromeAppsDeprecationLearnMoreURL[];
+ #endif
+ 
++extern const char kChromeUICyfsInitURL[];
++extern const char kChromeUICyfsInitHost[];
++
+ // Please do not append entries here. See the comments at the top of the file.
+ 
+ }  // namespace chrome

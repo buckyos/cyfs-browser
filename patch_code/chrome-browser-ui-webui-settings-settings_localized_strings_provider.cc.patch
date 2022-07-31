@@ -1,0 +1,13 @@
+diff --git a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+index 7a63cdf64d3e0ccc1c10cf2cded3cec14843b24b..3c6569c550c2247bb72f26b9704e8d990968cd5c 100644
+--- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
++++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+@@ -281,6 +281,8 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
+ 
+   html_source->AddString("managementPage",
+                          ManagementUI::GetManagementPageSubtitle(profile));
++  std::string cyfs_browser_version = chrome::GetCYFSBrowserVersion();
++  html_source->AddString("aboutCYFSBrowserVersion", cyfs_browser_version);
+   html_source->AddString(
+       "aboutUpgradeUpToDate",
+ #if BUILDFLAG(IS_CHROMEOS_ASH)

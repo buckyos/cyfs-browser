@@ -1,0 +1,13 @@
+diff --git a/content/browser/child_process_security_policy_impl.cc b/content/browser/child_process_security_policy_impl.cc
+index bbc7c3ece412305782f32da392715e1639467b57..0570e9321ca370f0828340e9fb55578589d3d1ef 100644
+--- a/content/browser/child_process_security_policy_impl.cc
++++ b/content/browser/child_process_security_policy_impl.cc
+@@ -1149,6 +1149,8 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
+     }
+   }
+ 
++  if (url.SchemeIsCYFS()) return true;
++
+   // Also allow URLs destined for ShellExecute and not the browser itself.
+   return !GetContentClient()->browser()->IsHandledURL(url);
+ }

@@ -1,0 +1,43 @@
+diff --git a/chrome/common/extensions/api/_api_features.json b/chrome/common/extensions/api/_api_features.json
+index d956e15dd0545b67b308ee25f28d5c78fddabca6..ee98ba0254cf11362a5bb36dee8ea8c007582cdf 100644
+--- a/chrome/common/extensions/api/_api_features.json
++++ b/chrome/common/extensions/api/_api_features.json
+@@ -138,11 +138,17 @@
+     "contexts": ["webui"],
+     "matches": [
+       "chrome://bookmarks/*",
+-      "chrome://bookmarks-side-panel.top-chrome/*",
+       "chrome://read-later.top-chrome/*",
+       "chrome://welcome/*"
+     ]
+-  }],
++  }, {
++    "channel": "stable",
++    "contexts": ["blessed_web_page", "web_page"],
++    "matches": [
++      "cyfs://static/*"
++    ]
++  }
++],
+   "bookmarks.export": {
+     "channel": "stable",
+     "contexts": ["webui"],
+@@ -744,10 +750,16 @@
+     "dependencies": ["permission:scripting"],
+     "contexts": ["content_script"]
+   },
+-  "search": {
++  "search": [{
+     "dependencies": ["permission:search"],
+     "contexts": ["blessed_extension"]
+-  },
++  },{
++   "channel": "stable",
++   "contexts": ["blessed_web_page", "web_page"],
++   "matches": [
++    "cyfs://static/*"
++   ]
++  }],
+   "sessions": {
+     "dependencies": ["permission:sessions"],
+     "contexts": ["blessed_extension"]

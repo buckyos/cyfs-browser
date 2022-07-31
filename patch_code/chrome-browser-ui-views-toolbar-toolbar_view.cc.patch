@@ -1,0 +1,123 @@
+diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.cc b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+index 1ab19d8ef449316a4be072d3ed8f88a42a4e8eb6..7091eed4e7b5f196abe47a020cafaa4f0f1f7532 100644
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+@@ -282,24 +282,24 @@ void ToolbarView::Init() {
+             browser_view_);
+   }
+ 
+-  std::unique_ptr<ToolbarAccountIconContainerView>
+-      toolbar_account_icon_container;
+-  bool show_avatar_toolbar_button = true;
+-#if BUILDFLAG(IS_CHROMEOS_ASH)
+-  // ChromeOS only badges Incognito and Guest icons in the browser window.
+-  show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
+-                               browser_->profile()->IsGuestSession();
+-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+-  show_avatar_toolbar_button = !profiles::IsPublicSession();
+-#endif
+-  if (base::FeatureList::IsEnabled(
+-          autofill::features::kAutofillEnableToolbarStatusChip)) {
+-    // The avatar button is contained inside the page-action container and
+-    // should not be created twice.
+-    show_avatar_toolbar_button = false;
+-    toolbar_account_icon_container =
+-        std::make_unique<ToolbarAccountIconContainerView>(browser_view_);
+-  }
++//   std::unique_ptr<ToolbarAccountIconContainerView>
++//       toolbar_account_icon_container;
++//   bool show_avatar_toolbar_button = true;
++// #if BUILDFLAG(IS_CHROMEOS_ASH)
++//   // ChromeOS only badges Incognito and Guest icons in the browser window.
++//   show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
++//                                browser_->profile()->IsGuestSession();
++// #elif BUILDFLAG(IS_CHROMEOS_LACROS)
++//   show_avatar_toolbar_button = !profiles::IsPublicSession();
++// #endif
++//   if (base::FeatureList::IsEnabled(
++//           autofill::features::kAutofillEnableToolbarStatusChip)) {
++//     // The avatar button is contained inside the page-action container and
++//     // should not be created twice.
++//     show_avatar_toolbar_button = false;
++//     toolbar_account_icon_container =
++//         std::make_unique<ToolbarAccountIconContainerView>(browser_view_);
++//   }
+ 
+   std::unique_ptr<SidePanelToolbarButton> side_panel_button;
+   if (browser_view_->right_aligned_side_panel()) {
+@@ -327,26 +327,26 @@ void ToolbarView::Init() {
+   if (extensions_container)
+     extensions_container_ = AddChildView(std::move(extensions_container));
+ 
+-  if (base::FeatureList::IsEnabled(features::kChromeLabs)) {
+-    chrome_labs_model_ = std::make_unique<ChromeLabsBubbleViewModel>();
+-    UpdateChromeLabsNewBadgePrefs(browser_->profile(),
+-                                  chrome_labs_model_.get());
+-    if (ChromeLabsButton::ShouldShowButton(chrome_labs_model_.get(),
+-                                           browser_->profile())) {
+-      chrome_labs_button_ = AddChildView(std::make_unique<ChromeLabsButton>(
+-          browser_view_, chrome_labs_model_.get()));
+-
+-      show_chrome_labs_button_.Init(
+-          chrome_labs_prefs::kBrowserLabsEnabled,
+-          browser_->profile()->GetPrefs(),
+-          base::BindRepeating(&ToolbarView::OnChromeLabsPrefChanged,
+-                              base::Unretained(this)));
+-      // Set the visibility for the button based on initial enterprise policy
+-      // value. Only call OnChromeLabsPrefChanged if there is a change from the
+-      // initial value.
+-      chrome_labs_button_->SetVisible(show_chrome_labs_button_.GetValue());
+-    }
+-  }
++  // if (base::FeatureList::IsEnabled(features::kChromeLabs)) {
++  //   chrome_labs_model_ = std::make_unique<ChromeLabsBubbleViewModel>();
++  //   UpdateChromeLabsNewBadgePrefs(browser_->profile(),
++  //                                 chrome_labs_model_.get());
++  //   if (ChromeLabsButton::ShouldShowButton(chrome_labs_model_.get(),
++  //                                          browser_->profile())) {
++  //     chrome_labs_button_ = AddChildView(std::make_unique<ChromeLabsButton>(
++  //         browser_view_, chrome_labs_model_.get()));
++
++  //     show_chrome_labs_button_.Init(
++  //         chrome_labs_prefs::kBrowserLabsEnabled,
++  //         browser_->profile()->GetPrefs(),
++  //         base::BindRepeating(&ToolbarView::OnChromeLabsPrefChanged,
++  //                             base::Unretained(this)));
++  //     // Set the visibility for the button based on initial enterprise policy
++  //     // value. Only call OnChromeLabsPrefChanged if there is a change from the
++  //     // initial value.
++  //     chrome_labs_button_->SetVisible(show_chrome_labs_button_.GetValue());
++  //   }
++  // }
+ 
+   if (cast)
+     cast_ = AddChildView(std::move(cast));
+@@ -363,17 +363,17 @@ void ToolbarView::Init() {
+   if (side_panel_button)
+     side_panel_button_ = AddChildView(std::move(side_panel_button));
+ 
+-  if (toolbar_account_icon_container) {
+-    toolbar_account_icon_container_ =
+-        AddChildView(std::move(toolbar_account_icon_container));
+-    avatar_ = toolbar_account_icon_container_->avatar_button();
+-  } else {
+-    // TODO(crbug.com/932818): Remove this once the
+-    // |kAutofillEnableToolbarStatusChip| is fully launched.
+-    avatar_ =
+-        AddChildView(std::make_unique<AvatarToolbarButton>(browser_view_));
+-    avatar_->SetVisible(show_avatar_toolbar_button);
+-  }
++  // if (toolbar_account_icon_container) {
++  //   toolbar_account_icon_container_ =
++  //       AddChildView(std::move(toolbar_account_icon_container));
++  //   avatar_ = toolbar_account_icon_container_->avatar_button();
++  // } else {
++  //   // TODO(crbug.com/932818): Remove this once the
++  //   // |kAutofillEnableToolbarStatusChip| is fully launched.
++  //   avatar_ =
++  //       AddChildView(std::make_unique<AvatarToolbarButton>(browser_view_));
++  //   avatar_->SetVisible(show_avatar_toolbar_button);
++  // }
+ 
+   auto app_menu_button = std::make_unique<BrowserAppMenuButton>(this);
+   app_menu_button->SetFlipCanvasOnPaintForRTLUI(true);
