@@ -18,7 +18,7 @@
 #include "base/threading/thread.h"
 #include "base/files/file_util.h"
 #include "base/files/file_path.h"
-
+#include "base/path_service.h"
 #include "base/observer_list.h"
 
 #include "base/memory/weak_ptr.h"
@@ -27,11 +27,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "base/win/scoped_process_information.h"
 
 
 using ExePath = base::FilePath::StringType;
 
+#if BUILDFLAG(IS_WIN)
 class ProcessPathPrefixFilter : public base::ProcessFilter {
  public:
   explicit ProcessPathPrefixFilter(const ExePath& process_path_prefix);
@@ -42,6 +42,7 @@ class ProcessPathPrefixFilter : public base::ProcessFilter {
  private:
   const ExePath process_path_prefix_;
 };
+#endif
 
 class MonitorRuntimeWork {
 public:
@@ -77,20 +78,23 @@ private:
 
   base::Process StartRuntimeProcessCore(bool anonymous, int proxy_port);
 
-  base::Process LaunchRuntimeProcess(const base::CommandLine& cmdline,
-                              const base::LaunchOptions& options);
+  uint16_t GetavailableTcpPort();
 
+#if BUILDFLAG(IS_WIN)
   std::vector<uint16_t> GetAllTcpConnectionsPort();
 
-  uint16_t GetavailableTcpPort();
+  bool IsParentProcess(const base::ProcessId& son_process_id,
+                              const base::ProcessId& parent_process_id);
 
   std::vector<base::ProcessId> FindProcesses(const ExePath& executable_name,
                               const base::ProcessFilter* filter);
 
+  base::Process LaunchRuntimeProcess(const base::CommandLine& cmdline,
+                              const base::LaunchOptions& options);
+#else
+  std::vector<base::ProcessId> FindProcesses(const ExePath& executable_name);
+#endif
   bool IsRuntimeBinding();
-
-  bool IsParentProcess(const base::ProcessId& son_process_id,
-                              const base::ProcessId& parent_process_id);
 
   void StartRuntimeProcess();
 

@@ -15,24 +15,25 @@
 #endif
 
 namespace {
+#if BUILDFLAG(IS_WIN)
+  const wchar_t kExecuteName[] = L"cyfs-runtime.exe";
   const wchar_t kCyfsDir[] = L"cyfs";
   const wchar_t kServicesDir[] = L"services";
   const wchar_t kRuntimeDir[] = L"runtime";
-#if BUILDFLAG(IS_WIN)
-  const wchar_t kExecuteName[] = L"cyfs-runtime.exe";
 #else
-  const wchar_t kExecuteName[] = L"cyfs-runtime";
+  const char kExecuteName[] = "cyfs-runtime";
+  const char kCyfsDir[] = "cyfs";
+  const char kServicesDir[] = "services";
+  const char kRuntimeDir[] = "runtime";
 #endif
 
-
   const char KAnonymous[] = "--anonymous";
-
   static constexpr int kMinPort = 8090;
   static constexpr int kMaxPort = 65535;
   static bool kUseDefaultPort = true;
 }
 
-
+#if BUILDFLAG(IS_WIN)
 ProcessPathPrefixFilter::ProcessPathPrefixFilter(const ExePath& process_path_prefix)
   : process_path_prefix_(process_path_prefix) {}
 
@@ -56,6 +57,7 @@ bool ProcessPathPrefixFilter::Includes(const base::ProcessEntry& entry) const {
                 << entry.th32ProcessID;
   return false;
 }
+#endif
 
 MonitorRuntimeWork::MonitorRuntimeWork(int interval) {
   cycleTime_ = base::Seconds(interval);
@@ -65,24 +67,6 @@ MonitorRuntimeWork::MonitorRuntimeWork(int interval) {
         base::BindOnce(&MonitorRuntimeWork::StartRuntimeProcess, weak_factory_.GetWeakPtr()));
   thread_->task_runner()->PostTask(FROM_HERE,
         base::BindOnce(&MonitorRuntimeWork::StartMonitorWork, weak_factory_.GetWeakPtr()));
-}
-
-std::vector<base::ProcessId> MonitorRuntimeWork::FindProcesses(
-        const ExePath& executable_name, const base::ProcessFilter* filter) {
-  std::vector<base::ProcessId> process_list;
-  base::NamedProcessIterator iter(executable_name, filter);
-  while (const base::ProcessEntry* entry = iter.NextProcessEntry()) {
-    base::Process process = base::Process::Open(entry->pid());
-    // Sometimes process open fails. This would cause a DCHECK in
-    // process.Terminate(). Maybe the process has killed itself between the
-    // time the process list was enumerated and the time we try to open the
-    // process?
-    if (!process.IsValid()) {
-      continue;
-    }
-    process_list.push_back(process.Pid());
-  }
-  return process_list;
 }
 
 MonitorRuntimeWork::~MonitorRuntimeWork() {
@@ -175,14 +159,11 @@ base::Process MonitorRuntimeWork::StartRuntimeProcessCore(bool anonymous, int pr
   base::LaunchOptions launchopts;
 #if BUILDFLAG(IS_WIN)
   launchopts.start_hidden = true;
-#endif
-
-
-#if BUILDFLAG(IS_WIN)
   base::Process runtime_process = LaunchRuntimeProcess(command_line, launchopts);
 #else
-  base::Process runtime_process = base::LaunchProcess(command_line, launchOpts);
+  base::Process runtime_process = base::LaunchProcess(command_line, launchopts);
 #endif
+
   if (runtime_process.IsValid()) {
     LOG(INFO) << "Start runtime process success, Pid = " << runtime_process.Pid();
     return runtime_process;
@@ -192,6 +173,7 @@ base::Process MonitorRuntimeWork::StartRuntimeProcessCore(bool anonymous, int pr
   }
 }
 
+#if BUILDFLAG(IS_WIN)
 base::Process MonitorRuntimeWork::LaunchRuntimeProcess(const base::CommandLine& cmdline,
                               const base::LaunchOptions& options) {
   const base::FilePath::StringType file = cmdline.GetProgram().value();
@@ -234,19 +216,25 @@ std::vector<uint16_t> MonitorRuntimeWork::GetAllTcpConnectionsPort() {
   std::sort(std::begin(idle_ports), std::end(idle_ports));
   return idle_ports;
 }
+#endif
 
 uint16_t MonitorRuntimeWork::GetavailableTcpPort() {
   if (kUseDefaultPort) {
-    return 38090;
+    return last_runtime_port_;
   }
+#if BUILDFLAG(IS_WIN)
   auto idle_ports = GetAllTcpConnectionsPort();
-  for (uint16_t port = kMinPort; port != kMaxPort; ++port)
+  for (uint16_t port = kMinPort; port != kMaxPort; ++port) {
     if (!std::binary_search(std::begin(idle_ports), std::end(idle_ports), port)) {
       LOG(INFO) << "Get available port " << port;
       return port;
     }
+  }
   LOG(ERROR) << "Can't find available local network port for runtime process";
-  return 0;
+  return last_runtime_port_;
+#else
+  return last_runtime_port_;
+#endif
 }
 
 bool MonitorRuntimeWork::IsRuntimeBinding() {
@@ -275,6 +263,7 @@ void MonitorRuntimeWork::StartRuntimeProcess() {
   }
 }
 
+#if BUILDFLAG(IS_WIN)
 bool MonitorRuntimeWork::IsParentProcess(const base::ProcessId& son_process_id, const base::ProcessId& parent_process_id) {
   base::win::ScopedHandle snapshot(
       ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
@@ -297,11 +286,44 @@ bool MonitorRuntimeWork::IsParentProcess(const base::ProcessId& son_process_id, 
 
   return false;
 }
+std::vector<base::ProcessId> MonitorRuntimeWork::FindProcesses(
+        const ExePath& executable_name, const base::ProcessFilter* filter) {
+  std::vector<base::ProcessId> process_list;
+  base::NamedProcessIterator iter(executable_name, filter);
+  while (const base::ProcessEntry* entry = iter.NextProcessEntry()) {
+    base::Process process = base::Process::Open(entry->pid());
+    // Sometimes process open fails. This would cause a DCHECK in
+    // process.Terminate(). Maybe the process has killed itself between the
+    // time the process list was enumerated and the time we try to open the
+    // process?
+    if (!process.IsValid()) {
+      continue;
+    }
+    process_list.push_back(process.Pid());
+  }
+  return process_list;
+}
+#else
+std::vector<base::ProcessId> MonitorRuntimeWork::FindProcesses(const ExePath& executable_name) {
+  std::vector<base::ProcessId> all_pids;
+  {
+    base::NamedProcessIterator process_it(executable_name, nullptr);
+    while (const base::ProcessEntry* entry = process_it.NextProcessEntry()) {
+      all_pids.push_back(entry->pid());
+    }
+  }
+  return all_pids;
+}
+#endif
 
 void MonitorRuntimeWork::CheckRuntimeProcessRunStatus() {
   base::FilePath base_path = GetRuntimeExeDir();
+#if BUILDFLAG(IS_WIN)
   ProcessPathPrefixFilter target_path_filter(base_path.value());
   process_list_ = FindProcesses(kExecuteName, &target_path_filter);
+#else
+  process_list_ = FindProcesses(kExecuteName);
+#endif
   if (process_list_.empty()) {
     LOG(INFO) << "Not found running runtime process. maybe need reload";
     StartRuntimeProcess();
@@ -310,9 +332,4 @@ void MonitorRuntimeWork::CheckRuntimeProcessRunStatus() {
   }
 }
 
-void MonitorRuntimeWork::updateRuntimePort(int port) {
-  // last_runtime_port_ = port;
-  // PrefService* pref_ervice = Profile::FromBrowserContext(ProfileManager::GetActiveUserProfile())->GetPrefs();
-  // // auto pref_ervice = Profile::FromBrowserContext(browser_context())->getProfile();
-  // pref_ervice->SetInteger(prefs::kRuntimePort, port);
-}
+void MonitorRuntimeWork::updateRuntimePort(int port) {}
