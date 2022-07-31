@@ -1,6 +1,6 @@
 {
     "Add": {
-        "update_time": "2022-07-30 23:51:14.275439",
+        "update_time": "2022-07-31 20:59:19.914059",
         "files": [
             "chrome/app/Extensions/cyfs_extension.gni",
             "chrome/app/Extensions/readme.md",
@@ -26,8 +26,16 @@
         ]
     },
     "Update": {
-        "update_time": "2022-07-30 23:51:16.436076",
+        "update_time": "2022-07-31 20:59:19.914059",
         "files": [
+            "chrome/app/chromium_strings.grd",
+            "chrome/app/generated_resources.grd",
+            "chrome/app/resources/chromium_strings_en-GB.xtb",
+            "chrome/app/resources/chromium_strings_zh-CN.xtb",
+            "chrome/app/resources/generated_resources_en-GB.xtb",
+            "chrome/app/resources/generated_resources_zh-CN.xtb",
+            "chrome/app/settings_chromium_strings.grdp",
+            "chrome/app/settings_strings.grdp",
             "chrome/app/theme/chromium/mac/app.icns",
             "chrome/app/theme/chromium/product_logo_128.png",
             "chrome/app/theme/chromium/product_logo_22_mono.png",
@@ -47,10 +55,16 @@
             "chrome/app/theme/default_200_percent/chromium/product_logo_name_22.png",
             "chrome/app/theme/default_200_percent/chromium/product_logo_name_22_white.png",
             "chrome/browser/browser_resources.grd",
+            "components/components_chromium_strings.grd",
+            "components/password_manager_strings.grdp",
             "components/resources/default_100_percent/chromium/product_logo.png",
             "components/resources/default_100_percent/chromium/product_logo_white.png",
             "components/resources/default_200_percent/chromium/product_logo.png",
-            "components/resources/default_200_percent/chromium/product_logo_white.png"
+            "components/resources/default_200_percent/chromium/product_logo_white.png",
+            "components/strings/components_chromium_strings_en-GB.xtb",
+            "components/strings/components_chromium_strings_zh-CN.xtb",
+            "components/strings/components_strings_en-GB.xtb",
+            "components/strings/components_strings_zh-CN.xtb"
         ]
     }
 }
