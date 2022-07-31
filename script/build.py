@@ -79,7 +79,7 @@ def check_chromium_branch(src):
 
 def main(args):
     opt = _parse_args(args)
-    check_requirements()
+    check_requirements(opt.target_cpu)
     ### patch
     # apply_patchs(root)
     GitPatcher.update(root)

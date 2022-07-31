@@ -2,7 +2,6 @@
 import os, sys, platform
 sys.path.append(os.path.dirname(__file__))
 
-from logging import exception
 import subprocess
 import shutil
 from util import is_dir_exists, make_dir_exist, make_file_not_exist
@@ -32,7 +31,7 @@ class Pack:
         try:
             subprocess.check_call(
                 cmd, shell=True, stdout=log_file, stderr=log_file)
-        except exception as error:
+        except Exception as error:
             print("Execute command: %s failed, error: %s" % (cmd, error))
             raise
 
@@ -314,8 +313,8 @@ def make_installer(root, target_cpu, project_name, version):
     try:
         pack = PackFactory(platform.system(), root, target_cpu, project_name, version)
         pack.pack()
-    except exception:
-        print("Make Installer failed, error: %s" % exception)
+    except Exception:
+        print("Make Installer failed, error: %s" % Exception)
 
 
 def main():

@@ -4,7 +4,7 @@ import os
 import sys, platform
 import subprocess
 sys.path.append(os.path.dirname(__file__))
-from common import MAC_CPUS, build_target, get_log_fd, last_args_file, toolchain_ninja_file
+from common import MAC_CPUS, build_target, last_args_file, toolchain_ninja_file
 from util import make_dir_exist
 import argparse
 import datetime

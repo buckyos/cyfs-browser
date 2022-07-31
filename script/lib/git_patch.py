@@ -254,6 +254,8 @@ class GitPatcher:
             return
         is_dir = os.path.isdir(src_path)
         dst_path = os.path.join(self.src_path, file)
+        if not os.path.exists(os.path.dirname(dst_path)):
+            os.makedirs(os.path.dirname(dst_path), exist_ok=True)
         print('Update Resource File %s to %s' % (src_path, dst_path))
         if not is_dir:
             shutil.copy(src_path, dst_path)
@@ -268,7 +270,7 @@ class GitPatcher:
 
         with open(change_record_file, 'r') as f:
             json_string = json.load(f)
-            need_copy_files = json_string['Add']['files']
+            need_copy_files = json_string['Add']['files'] + json_string['Update']['files']
 
         for file in need_copy_files:
             self.update_resource_file(file)

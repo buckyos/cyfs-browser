@@ -3,11 +3,10 @@ import os, sys, platform
 import re
 sys.path.append(os.path.dirname(__file__))
 
-from logging import exception
 import subprocess
 import shutil
 from util import is_dir_exists, make_dir_exist, make_file_not_exist
-from common import pack_base_path,pkg_base_path,pkg_build_path, src_root, get_chromium_version
+from common import pack_base_path,pkg_base_path,pkg_build_path, src_path, get_chromium_version
 from common import pack_app_path,build_target, build_app_path, build_target_path
 
 
@@ -27,7 +26,7 @@ class Pack:
         try:
             subprocess.check_call(
                 cmd, shell=True, stdout=log_file, stderr=log_file)
-        except exception as error:
+        except Exception as error:
             print('Execute command: %s failed, error: %s' % (cmd, error))
             raise
 
@@ -63,7 +62,7 @@ class PackForWindows(Pack):
 
     @property
     def out_path(self):
-        return build_target_path(src_root(self._root), self._build_target)
+        return build_target_path(src_path(self._root), self._build_target)
 
     @property
     def nsis_bin_path(self):
@@ -87,9 +86,10 @@ class PackForWindows(Pack):
     def make_nsis_installer(self):
         try:
             cmd = [self.nsis_bin_path,  '/DBrowserVersion=%s' %
-                       self.version, self.nsis_script]
+                       self._version, self.nsis_script]
             self.execute_cmd(cmd)
-        except exception as e:
+            print('Make installer success')
+        except Exception as e:
             print('Make nsis installer failed, error: %s' % e)
             sys.exit(-1)
 
@@ -259,8 +259,8 @@ def make_installer(root, project_name, version, target_cpu):
         pack = PackFactory(platform.system(), root,
                            target_cpu, project_name, version)
         pack.pack()
-    except exception:
-        print('Make Installer failed, error: %s' % exception)
+    except Exception as e:
+        print('Make Installer failed, error: %s' % e)
 
 
 def main():

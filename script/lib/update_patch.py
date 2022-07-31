@@ -6,13 +6,13 @@ import json
 import datetime
 
 patch_suffix = '.patch'
-not_patched_suffix = ['.png', '.jpg', '.jpeg', '.ico', '.icon', 'svg', 'icns']
+not_patched_suffix = ['.png', '.jpg', '.jpeg', '.ico', '.icon', '.svg', '.icns', '.grd', '.grdp', '.xtb']
 not_patched_begin_path = ['out']
 not_patched_end_path = []
 not_patched_file = []
 
-update_suffix = ['.cc', '.h', '.hpp', '.cpp',
-                 '.mm', 'java', '.html', '.css', '.js', 'py']
+update_suffix = ['.xtb', '.grd', '.grdp']
+update_files = ['chrome/browser/resources/cyfs_init/starting.png']
 not_update_suffix = ['.log']
 
 create_patch_args = ['--src-prefix=a/', '--dst-prefix=b/', '--full-index']
@@ -36,6 +36,7 @@ def check_patch_filter(file):
 
 
 class UpdatePatcher:
+    change_record = 'change_files.json'
     def __init__(self, root, src_path=[], patch_path=None, commid_ids=[], resource_path=None):
         assert len(commid_ids) == 2 or len(commid_ids) == 0
         self._root = root
@@ -50,7 +51,10 @@ class UpdatePatcher:
     @property
     def src_path(self):
         return os.path.join(self._root, self._src_path)
-        # return self._root
+
+    @property
+    def change_record_file(self):
+        return os.path.join(self.resource_path, self.change_record)
 
     @property
     def commid_ids(self):
@@ -166,12 +170,13 @@ class UpdatePatcher:
         if self._failure_patch:
             print('Patch failed: %s' % ' '.join(self._failure_patch))
 
-    def update_change_file_record(self, action, file_records):
+    def update_change_file_record(self, change_infos):
         json_string = dict()
-        change_file_info = json_string[action] = dict()
-        change_file_info['update_time'] = datetime.datetime.now()
-        change_file_info['files'] = file_records
-        full_path = os.path.join(self.resource_path, 'change_files.json')
+        for action, file_records in change_infos.items():
+            change_file_info = json_string[action] = dict()
+            change_file_info['update_time'] = datetime.datetime.now()
+            change_file_info['files'] = file_records
+        full_path = os.path.join(self.resource_path, self.change_record)
         with open(full_path, 'w') as f:
             json.dump(json_string, f, indent=4, default=str)
 
@@ -187,7 +192,12 @@ class UpdatePatcher:
         unstaged_files = self.get_files_by_action('?')
         unstaged_files = [x for x in unstaged_files if os.path.splitext(x)[
             1] not in not_update_suffix]
-        for file in unstaged_files:
+        unstaged_files += update_files
+        staged_files = self.get_files_by_action('M')
+        staged_files = [x for x in staged_files if os.path.splitext(x)[
+            1] in not_patched_suffix]
+        need_copy_files = unstaged_files + staged_files
+        for file in need_copy_files:
             src_path = os.path.join(self.src_path, file)
             is_dir = os.path.isdir(src_path)
             dst_path = os.path.join(self.resource_path, file)
@@ -197,7 +207,8 @@ class UpdatePatcher:
                 shutil.copy(src_path, dst_path)
             else:
                 shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
-        self.update_change_file_record('Add', unstaged_files)
+        change_infos = {'Add': unstaged_files, 'Update': staged_files}
+        self.update_change_file_record(change_infos)
         print('End update add files')
 
     @classmethod
