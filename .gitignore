@@ -7,7 +7,7 @@ PATCH_VERSION
 
 cyfs-runtime
 
-
+.vscode/
 .DS_Store
 
 *.dmg
