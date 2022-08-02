@@ -90,8 +90,9 @@ class PackForWindows(Pack):
             self.execute_cmd(cmd)
             print('Make installer success')
         except Exception as e:
-            print('Make nsis installer failed, error: %s' % e)
-            sys.exit(-1)
+            msg = 'Make nsis installer failed, error: %s' % e
+            print(msg)
+            sys.exit(msg)
 
     def copy_browser_file(self):
         copy_number = 0

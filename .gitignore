@@ -3,7 +3,11 @@
 /CYFS
 /cyfs-ts-sdk
 /cyfs-browser-webpage
+/nft
+/nft_web
 PATCH_VERSION
+
+*commit_id.txt
 
 cyfs-runtime
 

@@ -19,7 +19,7 @@ IS_WIN = platform.system() == 'Windows'
 
 def execute_cmd(cmd, **kwargs):
     try:
-        print('Execute cmd %s' % ' '.join(cmd))
+        print('Execute cmd: %s' % ' '.join(cmd))
         log_fd = kwargs.pop('log_fd', None)
         kwargs['stdout'] = log_fd
         kwargs['stderr'] = log_fd
@@ -128,7 +128,7 @@ class BuildHelper():
     def get_last_args_map_from_file(self):
         _last_args_file = last_args_file(self._src_root, self._build_target)
         last_args_map = dict()
-        if os.path.exists(_last_args_file):
+        if not os.path.exists(_last_args_file):
             return last_args_map
         with open(_last_args_file, 'r+') as f:
             lines = [l.strip() for l in f.readlines()]

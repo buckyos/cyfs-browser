@@ -36,17 +36,42 @@ def execute_cmd(cmd, **kwargs):
 def get_repo_name_from_url(url):
     return url.rsplit('/', 1)[1].split('.')[0]
 
+def git_reset_repo(local_path):
+    try:
+        cmd = ['git', 'reset', '--hard']
+        execute_cmd(cmd, cwd=local_path)
+    except Exception as e:
+        print('Execute cmd %s failed: %s' % (' '.join(cmd), e))
+        raise
+
+def git_pull_repo(repo_url, local_path):
+    try:
+        cmd = ['git', 'pull', repo_url]
+        execute_cmd(cmd, cwd=local_path)
+    except Exception as e:
+        print('Execute cmd %s failed: %s' % (' '.join(cmd), e))
+        raise
+
+def git_clone_repo(repo_url, local_path):
+    try:
+        cmd = ['git', 'clone', repo_url]
+        execute_cmd(cmd, cwd=local_path)
+    except Exception as e:
+        print('Execute cmd %s failed: %s' % (' '.join(cmd), e))
+        raise
+
 def fetch_source_code(root, repo_url, local_repo_name=None):
     try:
         repo_name = local_repo_name or get_repo_name_from_url(repo_url)
         local_path = os.path.join(root, repo_name)
         if not os.path.exists(os.path.join(local_path, '.git')):
-            cmd = ['git', 'clone', repo_url]
-            cwd = root
+            git_clone_repo(repo_url, root)
+            # cmd = ['git', 'clone', repo_url]
+            # cwd = root
         else:
-            cmd = ['git', 'pull', repo_url]
-            cwd = local_path
-        execute_cmd(cmd, cwd=cwd)
+            git_reset_repo(local_path)
+            git_pull_repo(repo_url, local_path)
+        # execute_cmd(cmd, cwd=cwd)
         return local_path
     except Exception as e:
         msg = 'Get %s failed: %s' % (repo_url, e)

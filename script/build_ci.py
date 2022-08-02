@@ -7,10 +7,10 @@ import platform
 
 
 from lib.check_ci import CheckFactory
-from lib.patch import apply_patchs
 from lib.ninja import build_browser
 from lib.pack_ci import make_installer
 from lib.common import src_path, MAC_CPUS
+from lib.git_patch import GitPatcher
 
 
 root = os.path.normpath(os.path.join(
@@ -51,20 +51,23 @@ def main(args):
     opt = _parse_args(args)
     current_os = platform.system()
     assert current_os in ['Windows', 'Darwin']
-    check = CheckFactory(current_os, root, opt.target_cpu,
-                         opt.project_name, opt.version)
-    if not check.get_match_build_cache():
+    check = CheckFactory(current_os, root, opt.target_cpu, opt.project_name)
+    is_match_cache = check.get_match_build_cache()
+    if not is_match_cache:
+        print("There have not match build cache, so need compile")
         check.check_requirements()
         ### patch
-        apply_patchs(root)
-        ### use chromium gn and ninja tool compile source code
-        build_browser(src_path(root), opt.target_cpu, opt.project_name)
+        GitPatcher.update(root)
+        check.update_default_extensions()
+        ## use chromium gn and ninja tool compile source code
+        build_browser(src_path(root), opt.project_name, opt.target_cpu)
     else:
         print("Get match build cache, so not need compile")
 
     ### pack
     make_installer(root, opt.target_cpu, opt.project_name, opt.version)
-    check.update_build_cache_and_version()
+    if not is_match_cache:
+        check.update_build_cache_and_version()
 
     print("Build finished!!")
 

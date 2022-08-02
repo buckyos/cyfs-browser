@@ -132,7 +132,6 @@ class GitPatcher:
     @property
     def src_path(self):
         return os.path.join(self._root, "src")
-        # return self._root
 
     @property
     def patch_base_path(self):

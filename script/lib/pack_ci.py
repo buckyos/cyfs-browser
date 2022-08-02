@@ -6,7 +6,6 @@ import subprocess
 import shutil
 from util import is_dir_exists, make_dir_exist, make_file_not_exist
 from common import pack_base_path, pkg_base_path, pkg_build_path, build_app_path, pack_app_path
-from common import include_files, include_version_files, include_dirs
 from common import src_path, build_target, get_chromium_version, build_target_path
 from common import local_nft_web_path, local_nft_bin_path, local_extension_path, static_page_path
 
@@ -37,6 +36,7 @@ class Pack:
 
     def copy_nft_web_files(self):
         try:
+            print('Begin copy nft web files')
             src_path = local_nft_web_path(self._root)
             for (root, _, files) in os.walk(src_path):
                 for file in files:
@@ -46,8 +46,10 @@ class Pack:
                     make_dir_exist(os.path.dirname(dst))
                     print("Copy %s to %s" % (src, dst))
                     shutil.copyfile(src, dst)
+            print('End copy nft web files')
         except Exception as e:
-            print("Update nft files failed, error %s" % e)
+            msg = "Update nft files failed, error %s" % e
+            print(msg)
             raise
 
     def pack(self):
@@ -75,10 +77,6 @@ class PackForWindows(Pack):
         'MEIPreload', 'Locales', 'swiftshader', 'resources'
     ]
 
-    def __init__(self, root, target_cpu, project_name, version):
-        assert platform.system() == "windows"
-        super(PackForWindows, self).__init__(self, root, project_name, version, target_cpu)
-
     @property
     def out_path(self):
         return build_target_path(src_path(self._root), self._build_target)
@@ -89,7 +87,9 @@ class PackForWindows(Pack):
 
     @property
     def nsis_bin_path(self):
-        return "C:\\Program Files (x86)\\NSIS\\Bin"
+        nsis_bin = 'C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe'
+        assert os.path.exists(nsis_bin)
+        return nsis_bin
 
     @property
     def nsis_script(self):
@@ -105,58 +105,71 @@ class PackForWindows(Pack):
         pass
 
     def copy_browser_file(self):
-        copy_number = 0
-        make_file_not_exist(self.product_base_path)
-        ## {build_dir}/* ==> {package}/*
-        for file_ in include_files:
-            src_path = os.path.join(self.out_path, file_)
-            dst_path = os.path.join(self.product_base_path, file_)
-            shutil.copyfile(src_path, dst_path)
+        try:
+            print('Begin copy browser files')
+            copy_number = 0
+            make_dir_exist(self.product_base_path)
+            ## {build_dir}/* ==> {package}/*
+            for file_ in self.include_files:
+                src_path = os.path.join(self.out_path, file_)
+                dst_path = os.path.join(self.product_base_path, file_)
+                shutil.copyfile(src_path, dst_path)
+                copy_number = copy_number + 1
+
+            version = get_chromium_version(self._root)
+            version_dir = os.path.join(self.product_base_path, version)
+            make_dir_exist(version_dir)
+            ## {build_dir}/* ==> {package}/{version}/*
+            for file_ in self.include_version_files:
+                src_path = os.path.join(self.out_path, file_)
+                dst_path = os.path.join(version_dir, file_)
+                shutil.copyfile(src_path, dst_path)
+                print("%s => %s" % (src_path, dst_path))
+                copy_number = copy_number + 1
+            manifest_file = "{}.manifest".format(version)
+            shutil.copyfile(os.path.join(self.out_path, manifest_file),
+                            os.path.join(version_dir, manifest_file))
             copy_number = copy_number + 1
 
-        version = get_chromium_version(self._root)
-        version_dir = os.path.join(self.product_base_path, version)
-        make_dir_exist(version_dir)
-        ## {build_dir}/* ==> {package}/{version}/*
-        for file_ in include_version_files:
-            src_path = os.path.join(self.out_path, file_)
-            dst_path = os.path.join(version_dir, file_)
-            shutil.copyfile(src_path, dst_path)
-            print("%s => %s" % (src_path, dst_path))
-            copy_number = copy_number + 1
-        manifest_file = "{}.manifest".format(version)
-        shutil.copyfile(os.path.join(self.out_path, manifest_file),
-                        os.path.join(version_dir, manifest_file))
-        copy_number = copy_number + 1
+            def check_not_need_copy(file):
+                _suffixs = ['.lib', '.pdb', '.info']
+                return bool([ext for ext in _suffixs if file.lower().endswith(ext)])
 
-        def check_not_need_copy(file):
-            _suffixs = ['.lib', '.pdb', '.info']
-            return bool([ext for ext in _suffixs if file.lower().endswith(ext)])
-
-        ## {build_dir}/*/* ==> {package}/{version}/*/*
-        for dir_ in include_dirs:
-            root = os.path.normpath(os.path.join(self.out_path, dir_))
-            for (base, _, files) in os.walk(root):
-                copy_files = [x for x in files if not check_not_need_copy(x)]
-                copy_files = map(lambda x: os.path.join(base, x), copy_files)
-                for file in copy_files:
-                    dst_file = os.path.join(
-                        version_dir, os.path.relpath(file, self.out_path))
-                    make_dir_exist(os.path.dirname(dst_file))
-                    print("Copy %s to %s" % (file, dst_file))
-                    shutil.copyfile(file, dst_file)
-                    copy_number = copy_number + 1
-        print("Copy %s file for nsis" % (copy_number))
+            ## {build_dir}/*/* ==> {package}/{version}/*/*
+            for dir_ in self.include_dirs:
+                root = os.path.normpath(os.path.join(self.out_path, dir_))
+                for (base, _, files) in os.walk(root):
+                    copy_files = [x for x in files if not check_not_need_copy(x)]
+                    copy_files = map(lambda x: os.path.join(base, x), copy_files)
+                    for file in copy_files:
+                        dst_file = os.path.join(
+                            version_dir, os.path.relpath(file, self.out_path))
+                        make_dir_exist(os.path.dirname(dst_file))
+                        print("Copy %s to %s" % (file, dst_file))
+                        shutil.copyfile(file, dst_file)
+                        copy_number = copy_number + 1
+            print("Copy %s file for nsis" % (copy_number))
+            print('End copy browser files')
+        except Exception as e:
+            print("Copy browser file failed: %s" % e)
+            raise
 
     def copy_extensions(self):
-        src_path = local_extension_path(self._root)
-        dst_path = os.path.join(self.product_base_path, "Extensions")
-        make_file_not_exist(dst_path)
-        print("Copy {} to {}" % (src_path, dst_path))
-        shutil.copytree(src_path, dst_path)
+        try:
+            print('Begin copy extensions')
+            src_path = local_extension_path(self._root)
+            dst_path = os.path.join(self.product_base_path, "Extensions")
+            print("Copy %s to  %s" % (src_path, dst_path))
+            make_file_not_exist(dst_path)
+            shutil.copytree(src_path, dst_path)
+            print('End copy extensions')
+        except Exception as e:
+            print("Copy extensions failed, error: %s" % e)
+            raise
 
     def copy_nft_bin_files(self):
         try:
+            print('Begin copy nft bin files')
             src_path = local_nft_bin_path(self._root)
             for (root, _, files) in os.walk(src_path):
                 for file in files:
@@ -166,6 +179,7 @@ class PackForWindows(Pack):
                     make_dir_exist(os.path.dirname(dst))
                     print("Copy %s to %s" % (src, dst))
                     shutil.copyfile(src, dst)
+            print('End copy nft bin files')
         except Exception as e:
             print("Update nft files failed, error %s" % e)
             raise
@@ -177,15 +191,19 @@ class PackForWindows(Pack):
         self.copy_nft_bin_files()
 
     def make_nsis_installer(self):
-        pass
+        try:
+            cmd = [self.nsis_bin_path,  '/DBrowserVersion=%s' %
+                    self._version, self.nsis_script]
+            self.execute_cmd(cmd)
+            print('Make installer success')
+        except Exception as e:
+            msg = 'Make nsis installer failed, error: %s' % e
+            print(msg)
+            sys.exit(msg)
 
 
 class PackForMacos(Pack):
     _app_name = "Cyfs Browser.app"
-
-    def __init__(self, root, target_cpu, project_name, version):
-        assert platform.system() == "Darwin"
-        super(PackForMacos, self).__init__(self, root, project_name, version, target_cpu)
 
     @property
     def pkg_base_path(self):
@@ -235,14 +253,11 @@ class PackForMacos(Pack):
 
         make_file_not_exist(self.pack_app_path)
         assert not os.path.exists(self.pack_app_path)
-        assert is_dir_exists(
-            self.build_app_path), ("Generator application %s failed" % self.build_app_path)
+        assert is_dir_exists(self.build_app_path), ("Build app %s failed" % self.build_app_path)
 
-        print("Copy application %s to %s" %
-              (self.build_app_path, self.pack_app_path))
+        print("Copy %s to %s" % (self.build_app_path, self.pack_app_path))
         shutil.copytree(self.build_app_path, self.pack_app_path, symlinks=True)
-        assert is_dir_exists(self.pack_app_path), "Copy application %s to %s failed" % (
-            self.build_app_path, self.pack_app_path)
+        assert is_dir_exists(self.pack_app_path), "Copy application  failed"
 
     def delete_build_dir(self, path, exts=[".pkg", ".dmg"]):
         try:
@@ -309,7 +324,7 @@ def PackFactory(type_name, root, target_cpu, project_name, version):
 
 
 def make_installer(root, target_cpu, project_name, version):
-    assert platform.system() in ["windows", "Darwin"]
+    assert platform.system() in ["Windows", "Darwin"]
     try:
         pack = PackFactory(platform.system(), root, target_cpu, project_name, version)
         pack.pack()
