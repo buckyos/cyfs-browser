@@ -46,11 +46,25 @@ def _parse_args(args):
 
     return opt
 
+def set_env_variables():
+    print('Begin setting environment variables')
+    if IS_WIN:
+        depot_tool_path = os.environ.get('DEPOT_TOOL_PATH', 'C:\\buildtools\\depot_tools')
+        print('depot_tool_path = %s' % depot_tool_path)
+        assert os.path.exists(depot_tool_path), 'Please provide [DEPOT_TOOL_PATH] env variable'
+        os.environ['PATH'] = depot_tool_path + os.path.pathsep + os.environ['PATH']
+        os.environ['DEPOT_TOOLS_WIN_TOOLCHAIN']="0"
+        print('current path = %s ' % os.environ['path'])
+    else:
+        pass
+    print('End setting environment variables')
+
 
 def main(args):
     opt = _parse_args(args)
     current_os = platform.system()
     assert current_os in ['Windows', 'Darwin']
+    set_env_variables()
     check = CheckFactory(current_os, root, opt.target_cpu, opt.project_name)
     is_match_cache = check.get_match_build_cache()
     if not is_match_cache:

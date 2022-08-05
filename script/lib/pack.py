@@ -167,7 +167,8 @@ class PackForMacos(Pack):
 
     @property
     def dmg_file(self):
-        return 'cyfs-browser-installer-%s.dmg' % (self._version)
+        dmg_filename = "cyfs-browser-installer-%s.dmg" % (self._version)
+        return os.path.join(self.pack_base_path, dmg_filename)
 
     def pack(self):
         self.check_requirements()
