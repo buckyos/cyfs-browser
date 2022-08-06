@@ -76,7 +76,7 @@ class UpdatePatcher:
     def git_cmd_output(command, **kwargs):
         try:
             print('Git Cmd: %s' % (' '.join(command)))
-            return subprocess.check_output(command, **kwargs).decode('ascii').strip()
+            return subprocess.check_output(command, **kwargs).decode('utf-8').strip()
         except subprocess.CalledProcessError as e:
             print('Git cmd %s failed, error: %s' % (' '.join(command), e))
             raise
