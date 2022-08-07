@@ -220,7 +220,7 @@ std::vector<uint16_t> MonitorRuntimeWork::GetAllTcpConnectionsPort() {
 
 uint16_t MonitorRuntimeWork::GetavailableTcpPort() {
   if (kUseDefaultPort) {
-    return last_runtime_port_;
+    return default_runtime_port_;
   }
 #if BUILDFLAG(IS_WIN)
   auto idle_ports = GetAllTcpConnectionsPort();
