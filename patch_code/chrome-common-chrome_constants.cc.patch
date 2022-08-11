@@ -1,7 +1,16 @@
 diff --git a/chrome/common/chrome_constants.cc b/chrome/common/chrome_constants.cc
-index 6fec2c15bfc7cc73af63ae6d8844cbd414c79362..38346f77e6d4cf1cc359d46000ef9610a3acd002 100644
+index 6fec2c15bfc7cc73af63ae6d8844cbd414c79362..5cbfa4107eca5e28b9feca20195fbf488cf6e622 100644
 --- a/chrome/common/chrome_constants.cc
 +++ b/chrome/common/chrome_constants.cc
+@@ -15,7 +15,7 @@
+ #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+ #define PRODUCT_STRING "Google Chrome"
+ #elif BUILDFLAG(CHROMIUM_BRANDING)
+-#define PRODUCT_STRING "Chromium"
++#define PRODUCT_STRING "Cyfs Browser"
+ #else
+ #error Unknown branding
+ #endif
 @@ -118,6 +118,7 @@ const base::FilePath::CharType kExtensionsCookieFilename[] =
  const base::FilePath::CharType kFeatureEngagementTrackerStorageDirname[] =
      FPL("Feature Engagement Tracker");
