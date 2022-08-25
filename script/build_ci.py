@@ -64,8 +64,7 @@ def main(args):
     opt = _parse_args(args)
     current_os = platform.system()
     assert current_os in ['Windows', 'Darwin']
-    os.environ['CYFS_BROWSER_SRC_PATH'] = os.path.normpath("D:\\test\\delete")
-    # set_env_variables()
+    set_env_variables()
     check = CheckFactory(current_os, root, opt.target_cpu, opt.project_name)
     is_match_cache = check.get_match_build_cache()
     if not is_match_cache:
