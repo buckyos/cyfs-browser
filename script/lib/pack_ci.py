@@ -11,11 +11,12 @@ from common import local_nft_web_path, local_nft_bin_path, local_extension_path,
 
 
 class Pack:
-    def __init__(self, root, target_cpu, project_name, version):
+    def __init__(self, root, target_cpu, project_name, version, is_match_cache):
         self._root = root
         self._target_cpu = target_cpu
         self._project_name = project_name
         self._version = version
+        self._is_match_cache = is_match_cache
         self._build_target = build_target(target_cpu, project_name)
 
     @property
@@ -184,8 +185,16 @@ class PackForWindows(Pack):
             print("Update nft files failed, error %s" % e)
             raise
 
+    def update_build_version(self):
+        verion_path = os.path.join(self.product_base_path, 'browser_version')
+        with open(verion_path, 'w') as f:
+            f.write(self._version)
+            print('Update browser build version => %s ' % self._version)
+
     def copy_files_for_pack(self):
-        self.copy_browser_file()
+        if not self._is_match_cache:
+            self.copy_browser_file()
+        self.update_build_version()
         self.copy_extensions()
         self.copy_nft_web_files()
         self.copy_nft_bin_files()
@@ -245,7 +254,8 @@ class PackForMacos(Pack):
         pass
 
     def copy_files_for_pack(self):
-        self.copy_browser_file()
+        if not self._is_match_cache:
+            self.copy_browser_file()
         self.copy_nft_web_files()
 
     def copy_browser_file(self):
@@ -316,18 +326,18 @@ PACK_TYPE_MAP = {
 }
 
 
-def PackFactory(type_name, root, target_cpu, project_name, version):
+def PackFactory(type_name, root, target_cpu, project_name, version, is_match_cache):
     """Factory to build Pack class instances."""
     class_ = PACK_TYPE_MAP.get(type_name)
     if not class_:
         raise KeyError('unrecognized pack type: %s' % type_name)
-    return class_(root, target_cpu, project_name, version)
+    return class_(root, target_cpu, project_name, version, is_match_cache)
 
 
-def make_installer(root, target_cpu, project_name, version):
+def make_installer(root, target_cpu, project_name, version, is_match_cache):
     assert platform.system() in ["Windows", "Darwin"]
     try:
-        pack = PackFactory(platform.system(), root, target_cpu, project_name, version)
+        pack = PackFactory(platform.system(), root, target_cpu, project_name, version, is_match_cache)
         pack.pack()
     except Exception:
         print("Make Installer failed, error: %s" % Exception)

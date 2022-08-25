@@ -64,7 +64,8 @@ def main(args):
     opt = _parse_args(args)
     current_os = platform.system()
     assert current_os in ['Windows', 'Darwin']
-    set_env_variables()
+    os.environ['CYFS_BROWSER_SRC_PATH'] = os.path.normpath("D:\\test\\delete")
+    # set_env_variables()
     check = CheckFactory(current_os, root, opt.target_cpu, opt.project_name)
     is_match_cache = check.get_match_build_cache()
     if not is_match_cache:
@@ -79,7 +80,7 @@ def main(args):
         print("Get match build cache, so not need compile")
 
     ### pack
-    make_installer(root, opt.target_cpu, opt.project_name, opt.version)
+    make_installer(root, opt.target_cpu, opt.project_name, opt.version, is_match_cache)
     if not is_match_cache:
         check.update_build_cache_and_version()
 
