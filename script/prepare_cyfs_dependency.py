@@ -153,7 +153,7 @@ def build_cyfs_ts_sdk():
     try:
         local_path = fetch_source_code(root, CYFS_TS_SDK_URL)
         execute_cmd([_NPM, 'install'], cwd=local_path)
-        execute_cmd([_NPM, 'run', 'build:h5'], cwd=local_path)
+        execute_cmd([_NPM, 'run', 'build','h5'], cwd=local_path)
         return local_path
     except Exception as e:
         msg = 'Build CYFS TS SDK failed, with %s' % e
