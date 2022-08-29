@@ -111,9 +111,8 @@ class CheckForCIBuild:
         download_file(self.remote_nft_bin_path, self.local_nft_bin_path, True)
 
     def download_default_extensions(self):
-        if not os.path.exists(self.local_extension_path):
-            download_file(self.remote_extensions_path,
-                          self.local_extension_path, True)
+        make_file_not_exist(self.local_extension_path)
+        download_file(self.remote_extensions_path, self.local_extension_path, True)
 
     def update_default_extensions(self):
         pass
