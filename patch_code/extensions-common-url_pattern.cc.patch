@@ -1,0 +1,43 @@
+diff --git a/extensions/common/url_pattern.cc b/extensions/common/url_pattern.cc
+index 40333911170044f622f4fefacaa6ae4b41e70c79..092ac8e04b7406440e87a358e06c7b20316c858f 100644
+--- a/extensions/common/url_pattern.cc
++++ b/extensions/common/url_pattern.cc
+@@ -8,6 +8,7 @@
+ 
+ #include <ostream>
+ 
++#include "base/logging.h"
+ #include "base/strings/pattern.h"
+ #include "base/strings/strcat.h"
+ #include "base/strings/string_number_conversions.h"
+@@ -33,7 +34,7 @@ const char* const kValidSchemes[] = {
+     content::kChromeUIScheme,  extensions::kExtensionScheme,
+     url::kFileSystemScheme,    url::kWsScheme,
+     url::kWssScheme,           url::kDataScheme,
+-    url::kUuidInPackageScheme,
++    url::kUuidInPackageScheme, url::kCyfsScheme,
+ };
+ 
+ const int kValidSchemeMasks[] = {
+@@ -48,6 +49,7 @@ const int kValidSchemeMasks[] = {
+     URLPattern::SCHEME_WSS,
+     URLPattern::SCHEME_DATA,
+     URLPattern::SCHEME_UUID_IN_PACKAGE,
++    URLPattern::SCHEME_CYFS,
+ };
+ 
+ static_assert(std::size(kValidSchemes) == std::size(kValidSchemeMasks),
+@@ -374,8 +376,13 @@ void URLPattern::SetMatchSubdomains(bool val) {
+ }
+ 
+ bool URLPattern::SetScheme(base::StringPiece scheme) {
++  VLOG(1) << "SetScheme scheme " << scheme;
+   spec_.clear();
+   scheme_.assign(scheme.data(), scheme.size());
++  if (scheme_ == "cyfs") {
++    valid_schemes_ &= (SCHEME_CYFS | SCHEME_HTTP | SCHEME_HTTPS);
++    return true;
++  }
+   if (scheme_ == "*") {
+     valid_schemes_ &= (SCHEME_HTTP | SCHEME_HTTPS);
+   } else if (!IsValidScheme(scheme_)) {

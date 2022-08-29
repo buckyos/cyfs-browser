@@ -1,0 +1,14 @@
+diff --git a/extensions/common/user_script.cc b/extensions/common/user_script.cc
+index a5b5b4f9f6097228df630c6b57fc4de44906d13d..afee020e5244e211c0d05ecdc45db5952629af24 100644
+--- a/extensions/common/user_script.cc
++++ b/extensions/common/user_script.cc
+@@ -43,7 +43,8 @@ enum {
+   kValidUserScriptSchemes = URLPattern::SCHEME_CHROMEUI |
+                             URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
+                             URLPattern::SCHEME_FILE | URLPattern::SCHEME_FTP |
+-                            URLPattern::SCHEME_UUID_IN_PACKAGE
++                            URLPattern::SCHEME_UUID_IN_PACKAGE |
++                            URLPattern::SCHEME_CYFS
+ };
+ 
+ // static

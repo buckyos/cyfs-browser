@@ -26,7 +26,8 @@
 !define CYFS_SCHEME_ROOT_KEY "HKCR"
 
 !define VC_COMPONENT_KEY "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Vc"
-!define BROWSER_USER_DATA_DIR "Chromium"
+!define OLD_BROWSER_USER_DATA_DIR "Chromium"
+!define BROWSER_USER_DATA_DIR "Cyber"
 
 ; MUI 1.67 compatible ------
 !include "MUI2.nsh"
@@ -327,6 +328,7 @@ label_ok:
   RMDir /r  "$APPDATA\cyfs"
   LogText "delete browser user data"
   RMDir /r "$LOCALAPPDATA\${BROWSER_USER_DATA_DIR}"
+  RMDir /r "$LOCALAPPDATA\${OLD_BROWSER_USER_DATA_DIR}"
   Goto end
 label_cancel:
   LogText "cancel delete user data"

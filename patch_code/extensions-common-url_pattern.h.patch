@@ -1,0 +1,12 @@
+diff --git a/extensions/common/url_pattern.h b/extensions/common/url_pattern.h
+index 026a096a1c3b0d44af433bbcfbccf4050a8e69d4..14ddb0e6eb22097618c9d64cae0f7e4e579b09e2 100644
+--- a/extensions/common/url_pattern.h
++++ b/extensions/common/url_pattern.h
+@@ -63,6 +63,7 @@ class URLPattern {
+     SCHEME_WSS = 1 << 8,
+     SCHEME_DATA = 1 << 9,
+     SCHEME_UUID_IN_PACKAGE = 1 << 10,
++    SCHEME_CYFS = 1 << 11,
+ 
+     // IMPORTANT!
+     // SCHEME_ALL will match every scheme, including chrome://, chrome-

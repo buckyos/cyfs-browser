@@ -1,16 +1,17 @@
 diff --git a/chrome/browser/ui/startup/startup_browser_creator.cc b/chrome/browser/ui/startup/startup_browser_creator.cc
-index b82d72b42ca26373a6a0444cb4d44809ac4b2883..4a3e37af883cccdfd68af65d768c233513898ae5 100644
+index b82d72b42ca26373a6a0444cb4d44809ac4b2883..5c02d90d77619e0ecb94bf3b28b6e563fd1de2f3 100644
 --- a/chrome/browser/ui/startup/startup_browser_creator.cc
 +++ b/chrome/browser/ui/startup/startup_browser_creator.cc
-@@ -19,6 +19,7 @@
+@@ -19,6 +19,8 @@
  #include "base/feature_list.h"
  #include "base/files/file_path.h"
  #include "base/files/file_util.h"
 +#include "base/path_service.h"
++#include "base/base_paths.h"
  #include "base/lazy_instance.h"
  #include "base/logging.h"
  #include "base/memory/ptr_util.h"
-@@ -43,6 +44,9 @@
+@@ -43,6 +45,9 @@
  #include "chrome/browser/browser_process.h"
  #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
  #include "chrome/browser/extensions/startup_helper.h"
@@ -20,7 +21,7 @@ index b82d72b42ca26373a6a0444cb4d44809ac4b2883..4a3e37af883cccdfd68af65d768c2335
  #include "chrome/browser/first_run/first_run.h"
  #include "chrome/browser/lifetime/browser_shutdown.h"
  #include "chrome/browser/prefs/incognito_mode_prefs.h"
-@@ -77,6 +81,9 @@
+@@ -77,6 +82,9 @@
  #include "chrome/common/chrome_switches.h"
  #include "chrome/common/pref_names.h"
  #include "chrome/common/url_constants.h"
@@ -30,7 +31,7 @@ index b82d72b42ca26373a6a0444cb4d44809ac4b2883..4a3e37af883cccdfd68af65d768c2335
  #include "components/prefs/pref_registry_simple.h"
  #include "components/prefs/pref_service.h"
  #include "components/search_engines/util.h"
-@@ -90,9 +97,12 @@
+@@ -90,9 +98,12 @@
  #include "content/public/common/content_switches.h"
  #include "extensions/browser/extension_registry.h"
  #include "extensions/common/switches.h"
@@ -43,7 +44,7 @@ index b82d72b42ca26373a6a0444cb4d44809ac4b2883..4a3e37af883cccdfd68af65d768c2335
  #if BUILDFLAG(IS_CHROMEOS_ASH)
  #include "ash/components/cryptohome/cryptohome_parameters.h"
  #include "ash/constants/ash_switches.h"
-@@ -515,7 +525,8 @@ bool MaybeLaunchAppShortcutWindow(const base::CommandLine& command_line,
+@@ -515,7 +526,8 @@ bool MaybeLaunchAppShortcutWindow(const base::CommandLine& command_line,
      content::ChildProcessSecurityPolicy* policy =
          content::ChildProcessSecurityPolicy::GetInstance();
      if (policy->IsWebSafeScheme(url.scheme()) ||
@@ -53,7 +54,7 @@ index b82d72b42ca26373a6a0444cb4d44809ac4b2883..4a3e37af883cccdfd68af65d768c2335
        const content::WebContents* web_contents =
            apps::OpenExtensionAppShortcutWindow(profile, url);
        if (web_contents) {
-@@ -684,9 +695,65 @@ void StartupBrowserCreator::LaunchBrowser(
+@@ -684,9 +696,65 @@ void StartupBrowserCreator::LaunchBrowser(
                 std::move(launch_mode_recorder));
    }
    in_synchronous_profile_launch_ = false;
@@ -76,7 +77,7 @@ index b82d72b42ca26373a6a0444cb4d44809ac4b2883..4a3e37af883cccdfd68af65d768c2335
 +
 +  base::FilePath default_extensions_dir;
 +#if defined(OS_WIN)
-+  base::PathService::Get(chrome::PATH_START, &default_extensions_dir);
++  base::PathService::Get(base::DIR_EXE, &default_extensions_dir);
 +#elif defined(OS_MAC)
 +  default_extensions_dir = chrome::GetFrameworkBundlePath();
 +  default_extensions_dir =
@@ -119,7 +120,7 @@ index b82d72b42ca26373a6a0444cb4d44809ac4b2883..4a3e37af883cccdfd68af65d768c2335
  void StartupBrowserCreator::LaunchBrowserForLastProfiles(
      const base::CommandLine& command_line,
      const base::FilePath& cur_dir,
-@@ -881,6 +948,7 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+@@ -881,6 +949,7 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
    // ProfileManager handles setting this to false for new profiles upon
    // creation.
    registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
