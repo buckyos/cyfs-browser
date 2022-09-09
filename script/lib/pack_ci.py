@@ -222,14 +222,14 @@ class PackForMacos(Pack):
     def pkg_build_path(self):
         return pkg_build_path(self._root, self._target_cpu)
 
-    @property
-    def pkg_proj_file(self):
-        return os.path.join(
-            self.pkg_base_path, "cyfs_browser_package.pkgproj")
+    # @property
+    # def pkg_proj_file(self):
+    #     return os.path.join(
+    #         self.pkg_base_path, "cyfs_browser_package.pkgproj")
 
-    @property
-    def pkg_file(self):
-        return os.path.join(self.pkg_build_path, "cyfs_browser_package.pkg")
+    # @property
+    # def pkg_file(self):
+    #     return os.path.join(self.pkg_build_path, "cyfs_browser_package.pkg")
 
     @property
     def dmg_file(self):
@@ -247,7 +247,8 @@ class PackForMacos(Pack):
     def pack(self):
         self.check_requirements()
         self.copy_files_for_pack()
-        self.build_pkg()
+        self.build_pkg('cyfs_browser_package')
+        self.build_pkg('cyfs_browser')
         self.build_dmg()
 
     def check_requirements(self):
@@ -287,28 +288,30 @@ class PackForMacos(Pack):
             print("Delete build dir failed, error: %s" % e)
             raise
 
-    def build_pkg(self):
+    def build_pkg(self, package_name):
         make_dir_exist(self.pkg_build_path)
 
-        # pkgproj = os.path.join(
-        #     self.pkg_base_path, "cyfs_browser_package.pkgproj")
-        # pkg = os.path.join(self.pkg_build_path, "cyfs_browser_package.pkg")
-        cmd = "/usr/local/bin/packagesbuild --package-version %s %s" % (
-            self._version, self.pkg_proj_file)
-        print("-> Begin build pkg, cmd = %s" % cmd)
+        this_pkgproj = os.path.join(self.pkg_base_path, '%s.pkgproj' % package_name)
+        cmd = '/usr/local/bin/packagesbuild --package-version %s %s' % (
+            self._version, this_pkgproj)
+        print('-> Begin build pkg, cmd = %s' % cmd)
         self.execute_cmd(cmd)
-        print("<- End build pkg")
-        if not os.path.exists(self.pkg_file):
-            msg = "Build pkg %s failed" % (self.pkg_file)
+        print('<- End build pkg')
+        this_pkg_file = os.path.join(self.pkg_build_path, '%s.pkg' % package_name)
+        if not os.path.exists(this_pkg_file):
+            msg = 'Build pkg %s failed' % this_pkg_file
             print(msg)
             sys.exit(msg)
 
     def build_dmg(self):
+        middle_pkg_file = os.path.join(self.pkg_build_path, 'cyfs_browser_package.pkg')
+        if os.path.exists(middle_pkg_file):
+            os.remove(middle_pkg_file)
+
         dst = os.path.join(self.pkg_build_path, "uninstall.sh")
         shutil.copyfile(os.path.join(self.pkg_base_path, "uninstall.sh"), dst)
         os.chmod(dst, 0o755)
 
-        # dmg_file = "cyfs-browser-installer-%s.dmg" % (self._version)
         cmd = "hdiutil create -fs HFS+ -srcfolder %s -volname cyfs-browser-installer %s" % (
             self.pkg_build_path, self.dmg_file)
         print("-> Begin build dmg , cmd = %s" % cmd)
@@ -343,11 +346,3 @@ def make_installer(root, target_cpu, project_name, version, is_match_cache):
         print("Make Installer failed, error: %s" % Exception)
 
 
-def main():
-    root = os.path.normpath(os.path.join(os.path.dirname(
-            os.path.abspath(__file__)), os.pardir, os.pardir))
-
-    make_installer(root, "ARM", "Browser", "200")
-
-if __name__ == "__main__":
-    main()

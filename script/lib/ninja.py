@@ -173,7 +173,7 @@ class BuildHelper():
     def clean_build_dir(self):
         try:
             cmd = ['gn', 'clean', 'out/%s' % self._build_target]
-            execute_cmd(cmd)
+            execute_cmd(cmd, cwd=self._src_root)
         finally:
             return
 
@@ -206,11 +206,13 @@ class BuildHelper():
             with LogRecord(self._src_root, self._build_target, 'GN') as log_fd:
                 execute_cmd(cmd, log_fd=log_fd, cwd=self._src_root)
         except Exception as e:
+            self.clean_build_dir()
             msg = 'Start gn %s failed, error: %s' % (self._build_target, e)
             print(msg)
             sys.exit(msg)
 
         if not self.is_ninja_file_exists():
+            self.clean_build_dir()
             msg = 'Gn gen %s failed, please check' % (self._build_target)
             print(msg)
             sys.exit(msg)
