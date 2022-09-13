@@ -218,18 +218,17 @@ class UpdatePatcher:
         update_patcher.update_change_files()
 
 
-def main():
+def main(args):
     this_path = os.path.dirname(os.path.abspath(__file__))
-    root = os.path.normpath(os.path.join(this_path, os.pardir, os.pardir))
+    root = os.path.normpath(os.path.join(this_path, os.pardir))
     # commit_ids = ['dd97e81','f659c44']
     UpdatePatcher.update_patch(root)
 
 
 if __name__ == '__main__':
     try:
-        # print(str(sys.argv))
-        # sys.exit(main(sys.argv[1:]))
-        main()
+        print(str(sys.argv))
+        sys.exit(main(sys.argv[1:]))
     except KeyboardInterrupt:
         sys.stderr.write("interrupted\n")
         sys.exit(1)

@@ -132,6 +132,7 @@ class CyfsInitMessageHandler : public content::WebUIMessageHandler {
   }
 
   void DidGetRuntimeProcessStatus(std::string callback_id, bool value) {
+    AllowJavascript();
     VLOG(1) << "Get Runtime process(proxy) Status "
             << (value ? "running" : "not running");
     base::Value data(value);
@@ -139,6 +140,7 @@ class CyfsInitMessageHandler : public content::WebUIMessageHandler {
   }
 
   void DidGetRuntimeBindStatus(std::string callback_id, bool value) {
+    AllowJavascript();
     VLOG(1) << "Current User Runtime Bind Status : "
             << (value ? "binding" : "not binding");
     if (value) {

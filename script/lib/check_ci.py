@@ -211,13 +211,15 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
         assert is_dir_exists(self.static_page_path)
         assert is_dir_exists(self.ts_sdk_path)
 
-        self.copy_chromium_source_code()
         self.download_default_extensions()
         self.download_nft_web_files()
         self.download_nft_files()
 
+    def check_browser_src_files(self):
+        self.copy_chromium_source_code()
         assert is_dir_exists(self.chrome_path)
         self.check_chromium_branch()
+
 
     def remote_zip_file(self, zip_name):
         return os.path.join(self.remote_cache_path, zip_name)
@@ -321,6 +323,11 @@ class CheckForMacosCIBuild(CheckForCIBuild):
             self.src_path, "chrome", "app", "Extensions")
         make_dir_exist(extenions_path)
 
+        old_extensions = [ x for x in os.listdir(extenions_path) if x.endswith('.zip')]
+        old_extensions = list(map(lambda x : os.path.join(extenions_path, x), old_extensions))
+        for filename in old_extensions:
+            os.remove(filename)
+
         copys = list(filter(lambda x: x.endswith(".zip"),
                      os.listdir(self.local_extension_path)))
         for filename in copys:
@@ -343,10 +350,11 @@ class CheckForMacosCIBuild(CheckForCIBuild):
         assert is_dir_exists(self.static_page_path)
         assert is_dir_exists(self.ts_sdk_path)
 
-        self.copy_chromium_source_code()
         self.download_default_extensions()
         self.download_nft_web_files()
 
+    def check_browser_src_files(self):
+        self.copy_chromium_source_code()
         assert is_dir_exists(self.chrome_path)
         self.check_chromium_branch()
 

@@ -67,9 +67,10 @@ def main(args):
     set_env_variables()
     check = CheckFactory(current_os, root, opt.target_cpu, opt.project_name)
     is_match_cache = check.get_match_build_cache()
+    check.check_requirements()
     if not is_match_cache:
         print("There have not match build cache, so need compile")
-        check.check_requirements()
+        check.check_browser_src_files()
         ### patch
         GitPatcher.update(root)
         check.update_default_extensions()

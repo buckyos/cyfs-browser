@@ -222,15 +222,6 @@ class PackForMacos(Pack):
     def pkg_build_path(self):
         return pkg_build_path(self._root, self._target_cpu)
 
-    # @property
-    # def pkg_proj_file(self):
-    #     return os.path.join(
-    #         self.pkg_base_path, "cyfs_browser_package.pkgproj")
-
-    # @property
-    # def pkg_file(self):
-    #     return os.path.join(self.pkg_build_path, "cyfs_browser_package.pkg")
-
     @property
     def dmg_file(self):
         dmg_filename = "cyfs-browser-installer-%s.dmg" % (self._version)
