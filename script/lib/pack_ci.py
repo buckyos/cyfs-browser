@@ -241,6 +241,7 @@ class PackForMacos(Pack):
         self.build_pkg('cyfs_browser_package')
         self.build_pkg('cyfs_browser')
         self.build_dmg()
+        self.add_custom_icon_for_dmg()
 
     def check_requirements(self):
         pass
@@ -312,6 +313,21 @@ class PackForMacos(Pack):
             msg = "Build dmg %s failed" % (self.dmg_file)
             print(msg)
             sys.exit(msg)
+
+        
+    def add_custom_icon_for_dmg(self):
+        print('Begin add custom icon for dmg')
+        os.chdir(self.pack_base_path)
+        cmd = 'cp app.icns app_copy.icns && sips -i app_copy.icns'
+        self.execute_cmd(cmd)
+        cmd = 'DeRez -only icns app_copy.icns > icns.rsrc'
+        self.execute_cmd(cmd)
+        cmd = 'Rez -append icns.rsrc -o %s' % os.path.basename(self.dmg_file)
+        self.execute_cmd(cmd)
+        cmd = 'SetFile -a C %s' % os.path.basename(self.dmg_file)
+        self.execute_cmd(cmd)
+        print('End add custom icon for dmg')
+        
 
 
 PACK_TYPE_MAP = {
