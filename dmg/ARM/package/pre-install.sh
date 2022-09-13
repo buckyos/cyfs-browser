@@ -1,34 +1,52 @@
 #!/bin/sh
 
-PLIST=${HOME}/Library/LaunchAgents/com.cyfs.runtime-monitor.plist
-RUNTIME_DIR=${HOME}/Library/Application\ Support/cyfs/services/runtime
+readonly PLIST=${HOME}/Library/LaunchAgents/com.cyfs.runtime-monitor.plist
+readonly RUNTIME_DIR=${HOME}/Library/Application\ Support/cyfs/services/runtime
 
-runtime_monitor_task_id=`launchctl list | grep com.cyfs.runtime-monitor | grep -v "grep"`
-if [[ -n ${runtime_monitor_task_id} ]]; then
-    echo runtime-monitor task status is ${runtime_monitor_task_id}.
+# unload cyfs-runtime monitor task if task is exist
+monitor_task_id=`launchctl list | grep com.cyfs.runtime-monitor | grep -v "grep"`
+if [ -n ${runtime_monitor_task_id} ]; then
+    echo runtime-monitor task status is ${monitor_task_id}.
     echo unload com.cyfs.runtime-monitor.plist.
     /bin/launchctl unload -w ${PLIST}
-else
-    echo runtime-monitor task is not running.
-    runtime_process_id=`ps -ef | grep cyfs-runtime | grep -v "grep" | awk '{print $2}'`
-    if [[ -n ${runtime_process_id} ]]; then
-        echo cyfs-runtime pid is $runtime_process_id.
-        for id in $runtime_process_id
-        do
-            kill -9 $id  
-            echo "killed pid $id process cyfs-runtime".
-        done
-    else
-        echo cyfs-runtime process is not running, no need kill.
-    fi
 fi
 
-if [[ -d ${RUNTIME_DIR} ]]; then
-    rm -rf ${RUNTIME_DIR}
-fi
+function kill_process {
+    name=$1
+    echo kill $name process
+    PROCESS=`ps -ef | grep $name | grep -v "grep" | awk '{print $2}'`
+    for i in $PROCESS
+    do 
+        echo "KILL the process $i "
+        kill -9 $i
+    done
+}
 
-if [[ -f ${PLIST} ]]; then 
-    rm -f ${PLIST}
-fi
+function kill_browser_process {
+    echo kill Cyfs Browser process
+    PROCESS=`ps -ef | grep Cyfs\ Browser | grep -v "grep" | awk '{print $2}'`
+    for i in $PROCESS
+    do 
+        echo "KILL the process $i "
+        kill -9 $i
+    done
+}
+
+# kill cyfs-runtime process
+kill_process 'cyfs-runtime'
+
+# kill ‘Cyfs Browser’ process
+kill_browser_process
+
+# remove runtime dir if dir exist
+echo remove "${RUNTIME_DIR}"
+[ -d "${RUNTIME_DIR}" ] && rm -rf "${RUNTIME_DIR}"
+
+
+# remove plist file if the file is exist
+echo remove ${PLIST}
+[ -f ${PLIST} ] && rm -rf ${PLIST} 
+
 
 exit 0
+
