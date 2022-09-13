@@ -306,7 +306,7 @@ class PackForMacos(Pack):
         shutil.copyfile(os.path.join(self.pkg_base_path, "uninstall.sh"), dst)
         os.chmod(dst, 0o755)
 
-        cmd = "hdiutil create -fs HFS+ -srcfolder %s -volname cyfs-browser-installer %s" % (
+        cmd = "hdiutil create -fs HFS+ -srcfolder %s -ov -format UDZO -volname cyfs-browser-installer %s" % (
             self.pkg_build_path, self.dmg_file)
         print("-> Begin build dmg , cmd = %s" % cmd)
         self.execute_cmd(cmd)
