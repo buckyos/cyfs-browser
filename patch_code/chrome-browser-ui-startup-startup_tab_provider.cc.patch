@@ -1,0 +1,29 @@
+diff --git a/chrome/browser/ui/startup/startup_tab_provider.cc b/chrome/browser/ui/startup/startup_tab_provider.cc
+index 8618347259bc7ce89bf39f817fafd9f4b6cf9743..2331a224d6343affce4123eb3729fe1a73af036d 100644
+--- a/chrome/browser/ui/startup/startup_tab_provider.cc
++++ b/chrome/browser/ui/startup/startup_tab_provider.cc
+@@ -13,6 +13,7 @@
+ #include "base/strings/string_piece.h"
+ #include "base/strings/string_util.h"
+ #include "base/threading/thread_restrictions.h"
++#include "base/logging.h"
+ #include "build/branding_buildflags.h"
+ #include "build/build_config.h"
+ #include "build/chromeos_buildflags.h"
+@@ -244,6 +245,7 @@ StartupTabs StartupTabProviderImpl::GetCommandLineTabs(
+   for (const auto& arg : command_line.GetArgs()) {
+     ParsedCommandLineTabArg parsed_arg =
+         ParseTabFromCommandLineArg(arg, cur_dir, profile);
++    VLOG(1) << "Parsed command line url = " << parsed_arg.tab_url.spec();
+ 
+     // `ParseTabFromCommandLineArg()` shouldn't return
+     // CommandLineTabsPresent::kUnknown when a profile is provided.
+@@ -525,7 +527,7 @@ StartupTabProviderImpl::ParseTabFromCommandLineArg(
+       url = url_formatter::FixupRelativeFile(cur_dir, base::FilePath(arg));
+     }
+ 
+-    if (ValidateUrl(url))
++    if (ValidateUrl(url) || url.SchemeIsCYFS())
+       return {CommandLineTabsPresent::kYes, std::move(url)};
+   }
+ 

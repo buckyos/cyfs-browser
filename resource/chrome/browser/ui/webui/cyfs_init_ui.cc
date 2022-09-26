@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/dev_ui_browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -192,8 +193,8 @@ CyfsInitUI::CyfsInitUI(content::WebUI* web_ui)
   // html_source->AddLocalizedStrings(kStrings);
 
   html_source->AddString("welcomeMessage", "Welcome to this cyfs page");
-  html_source->AddString("browser_url", "cyfs://static/browser.html");
-  html_source->AddString("guide_url", "cyfs://static/guide.html");
+  html_source->AddString("browser_url", chrome::kCyfsBrowserURL);
+  html_source->AddString("guide_url", chrome::kCyfsBrowserGuideURL);
   html_source->UseStringsJs();
 
   // Add required resources.
