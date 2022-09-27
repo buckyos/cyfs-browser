@@ -1,0 +1,50 @@
+diff --git a/chrome/browser/sessions/session_restore.cc b/chrome/browser/sessions/session_restore.cc
+index c3dc563ef85028219256bd15014cad31e2eb18b9..29618b434674837a25e5cf667066edfb6f8d924f 100644
+--- a/chrome/browser/sessions/session_restore.cc
++++ b/chrome/browser/sessions/session_restore.cc
+@@ -506,7 +506,7 @@ class SessionRestoreImpl : public BrowserListObserver {
+       std::vector<RestoredTab>* created_contents,
+       int* window_count,
+       int* tab_count) {
+-    DVLOG(1) << "ProcessSessionWindows " << windows->size();
++    VLOG(1) << "ProcessSessionWindows " << windows->size();
+ 
+     if (windows->empty()) {
+       // Restore was unsuccessful. The DOM storage system can also delete its
+@@ -540,9 +540,18 @@ class SessionRestoreImpl : public BrowserListObserver {
+       if (window->show_state != ui::SHOW_STATE_MINIMIZED ||
+           window->window_id == active_window_id)
+         has_visible_browser = true;
++      std::vector<std::unique_ptr<sessions::SessionTab>>& tabs = window->tabs;
++      tabs.erase(std::remove_if(tabs.begin(), tabs.end(),
++        [&](std::unique_ptr<sessions::SessionTab>& tab) {
++          auto current_navigation_index = tab->current_navigation_index;
++          auto current_navigation = tab->navigations[current_navigation_index];
++          // return current_navigation.original_request_url().SchemeIsCYFS();
++          return true;
++        }), tabs.end());
+     }
+ 
+     for (auto i = windows->begin(); i != windows->end(); ++i) {
++      if ((*i)->tabs.empty()) continue;
+       ++(*window_count);
+       // 1. Choose between restoring tabs in an existing browser or in a newly
+       //    created browser.
+@@ -573,6 +582,7 @@ class SessionRestoreImpl : public BrowserListObserver {
+             "SessionRestore-CreateRestoredBrowser-End", false);
+ #endif
+       }
++      VLOG(1) << "Browser ptr = " << browser;
+ 
+       // 2. Track TYPE_NORMAL browsers.
+       if ((*i)->type == sessions::SessionWindow::TYPE_NORMAL) {
+@@ -710,7 +720,8 @@ class SessionRestoreImpl : public BrowserListObserver {
+       std::vector<RestoredTab>* created_contents,
+       base::flat_map<tab_groups::TabGroupId, tab_groups::TabGroupId>*
+           new_group_ids) {
+-    DVLOG(1) << "RestoreTabsToBrowser " << window.tabs.size();
++    VLOG(1) << "RestoreTabsToBrowser " << window.tabs.size();
++    if (window.tabs.empty()) return;
+     // TODO(https://crbug.com/1032348): Change to DCHECK once we understand
+     // why some browsers don't have an active tab on startup.
+     CHECK(!window.tabs.empty());
