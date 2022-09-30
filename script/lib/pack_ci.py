@@ -225,8 +225,8 @@ class PackForMacos(Pack):
     @property
     def dmg_file(self):
         cpu_type = 'aarch64' if self._target_cpu == 'ARM' else 'x86'
-        version = '1.0.0.%s' % self._version
-        dmg_filename = "cyfs-browser-%s-%s.dmg" % (version, cpu_type)
+        # version = '1.0.0.%s' % self._version
+        dmg_filename = "cyfs-browser-%s-%s.dmg" % (self._version, cpu_type)
         return os.path.join(self.pack_base_path, dmg_filename)
 
     @property
