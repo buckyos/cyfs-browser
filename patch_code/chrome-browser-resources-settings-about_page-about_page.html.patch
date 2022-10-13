@@ -1,17 +1,20 @@
 diff --git a/chrome/browser/resources/settings/about_page/about_page.html b/chrome/browser/resources/settings/about_page/about_page.html
-index f8b241516418220fb2cdd10ad47d3ac832e491b1..f11989f2c60689b7848ad3de8916ba477dcf1567 100644
+index f8b241516418220fb2cdd10ad47d3ac832e491b1..314d7e5bfa8cee99c401370768448e9deff07ba7 100644
 --- a/chrome/browser/resources/settings/about_page/about_page.html
 +++ b/chrome/browser/resources/settings/about_page/about_page.html
-@@ -56,7 +56,7 @@
-             alt="$i18n{aboutProductLogoAlt}"
-             role="presentation">
+@@ -110,6 +110,11 @@
+         </span>
  </if>
--        <h1 class="product-title">$i18n{aboutProductTitle}</h1>
-+        <h1 class="product-title">$i18n{aboutProductTitle} $i18n{aboutCYFSBrowserVersion}</h1>
        </div>
-       <div class="cr-row two-line">
-         <!-- Set the icon from the iconset (when it's obsolete/EOL and
-@@ -131,8 +131,8 @@
++      <div class="cr-row one-line">
++        <div class="flex cr-padded-text" >
++          <div class="secondary">$i18n{aboutRuntimeVersion}</div>
++        </div>
++      </div>
+ <if expr="_google_chrome and is_macosx">
+       <template is="dom-if" if="[[!promoteUpdaterStatus_.hidden]]">
+         <div id="promoteUpdater"
+@@ -131,8 +136,8 @@
          </div>
        </template>
  </if>

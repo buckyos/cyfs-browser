@@ -2,8 +2,8 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Cyfs_Browser"
-!define BROWSER_NAME_ALIAS "Cyfs Browser"
-!define BROWSER_DESKTOP_NAME "Cyfs Browser"
+!define BROWSER_NAME_ALIAS "CYFS Browser"
+!define BROWSER_DESKTOP_NAME "CYFS Browser"
 !define START_RUNTIME_BAT "Restart Runtime"
 !define BROWSER_EXE_NAME "${PRODUCT_NAME}.exe"
 !define NFT_TOOL_EXE "nft-creator.exe"
@@ -12,7 +12,7 @@
 !define RUNTIME_DESKTOP_NAME "Cyfs Runtime"
 !define PRODUCT_VERSION "${BrowserVersion}"
 !define RUNTIME_PRODUCT_VERSION "${RuntimeVersion}"
-!define PRODUCT_PUBLISHER "CYFS North American , Inc. "
+!define PRODUCT_PUBLISHER "CYFS Core Dev Team"
 !define PRODUCT_WEB_SITE "https://cyfs.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -57,28 +57,28 @@ Unicode True
 !define MUI_WELCOMEFINISHPAGE_BITMAP ".\images\left.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP ".\images\left.bmp"
 
-!define MUI_WELCOMEPAGE_TITLE "Welcome to install Cyfs Browser"
+!define MUI_WELCOMEPAGE_TITLE "Welcome to install CYFS Browser"
 ## $\n == blank line
 ## $\r$\n == new line
 !define MUI_WELCOMEPAGE_TEXT "A truly decentralized browser. Support CYFS link browsing, new web3 product experience.$\r$\n\
 $\nLow threshold for use$\r$\n\
-The Cyfs Browser is based on the secondary development of Chromium, retains the original Chrome UI, and retains your usage habits.$\r$\n\
+The CYFS Browser is based on the secondary development of Chromium, retains the original Chrome UI, and retains your usage habits.$\r$\n\
 $\nCreate NFTs with ease$\r$\n\
-Cyfs Browser can help you easily create NFT works, and convert any file into NFT in just a few simple steps.$\r$\n\
+CYFS Browser can help you easily create NFT works, and convert any file into NFT in just a few simple steps.$\r$\n\
 $\nBrowse Decentralized Data$\r$\n\
-The Cyfs Browser makes the 404 situation in the centralized network disappear and browses the decentralized data permanently.$\r$\n\
+The CYFS Browser makes the 404 situation in the centralized network disappear and browses the decentralized data permanently.$\r$\n\
 $\nprivacy protection$\r$\n\
-Cyfs Browser supports anonymous browsing mode to protect your online privacy.$\r$\n\
+CYFS Browser supports anonymous browsing mode to protect your online privacy.$\r$\n\
 "
 
 !define MUI_LICENSEPAGE_TEXT_TOP "Press Page Down to see the terms of the agreement."
 !define MUI_LICENSEPAGE_TEXT_BOTTOM "If you accept the terms of the agreement, click I Agree to continue."
-!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "Please wait while Cyfs Browser (V ${BrowserVersion}) is being installed"
+!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "Please wait while CYFS Browser (V ${BrowserVersion}) is being installed"
 ; !define MUI_INSTFILESPAGE_FINISHHEADER_SUBTEXT
 
 
-!define MUI_FINISHPAGE_TITLE "Cyfs Browser install complete"
-!define MUI_FINISHPAGE_TEXT "Cyfs Browser (V ${BrowserVersion}) has been installed on your computer.$\r$\n\
+!define MUI_FINISHPAGE_TITLE "CYFS Browser install complete"
+!define MUI_FINISHPAGE_TEXT "CYFS Browser (V ${BrowserVersion}) has been installed on your computer.$\r$\n\
 $\nClick finish to close Setup."
 
 ; !define MUI_TEXTCOLOR "000000"
@@ -113,7 +113,7 @@ Caption "${BROWSER_NAME_ALIAS} Install (V ${BrowserVersion})"
 ;ShowInstDetails nevershow
 ;ShowUnInstDetails nevershow
 
-BrandingText "CYFS North American , Inc."
+BrandingText "CYFS Core Dev Team"
 
 ; set browser install path
 InstallDir "$APPDATA\${PRODUCT_NAME}"
