@@ -277,10 +277,10 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       </if>
 
       <message name="IDS_PRODUCT_NAME" desc="The Chrome application name">
-        Cyfs Browser
+        CYFS Browser
       </message>
       <message name="IDS_SHORT_PRODUCT_NAME" desc="The Chrome application short name.">
-        Cyfs Browser
+        CYFS Browser
       </message>
       <if expr="is_win">
         <message name="IDS_SXS_SHORTCUT_NAME" desc="Unused in Chromium builds" translateable="false">
@@ -378,10 +378,10 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Chromium Canary
       </message>
       <message name="IDS_ABOUT_VERSION_COMPANY_NAME" desc="Company name on the about pages">
-        The Cyfs Browser Authors
+        The CYFS Browser Authors
       </message>
       <message name="IDS_ABOUT_VERSION_COPYRIGHT" desc="Copyright information on the about pages">
-        Copyright <ph name="YEAR">{0,date,y}<ex>2016</ex></ph> The Cyfs Browser Authors. All rights reserved.
+        Copyright <ph name="YEAR">{0,date,y}<ex>2016</ex></ph> The CYFS Core Dev Team. All rights reserved.
       </message>
       <if expr="chromeos_ash">
         <message name="IDS_ABOUT_CROS_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for ChromeOS.">
@@ -447,7 +447,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         </message>
       </if>
       <message name="IDS_FR_CUSTOMIZE_DEFAULT_BROWSER" desc="Default browser checkbox label">
-        Make Cyfs Browser the default browser
+        Make CYFS Browser the default browser
       </message>
       <if expr="use_titlecase">
         <message name="IDS_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND" desc="In Title Case: The checkbox in the status tray context menu that controls whether chrome keeps running in the background after the last window is closed">
@@ -606,7 +606,7 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
       </if>
       <message name="IDS_DEFAULT_BROWSER_INFOBAR_TEXT" desc="Text to show in an infobar when Chromium is not the current default browser.">
-        Cyfs Browser isn't your default browser
+        CYFS Browser isn't your default browser
       </message>
       <message name="IDS_TAILORED_SECURITY_CONSENTED_ENABLE_NOTIFICATION_DESCRIPTION" desc="The text of the notification asking if the user wants to enable Enhanced Safe Browsing">
         You turned on Enhanced Safe Browsing in your account. Now get it for Chromium.
@@ -733,7 +733,7 @@ Permissions you've already given to websites and apps may apply to this account.
         Warning: Chromium cannot prevent extensions from recording your browsing history. To disable this extension in Incognito mode, unselect this option.
       </message>
       <message name="IDS_EXTENSIONS_UNINSTALL" desc="The link for uninstalling extensions.">
-        Remove from Cyfs Browser...
+        Remove from CYFS Browser...
       </message>
       <message name="IDS_EXTENSIONS_SHORTCUT_SCOPE_IN_CHROME" desc="The label to indicate that a shortcut will be triggerable only from within the Chrome application.">
         In Chromium
@@ -767,7 +767,7 @@ Permissions you've already given to websites and apps may apply to this account.
 
       <if expr="use_titlecase and not chromeos_ash">
         <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
-          About &amp;Cyfs Browser
+          About &amp;CYFS Browser
         </message>
         <message name="IDS_RELAUNCH_TO_UPDATE" desc="In Title Case: The text label of the relaunch to update Chrome menu item">
           Relaunch to Update &amp;Chromium
@@ -775,7 +775,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
       <if expr="not use_titlecase and not chromeos_ash">
         <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
-          About &amp;Cyfs Browser
+          About &amp;CYFS Browser
         </message>
         <message name="IDS_RELAUNCH_TO_UPDATE" desc="The text label of the relaunch to update Chrome menu item">
           Relaunch to update &amp;Chromium
@@ -990,7 +990,7 @@ Permissions you've already given to websites and apps may apply to this account.
       <!-- Mac First-run dialog messages -->
       <if expr="is_macosx">
         <message name="IDS_FIRSTRUN_DLG_MAC_SET_DEFAULT_BROWSER_LABEL" desc="Label for checkbox that sets the default browser">
-          Set Cyfs Browser as your default browser
+          Set CYFS Browser as your default browser
         </message>
       </if>
 

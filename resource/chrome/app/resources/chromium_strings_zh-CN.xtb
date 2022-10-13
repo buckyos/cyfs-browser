@@ -4,11 +4,11 @@
 <translation id="1026101648481255140">继续安装</translation>
 <translation id="1029669172902658969">重新启动以更新 Chromium 操作系统(&amp;C)</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
-<translation id="7215125898567943664">Cyfs Browser 有助于保护您免受数据泄露、不良扩展程序等问题的影响</translation>
+<translation id="1098170124587656448">Chromium 有助于保护您免受数据泄露、不良扩展程序等问题的影响</translation>
 <translation id="1104942323762546749">Chromium 想导出您的密码。请输入您的 Windows 密码以允许此操作。</translation>
-<translation id="8713042369605541296">Cyfs Browser 是您的默认浏览器</translation>
+<translation id="113122355610423240">Chromium 是您的默认浏览器</translation>
 <translation id="1131805035311359397">若要检查您的密码是否未曾遭遇数据泄露和其他安全问题，请<ph name="BEGIN_LINK" />登录 Chromium<ph name="END_LINK" />。</translation>
-<translation id="1613212111517732709">关于 Cyfs Browser</translation>
+<translation id="2529224046171647202">关于 CYFS Browser</translation>
 <translation id="1203500561924088507">感谢您完成安装。您必须重启浏览器才能使用 <ph name="BUNDLE_NAME" />。</translation>
 <translation id="1315551408014407711">设置您的新 Chromium 个人资料</translation>
 <translation id="1396446129537741364">Chromium 正尝试显示密码。</translation>
@@ -17,7 +17,7 @@
 <translation id="1553461853655228091">Chromium 需要获得相应权限，才能使用您的摄像头为您的周边环境创建 3D 地图</translation>
 <translation id="1602421994560205104">Chromium 屏蔽了此文件，因为它太大，无法进行安全检查。请使用不超过 50 MB 的文件重试</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{您的管理员要求您重新启动 Chromium 以应用一项更新}=1{您的管理员要求您重新启动 Chromium 以应用一项更新。您的无痕式窗口不会重新打开。}other{您的管理员要求您重新启动 Chromium 以应用一项更新。您的 # 个无痕式窗口不会重新打开。}}</translation>
-<translation id="1625909126243026060">检查 Chromium 中重要的隐私控制设置和安全控件</translation>
+<translation id="6568788099325152897">检查 CYFS Browser 中重要的隐私控制设置和安全控件</translation>
 <translation id="1632539827495546968">如果只想使用此帐号一次，您可在 Chromium 浏览器中使用<ph name="GUEST_LINK_BEGIN" />访客模式<ph name="GUEST_LINK_END" />。如果想添加他人的帐号，请向您的 <ph name="DEVICE_TYPE" /> <ph name="LINK_BEGIN" />添加新用户<ph name="LINK_END" />。
 
 您已向网站和应用授予的权限可能会应用于此帐号。您可在<ph name="SETTINGS_LINK_BEGIN" />设置<ph name="SETTINGS_LINK_END" />部分中管理您的 Google 帐号。</translation>
@@ -36,7 +36,7 @@
 
 您已向网站和应用授予的权限可能会应用于此帐号。您可在<ph name="SETTINGS_LINK_BEGIN" />设置<ph name="SETTINGS_LINK_END" />部分中管理您的 Google 帐号。</translation>
 <translation id="1953553007165777902">正在下载…还需 <ph name="MINUTE" /> 分钟</translation>
-<translation id="8533470113944906162">Cyfs Browser 无法确定或设置默认浏览器</translation>
+<translation id="1966382378801805537">Chromium 无法确定或设置默认浏览器</translation>
 <translation id="2008474315282236005">这会从这台设备上删除 1 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="2018879682492276940">安装失败。请重试。</translation>
 <translation id="2020032459870799438">若要检查您的其他密码是否未曾遭遇数据泄露和其他安全问题，请<ph name="BEGIN_LINK" />登录 Chromium<ph name="END_LINK" />。</translation>
@@ -64,10 +64,10 @@
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2837693172913560447">这样做会为 <ph name="USER_EMAIL_ADDRESS" /> 创建一份新的 Chromium 个人资料</translation>
-<translation id="887517349541781551">从Cyfs Browser中移除…</translation>
+<translation id="8214054303712908933">从CYFS Browser中移除…</translation>
 <translation id="2850691299438350830">保护您在 Chromium 中免受安全威胁，登录状态下还可让您更安全地使用其他 Google 应用</translation>
 <translation id="2885378588091291677">任务管理器</translation>
-<translation id="6886160333384257561">关于 Cyfs Browser(&amp;C)</translation>
+<translation id="8634147177990539032">关于 CYFS Browser(&amp;C)</translation>
 <translation id="2915996080311180594">暂不重启</translation>
 <translation id="2928420929544864228">安装完毕。</translation>
 <translation id="2977470724722393594">Chromium 已是最新版本</translation>
@@ -91,7 +91,7 @@
 <translation id="3283186697780795848">已安装 Chromium 版本 <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3286538390144397061">立即重新启动</translation>
 <translation id="328888136576916638">缺少 Google API 密钥，因此 Chromium 的部分功能将无法使用。</translation>
-<translation id="7665642693549815118">关闭 Cyfs Browser 后继续运行后台应用</translation>
+<translation id="3405702382653805952">关闭 CYFS Browser 后继续运行后台应用</translation>
 <translation id="3349211344363550267">Chromium 建议您不要下载或打开此文件</translation>
 <translation id="3350761136195634146">已有一份使用此帐号创建的 Chromium 个人资料</translation>
 <translation id="3387527074123400161">Chromium 操作系统</translation>
@@ -129,10 +129,10 @@
 <translation id="4148957013307229264">正在安装...</translation>
 <translation id="419998258129752635"><ph name="PAGE_TITLE" /> - 网络登录 - Chromium</translation>
 <translation id="421369550622382712">在这里，您可以找到适用于 Chromium 的精彩应用、游戏、扩展程序和主题背景。</translation>
-<translation id="4216212958613226427">使用此语言显示 Chromium 界面</translation>
+<translation id="2078605360681554475">使用此语言显示 CYFS Browser 界面</translation>
 <translation id="4222932583846282852">正在取消…</translation>
 <translation id="4230135487732243613">是否将您的 Chromium 数据与此帐号相关联？</translation>
-<translation id="5568058375997949195">获取有关 Cyfs Browser 的帮助</translation>
+<translation id="1090607577961432185">获取有关 CYFS Browser 的帮助</translation>
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="4304713468139749426">密码管理器</translation>
 <translation id="4334294535648607276">下载完毕。</translation>
@@ -168,23 +168,23 @@
 <translation id="5114678101347489141">Chromium 正在探索各种新功能，以便让网站既能减少使用您的信息，又能提供同样出色的浏览体验</translation>
 <translation id="5224391634244552924">尚未保存任何密码。您需要先保存密码才能使用 Chromium 的密码检查功能。</translation>
 <translation id="5252179775517634216"><ph name="EXISTING_USER" />已登录此 Chromium 个人资料。这样做会为 <ph name="USER_EMAIL_ADDRESS" /> 创建一份新的 Chromium 个人资料</translation>
-<translation id="4585823663498373655">要想应用您的更改，请重新启动 Cyfs Browser</translation>
+<translation id="302611545169521094">要想应用您的更改，请重新启动 CYFS Browser</translation>
 <translation id="5296845517486664001">在试用期间，如果 Chromium 随机将您加入到了其中某项正在进行的试用活动，您的浏览记录会影响您看到的广告以及系统推测出的兴趣（如下所示）。为了保护您的隐私，Chromium 每个月都会按保留时间先后顺序删除您的部分兴趣。</translation>
 <translation id="5358375970380395591">您目前登录的帐号是一个受管理帐号，该帐号的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐号信息中心删除这些数据，但无法将这些数据与其他帐号相关联。<ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">正在更新 Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">允许登录 Chromium</translation>
 <translation id="5398878173008909840">Chromium 现已推出新版本。</translation>
-<translation id="5427571867875391349">将Cyfs Browser设为默认浏览器</translation>
+<translation id="5350290530707104996">将CYFS Browser设为默认浏览器</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium 测试版</translation>
 <translation id="5480860683791598150">Chromium 需要获得位置权限，才能将您的位置信息共享给此网站</translation>
 <translation id="5487574057737591516">为了保护您的隐私，如果您的兴趣保留时间超过 4 周，系统便会自动将其删除。随着您继续浏览，某项兴趣可能会再次出现在列表中。如果 Chromium 的推测不准确，或者您不想看到某些广告，可以移除某项兴趣。</translation>
 <translation id="549669000822060376">Chromium正在安装最新的系统更新，请稍候。</translation>
 <translation id="5496810170689441661">Chromium 正在尝试修改密码。请输入您的 Windows 密码以允许此操作。</translation>
-<translation id="7442489743707017612">在 Cyfs Browser 中打开 PDF 文件</translation>
+<translation id="1333305411288623746">在 CYFS Browser 中打开 PDF 文件</translation>
 <translation id="5623402015214259806">{0,plural, =0{有一项可用的 Chromium 更新}=1{有一项可用的 Chromium 更新}other{有一项可用的 Chromium 更新（已发布 # 天）}}</translation>
 <translation id="5634636535844844681">Chromium 仅支持 Windows 7 或更高版本的操作系统。</translation>
 <translation id="5653831366781983928">请立即重启 Chromium</translation>
-<translation id="5698481217667032250">以这种语言显示 Chromium</translation>
+<translation id="5988716171191537396">以这种语言显示 CYFS Browser</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
 <translation id="5883558403894052917">Chromium 发现这些内容包含恶意软件：</translation>
 <translation id="5895138241574237353">重新启动</translation>
@@ -211,11 +211,11 @@
 <translation id="6219195342503754812">{0,plural, =0{Chromium 将立即重新启动}=1{Chromium 将在 1 秒后重新启动}other{Chromium 将在 # 秒后重新启动}}</translation>
 <translation id="6241367896540709610">Chromium 需要获得存储空间使用权限才能下载文件</translation>
 <translation id="6245734527075554892">将网址与存储在 Chromium 中的不安全网站列表进行比对</translation>
-<translation id="3666327966893632721">将 Cyfs Browser 设置为默认浏览器</translation>
+<translation id="4895429059464018844">将 CYFS Browser 设置为默认浏览器</translation>
 <translation id="6266342355635466082">Chromium 无法检查是否有更新。请检查您的互联网连接。</translation>
 <translation id="6268381023930128611">退出 Chromium？</translation>
 <translation id="6273793429163604305">即将就绪…</translation>
-<translation id="2828234732082468538">自定义您的 Cyfs Browser 个人资料</translation>
+<translation id="1160935650504032084">自定义您的 CYFS Browser 个人资料</translation>
 <translation id="6290827346642914212">请为您的 Chromium 个人资料命名</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> 可能存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="6309712487085796862">Chromium 正在使用您的摄像头。</translation>
@@ -270,11 +270,11 @@
 <translation id="7246575524853130370">Chromium 推测出的您的兴趣</translation>
 <translation id="7265671031637041256">Chromium 屏蔽了此文件，因为它已加密。请让文件所有者解密</translation>
 <translation id="7309928523159922338">借助 Ad measurement，您访问的网站可向 Chromium 请求信息，以便对网站上的广告进行效果衡量。Ad measurement 会在网站间传输尽可能少的信息，从而限制跨网站跟踪。</translation>
-<translation id="7840644711321880954">正在更新 Cyfs Browser</translation>
+<translation id="6360963218547809284">正在更新 CYFS Browser</translation>
 <translation id="7318036098707714271">您的偏好设置文件已损坏或无效。
 
 Chromium 无法恢复您的设置。</translation>
-<translation id="138464974652861409">Cyfs Browser</translation>
+<translation id="5969877561795249315">CYFS Browser</translation>
 <translation id="7339898014177206373">打开新的窗口</translation>
 <translation id="734373864078049451">您的上网记录、书签和其他Chromium内容都保存在此处。</translation>
 <translation id="7349591376906416160">您的系统管理员已将 Chromium 配置为使用<ph name="ALTERNATIVE_BROWSER_NAME" />访问 <ph name="TARGET_URL_HOSTNAME" />。</translation>
@@ -293,7 +293,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7682213815243802460">您可在 Chromium 设置中详细了解这些功能。</translation>
 <translation id="7682601070171973634">Chromium 团队正在探索新功能，以便网站只需使用您的较少数据就能提供同样的浏览体验</translation>
-<translation id="4760585693357174315">Cyfs Browser 不是您的默认浏览器</translation>
+<translation id="4600266493701954191">CYFS Browser 不是您的默认浏览器</translation>
 <translation id="7689606757190482937">在您的所有设备上同步并个性化设置 Chromium</translation>
 <translation id="7729447699958282447">由于您的网域停用了同步功能，Chromium无法同步您的数据。</translation>
 <translation id="7745317241717453663">这会从这台设备上删除您的浏览数据。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
@@ -306,7 +306,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />您可以如何管理自己的数据<ph name="END_BOLD" />：为了保护您的隐私，如果您的兴趣保留时间超过 4 周，系统便会自动将其删除。随着您继续浏览，某项兴趣可能会再次出现在列表中。您也可以移除不希望纳入 Chromium 考虑范围的兴趣。</translation>
 <translation id="788352880609666695">这份 Chromium 个人资料可以使用下列帐号</translation>
 <translation id="7937630085815544518">您之前登录 Chromium 时使用的帐号为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐号再次登录。</translation>
-<translation id="8776078950548090698">这是 Cyfs Browser 的并行安装，您无法将此浏览器设为默认浏览器。</translation>
+<translation id="3986188227335687685">这是 CYFS Browser 的并行安装，您无法将此浏览器设为默认浏览器。</translation>
 <translation id="7982481011030453202">如果此页面中未显示某项设置，请在 <ph name="LINK_BEGIN" />Chromium 操作系统设置<ph name="LINK_END" />中查找</translation>
 <translation id="7997934263947464652">来源不明的扩展程序、应用和主题可能会危害您的设备。Chromium 建议只从 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />安装这些内容</translation>
 <translation id="8013436988911883588">一旦 Chromium 获得了使用权限，网站便能请求您向其授予使用权限。</translation>
@@ -330,7 +330,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8558383651099478961">您的家长已为 Chromium 停用“网站、应用和扩展程序的权限”。因此，您无法添加该<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
 <translation id="8561285221328166383">若要接收后续 Chromium 更新，您需使用 macOS 10.13 或更高版本。该计算机目前使用的是 macOS 10.12。</translation>
 <translation id="8568283329061645092">您需要先登录 Google 帐号才能使用 Chromium 的密码检查功能。</translation>
-<translation id="7267362170917110807">版权所有<ph name="YEAR" /> The Cyfs Browser Authors。保留所有权利。</translation>
+<translation id="6298955232712833087">版权所有<ph name="YEAR" /> The CYFS Core Dev Team。保留所有权利。</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />我们会如何使用这些数据<ph name="END_BOLD" />：网站可以将您的兴趣信息存储在 Chromium 中。例如，如果您访问某个网站购买马拉松跑鞋，系统可能会根据该网站推测您对跑马拉松感兴趣。之后，如果您访问其他网站报名参加比赛，相应网站就可以根据您的兴趣向您展示跑鞋广告。</translation>
 <translation id="8619360774459241877">正在启动 Chromium…</translation>
 <translation id="8621669128220841554">未指定的错误导致安装失败。请重新下载 Chromium。</translation>
@@ -363,5 +363,5 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="945990405696787151">若要接收后续 Chromium 更新，您需使用 macOS 10.13 或更高版本。该计算机目前使用的是 OS X 10.11。</translation>
 <translation id="965162752251293939">谁在使用 Chromium？</translation>
 <translation id="967427899662692980">获享 Chromium 的最强安全保护</translation>
-<translation id="2463748360542059515">The Cyfs Browser Authors</translation>
+<translation id="6117213054558966582">The CYFS Browser Authors</translation>
 </translationbundle>

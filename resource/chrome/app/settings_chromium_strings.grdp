@@ -9,14 +9,14 @@
   </if>
   <!-- About Page -->
   <message name="IDS_SETTINGS_ABOUT_PROGRAM" desc="Menu title for the About Chromium page.">
-    About Cyfs Browser
+    About CYFS Browser
   </message>
   <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
-    Get help with Cyfs Browser
+    Get help with CYFS Browser
   </message>
   <if expr="not chromeos_ash">
     <message name="IDS_SETTINGS_UPGRADE_UPDATING" desc="Status label: Updating Chromium">
-      Updating Cyfs Browser
+      Updating CYFS Browser
     </message>
     <message name="IDS_SETTINGS_UPGRADE_UPDATING_PERCENT" desc="Status label: Updating Chromium (90%)">
       Updating Chromium (<ph name="PROGRESS_PERCENT">$1<ex>90%</ex></ph>)
@@ -83,16 +83,16 @@
   <!-- Default Browser Page -->
   <if expr="not chromeos_ash">
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT" desc="The text displayed when Chrome is the default browser">
-      Cyfs Browser is your default browser
+      CYFS Browser is your default browser
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT" desc="Default browser checkbox label">
-      Make Cyfs Browser the default browser
+      Make CYFS Browser the default browser
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_ERROR" desc="The text displayed when Chrome cannot determine or set the default browser">
-      Cyfs Browser cannot determine or set the default browser
+      CYFS Browser cannot determine or set the default browser
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY" desc="The text displayed when Chromium is installed in side-by-side mode, which does not support setting as the default browser.">
-      This is a secondary installation of Cyfs Browser, and cannot be made your default browser.
+      This is a secondary installation of CYFS Browser, and cannot be made your default browser.
     </message>
   </if>
 
@@ -110,7 +110,7 @@
     To fix spelling errors, Chromium sends the text you type in text fields to Google
   </message>
   <message name="IDS_SETTINGS_RESTART_TO_APPLY_CHANGES" desc="Description in the snackbar to restart Chrome and apply changes.">
-    To apply your changes, relaunch Cyfs Browser
+    To apply your changes, relaunch CYFS Browser
   </message>
 
   <if expr="not chromeos_ash and not chromeos_lacros">
@@ -124,12 +124,12 @@
 
   <!-- Site Settings -->
   <message name="IDS_SETTINGS_SITE_SETTINGS_PDFS_BLOCKED" desc="Label for the disabled option of the pdfs content setting.">
-    Open PDFs in Cyfs Browser
+    Open PDFs in CYFS Browser
   </message>
 
   <!-- Privacy Guide -->
   <message name="IDS_SETTINGS_PRIVACY_GUIDE_PROMO_BODY" desc="Body text of a card in the settings page that explains what the 'Privacy Guide' feature is.">
-    Review key privacy and security controls in Chromium
+    Review key privacy and security controls in CYFS Browser
   </message>
   <message name="IDS_SETTINGS_PRIVACY_GUIDE_CLEAR_ON_EXIT_FEATURE_DESCRIPTION1" desc="A part of the feature description of 'clear cookies on exit' card in the 'Privacy Guide'.">
     When you close all Chromium windows, cookies and site data are automatically cleared
@@ -208,7 +208,7 @@
 
   <!-- Safety check -->
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_BEFORE" desc="This text describes what the safety check is. (It's an area of the Settings page where users can quickly check whether their safety-related settings are fully protecting them.)">
-    Cyfs Browser can help keep you safe from data breaches, bad extensions, and more
+    CYFS Browser can help keep you safe from data breaches, bad extensions, and more
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED_OFFLINE" desc="This text describes that Chromium cannot check for updates because there currently is no internet connection.">
     Chromium can't check for updates. Try checking your internet connection.
@@ -246,7 +246,7 @@
   </message>
 <if expr="not chromeos_ash">
   <message name="IDS_SETTINGS_CUSTOMIZE_YOUR_CHROME_PROFILE" desc="Label of the link that takes you to the page to customize your chrome profile.">
-    Customize your Cyfs Browser profile
+    Customize your CYFS Browser profile
   </message>
   <message name="IDS_SETTING_NAME_YOUR_PROFILE" desc="Title of the edit local profile name section on the manage profile page.">
     Name your Chromium profile
@@ -278,17 +278,17 @@
   <!-- Languages Page -->
   <if expr="is_win">
     <message name="IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE" desc="The label for a language that is currently used as the UI display language.">
-      This language is used to display the Cyfs Browser UI
+      This language is used to display the CYFS Browser UI
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE" desc="The label used for a button that changes the UI language.">
-      Display Cyfs Browser in this language
+      Display CYFS Browser in this language
     </message>
   </if>
 
   <!-- System Page -->
   <if expr="not chromeos_ash">
     <message name="IDS_SETTINGS_SYSTEM_BACKGROUND_APPS_LABEL" desc="Label for the checkbox to allow apps to run in the background, when Chrome is closed.">
-      Continue running background apps when Cyfs Browser is closed
+      Continue running background apps when CYFS Browser is closed
     </message>
   </if>
 
