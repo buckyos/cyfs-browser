@@ -68,7 +68,10 @@ def main(args):
     check = CheckFactory(current_os, root, opt.target_cpu, opt.project_name)
     is_match_cache = check.get_match_build_cache()
     check.check_requirements()
-    if not is_match_cache:
+    ## In Macos environment, externsion must be execute compile
+    if is_match_cache and current_os != 'Darwin':
+        print("Get match build cache, so not need compile")
+    else:
         print("There have not match build cache, so need compile")
         check.check_browser_src_files()
         ### patch
@@ -76,8 +79,6 @@ def main(args):
         check.update_default_extensions()
         ## use chromium gn and ninja tool compile source code
         build_browser(src_path(root), opt.project_name, opt.target_cpu)
-    else:
-        print("Get match build cache, so not need compile")
 
     ### pack
     make_installer(root, opt.target_cpu, opt.project_name, opt.version, is_match_cache)
