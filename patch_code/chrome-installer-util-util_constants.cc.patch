@@ -1,5 +1,5 @@
 diff --git a/chrome/installer/util/util_constants.cc b/chrome/installer/util/util_constants.cc
-index a05091fd48bead3dbebfb3151007745883551af6..013bb3c7f61482540e1ab0b78468086ca61c587b 100644
+index a05091fd48bead3dbebfb3151007745883551af6..a980cdf4af34fa552d88f6b4fbefb59745645ad6 100644
 --- a/chrome/installer/util/util_constants.cc
 +++ b/chrome/installer/util/util_constants.cc
 @@ -214,7 +214,7 @@ const char kGoogleUpdateIsMachineEnvVar[] = "GoogleUpdateIsMachine";
@@ -7,7 +7,7 @@ index a05091fd48bead3dbebfb3151007745883551af6..013bb3c7f61482540e1ab0b78468086c
  const wchar_t kActiveSetupExe[] = L"chrmstp.exe";
  const wchar_t kChromeDll[] = L"chrome.dll";
 -const wchar_t kChromeExe[] = L"chrome.exe";
-+const wchar_t kChromeExe[] = L"Cyfs_Browser.exe";
++const wchar_t kChromeExe[] = L"CYFS_Browser.exe";
  const wchar_t kChromeNewExe[] = L"new_chrome.exe";
  const wchar_t kChromeOldExe[] = L"old_chrome.exe";
  const wchar_t kChromeProxyExe[] = L"chrome_proxy.exe";

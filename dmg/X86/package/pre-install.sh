@@ -23,8 +23,8 @@ function kill_process {
 }
 
 function kill_browser_process {
-    echo kill Cyfs Browser process
-    PROCESS=`ps -ef | grep Cyfs\ Browser | grep -v "grep" | awk '{print $2}'`
+    echo kill CYFS Browser process
+    PROCESS=`ps -ef | grep CYFS\ Browser | grep -v "grep" | awk '{print $2}'`
     for i in $PROCESS
     do 
         echo "KILL the process $i "

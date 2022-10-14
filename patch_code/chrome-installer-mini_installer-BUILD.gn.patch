@@ -1,5 +1,5 @@
 diff --git a/chrome/installer/mini_installer/BUILD.gn b/chrome/installer/mini_installer/BUILD.gn
-index 51fa0d7f4cf77cd03e7332a3e3c0a22a173bf6ca..98b15798297b29c7e143a2d5d9f9cc4dbe7b76ba 100644
+index 51fa0d7f4cf77cd03e7332a3e3c0a22a173bf6ca..d885e67a74735c3ca70412205a491c2a051f430f 100644
 --- a/chrome/installer/mini_installer/BUILD.gn
 +++ b/chrome/installer/mini_installer/BUILD.gn
 @@ -120,7 +120,7 @@ action("mini_installer_archive") {
@@ -7,7 +7,7 @@ index 51fa0d7f4cf77cd03e7332a3e3c0a22a173bf6ca..98b15798297b29c7e143a2d5d9f9cc4d
    inputs = [
      "$root_out_dir/chrome.dll",
 -    "$root_out_dir/chrome.exe",
-+    "$root_out_dir/Cyfs_Browser.exe",
++    "$root_out_dir/CYFS_Browser.exe",
      "$root_out_dir/locales/en-US.pak",
      "$root_out_dir/setup.exe",
      "//chrome/tools/build/win/makecab.py",

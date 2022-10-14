@@ -1,4 +1,4 @@
-## Build Windows Cyfs Browser
+## Build Windows CYFS Browser
 
 
 ### Install prerequisites
@@ -30,7 +30,7 @@ set DEPOT_TOOLS_UPDATE=0
 set DEPOT_TOOLS_WIN_TOOLCHAIN=0
 ```
 
-2.Get Cyfs Browser and Chromium source
+2.Get CYFS Browser and Chromium source
 ```cmd
 git clone https://github.com/buckyos/cyfs-browser.git ${root}
 
@@ -49,7 +49,7 @@ git checkout -b cyfs_branch 103.0.5047.0
 gclient sync --with_branch_heads --with_tags
 ```
 
-### Build Cyfs Browser
+### Build CYFS Browser
 
 1. Update and compile Cyfs componment
 ```cmd
@@ -58,7 +58,7 @@ cd ${root}/script
 python(python3) prepare_cyfs_dependency.py
 ```
 
-2. Compile Cyfs Browser source code
+2. Compile CYFS Browser source code
 ```cmd
 cd ${root}/script
 
@@ -67,6 +67,6 @@ python(python3) build.py --project-name=${project_name} --version=${version}
 ### like this: python(python3) build.py --project-name=Browser --version=1
 ```
 
-3.Find the Cyfs Browser installation package
+3.Find the CYFS Browser installation package
 
 `${root}/\browser_install/Cyfs_Browser_${version}.exe`

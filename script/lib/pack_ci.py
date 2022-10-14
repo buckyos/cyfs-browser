@@ -212,7 +212,7 @@ class PackForWindows(Pack):
 
 
 class PackForMacos(Pack):
-    _app_name = "Cyfs Browser.app"
+    _app_name = "CYFS Browser.app"
 
     @property
     def pkg_base_path(self):

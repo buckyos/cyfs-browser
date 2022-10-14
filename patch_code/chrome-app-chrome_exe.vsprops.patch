@@ -1,5 +1,5 @@
 diff --git a/chrome/app/chrome_exe.vsprops b/chrome/app/chrome_exe.vsprops
-index 95b044a1328ff940585e1d1559d740b9a5ca4454..0b3f70e7c5c3ca74c4725f042e93a65b3828617e 100644
+index 95b044a1328ff940585e1d1559d740b9a5ca4454..e204e035a2a044d94c5f59ff7bf29f8638e323fd 100644
 --- a/chrome/app/chrome_exe.vsprops
 +++ b/chrome/app/chrome_exe.vsprops
 @@ -12,7 +12,7 @@
@@ -7,7 +7,7 @@ index 95b044a1328ff940585e1d1559d740b9a5ca4454..0b3f70e7c5c3ca74c4725f042e93a65b
  		Name="VCLinkerTool"
  		DelayLoadDLLs="ole32.dll;oleaut32.dll"
 -		OutputFile="$(OutDir)\chrome.exe"
-+		OutputFile="$(OutDir)\Cyfs_Browser.exe"
++		OutputFile="$(OutDir)\CYFS_Browser.exe"
  		ProgramDatabaseFile="$(OutDir)\$(ProjectName).pdb"
  	/>
  	<Tool

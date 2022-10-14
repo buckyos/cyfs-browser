@@ -1,5 +1,5 @@
 diff --git a/chrome/BUILD.gn b/chrome/BUILD.gn
-index 5c564fe889ca6621ff33d31d8d2fff93563093eb..cedf9c92e9497ee7375518b4829dcf38fec8b462 100644
+index 5c564fe889ca6621ff33d31d8d2fff93563093eb..b81700e8ed67a822f2a34bc73115c19e63613da3 100644
 --- a/chrome/BUILD.gn
 +++ b/chrome/BUILD.gn
 @@ -51,6 +51,7 @@ if (is_android) {
@@ -15,12 +15,12 @@ index 5c564fe889ca6621ff33d31d8d2fff93563093eb..cedf9c92e9497ee7375518b4829dcf38
      # See comment in chrome_dll.gypi in the hardlink_to_output
      # target for why this cannot be 'initial' like the DLL.
 -    inputs = [ "$root_out_dir/initialexe/chrome.exe" ]
-+    inputs = [ "$root_out_dir/initialexe/Cyfs_Browser.exe" ]
++    inputs = [ "$root_out_dir/initialexe/CYFS_Browser.exe" ]
      outputs = [
 -      "$root_out_dir/chrome.exe",
 -      "$root_out_dir/chrome.exe.pdb",
-+      "$root_out_dir/Cyfs_Browser.exe",
-+      "$root_out_dir/Cyfs_Browser.exe.pdb",
++      "$root_out_dir/CYFS_Browser.exe",
++      "$root_out_dir/CYFS_Browser.exe.pdb",
      ]
      args = [
        "-i",
@@ -29,7 +29,7 @@ index 5c564fe889ca6621ff33d31d8d2fff93563093eb..cedf9c92e9497ee7375518b4829dcf38
      configs += [ "//build/config/compiler:thinlto_optimize_max" ]
      if (is_win) {
 -      output_name = "initialexe/chrome"
-+      output_name = "initialexe/Cyfs_Browser"
++      output_name = "initialexe/CYFS_Browser"
      } else {
        output_name = "chrome"
      }

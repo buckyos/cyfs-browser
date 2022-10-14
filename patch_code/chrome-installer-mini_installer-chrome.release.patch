@@ -1,5 +1,5 @@
 diff --git a/chrome/installer/mini_installer/chrome.release b/chrome/installer/mini_installer/chrome.release
-index 5cdaad05767053cf4327e7edf8c47adf473c31f2..bb280cd06d8a43e04aa35dc7a34a946284073244 100644
+index 5cdaad05767053cf4327e7edf8c47adf473c31f2..da1f1d4a393316abd9158518845b576deea02f68 100644
 --- a/chrome/installer/mini_installer/chrome.release
 +++ b/chrome/installer/mini_installer/chrome.release
 @@ -6,7 +6,7 @@
@@ -7,7 +7,7 @@ index 5cdaad05767053cf4327e7edf8c47adf473c31f2..bb280cd06d8a43e04aa35dc7a34a9462
  # Chrome Application dir entries, sorted alphabetically.
  #
 -chrome.exe: %(ChromeDir)s\
-+Cyfs_Browser.exe: %(ChromeDir)s\
++CYFS_Browser.exe: %(ChromeDir)s\
  chrome_proxy.exe: %(ChromeDir)s\
  #
  # Chrome version dir assembly manifest.

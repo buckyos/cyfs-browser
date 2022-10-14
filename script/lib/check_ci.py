@@ -273,7 +273,7 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
             return is_match
 
 class CheckForMacosCIBuild(CheckForCIBuild):
-    _app_name = "Cyfs Browser.app"
+    _app_name = "CYFS Browser.app"
     _code_zip_name = "chromium_mac_code.tar.gz"
 
     @property

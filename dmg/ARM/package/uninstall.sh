@@ -5,7 +5,7 @@ RUNTIME_DATA_PATH=cyfs
 BROWSER_DATA_PATH=cyber
 PLIST=${HOME}/Library/LaunchAgents/com.cyfs.runtime-monitor.plist
 BROWSER_APP_PATH="${HOME}/Applications"
-BROWSER_APP="Cyfs Browser.app"
+BROWSER_APP="CYFS Browser.app"
 
 function delete_user_data {
     pushd "${APPLICATIONSUPPORT}"
@@ -47,23 +47,23 @@ function remove_browser_application {
 echo "--------------------------------------------------------------------------"
 echo "--------------------------------------------------------------------------"
 while true; do
-    read -p "You are uninstall Cyfs Browser application. Are you sure [Y/N]? " answer
+    read -p "You are uninstall CYFS Browser application. Are you sure [Y/N]? " answer
     case $answer in 
     Y | y | yes | YES) 
         echo "Begin uninstall application"
         break;;
     N | n | no | NO)
-        echo "cancel uninstall Cyfs Browser application user"
+        echo "cancel uninstall CYFS Browser application user"
         exit 0;;
     *) echo "Please answer yes or no";;
     esac
 done
 echo "--------------------------------------------------------------------------"
 
-browser_process_id=`ps -ef | grep "Cyfs Browser" | grep -v "grep" | awk '{print $2}'`
+browser_process_id=`ps -ef | grep "CYFS Browser" | grep -v "grep" | awk '{print $2}'`
 if [[ -n ${browser_process_id} ]]; then
-    echo Cyfs Browser process is runing, please close the application.
-    echo Cyfs Browser pid is $browser_process_id.
+    echo CYFS Browser process is runing, please close the application.
+    echo CYFS Browser pid is $browser_process_id.
     sleep 5
     exit 0
 fi
@@ -96,8 +96,8 @@ if [[ -n ${package_exist} ]]; then
     sudo /usr/sbin/pkgutil --forget com.cyfs.browser.package
 fi
 
-echo "End uninstall Cyfs Browser application"
-echo "Uninstall Cyfs Browser finished"
+echo "End uninstall CYFS Browser application"
+echo "Uninstall CYFS Browser finished"
 echo "--------------------------------------------------------------------------"
 echo "--------------------------------------------------------------------------"
 exit 0

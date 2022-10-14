@@ -750,7 +750,7 @@ Permissions you've already given to websites and apps may apply to this account.
 
       <!-- Main Chrome menu -->
       <message name="IDS_APPMENU_TOOLTIP" desc="The tooltip to show for the browser menu">
-        Customize and control Chromium
+        Customize and control CYFS Browser
       </message>
 
       <message name="IDS_APPMENU_TOOLTIP_UPDATE_AVAILABLE" desc="The tooltip to show for the browser menu when an update is available">

@@ -1,4 +1,4 @@
-## Build MacOs Cyfs Browser
+## Build MacOs CYFS Browser
 
 
 ### Install prerequisites
@@ -12,7 +12,7 @@ macOS SDK 12.0+
 [Packages](http://s.sudre.free.fr/Software/Packages/about.html)  
 
 [note]
-Build Cyfs Browser code must be use Xcode Developer tool
+Build CYFS Browser code must be use Xcode Developer tool
 ```bash
 xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
@@ -35,7 +35,7 @@ export DEPOT_TOOLS_UPDATE=0
 ```
 
 
-2.Get Cyfs Browser and Chromium source
+2.Get CYFS Browser and Chromium source
 ```bash
 git clone https://github.com/buckyos/cyfs-browser.git ${root}
 
@@ -54,7 +54,7 @@ git checkout -b cyfs_branch 103.0.5047.0
 gclient sync --with_branch_heads --with_tags
 ```
 
-### Build Cyfs Browser
+### Build CYFS Browser
 
 1. Update and compile Cyfs componment
 ```bash
@@ -63,7 +63,7 @@ cd ${root}/script
 python(python3) prepare_cyfs_dependency.py
 ```
 
-2. Compile Cyfs Browser source code
+2. Compile CYFS Browser source code
 [note] if you build machine is macos, you must to set target-cpu argument like `ARM` and `X86`
 ARM is mean m1 cpu machine, and X86 is mean x86 cpu machine
 ```bash
@@ -74,6 +74,6 @@ python(python3) build.py --project-name=${project_name} --version=${version} --t
 ### like this: python(python3) build.py --project-name=Browser --version=1 --target-cpu=ARM
 ```
 
-3.Find the Cyfs Browser installation package
+3.Find the CYFS Browser installation package
 
 `${root}/dmg/${target_cpu}/cyfs-browser-installer-${version}.dmg`
