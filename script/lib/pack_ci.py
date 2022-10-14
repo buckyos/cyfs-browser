@@ -58,10 +58,10 @@ class Pack:
 
 
 class PackForWindows(Pack):
-    _product_name = "Cyfs_Browser"
+    _product_name = "CYFS_Browser"
 
     include_files = [
-        'Cyfs_Browser.exe', 'chrome_proxy.exe',
+        'CYFS_Browser.exe', 'chrome_proxy.exe',
     ]
     include_version_files = [
         'chrome_100_percent.pak','chrome_200_percent.pak', 'resources.pak',

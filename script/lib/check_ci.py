@@ -154,7 +154,7 @@ class CheckForCIBuild:
             raise
 
 class CheckForWindowsCIBuild(CheckForCIBuild):
-    _product_name = "Cyfs_Browser"
+    _product_name = "CYFS_Browser"
     _code_zip_name = "chromium_code_pc.zip"
 
     @property

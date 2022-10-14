@@ -20,8 +20,6 @@ Once you have the prerequisites installed, you can get the code and initialize t
 1. downlaod depot_tools and set env variables
 ```cmd
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-
-setx path "%path%;${path_to_depot_tools}"
 ```
 
 ##### disadble update chromium source background
@@ -69,4 +67,4 @@ python(python3) build.py --project-name=${project_name} --version=${version}
 
 3.Find the CYFS Browser installation package
 
-`${root}/\browser_install/Cyfs_Browser_${version}.exe`
+`${root}/\browser_install/CYFS_Browser_${version}.exe`

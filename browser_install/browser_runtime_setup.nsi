@@ -63,12 +63,12 @@ Unicode True
 !define MUI_WELCOMEPAGE_TEXT "A truly decentralized browser. Support CYFS link browsing, new web3 product experience.$\r$\n\
 $\nLow threshold for use$\r$\n\
 The CYFS Browser is based on the secondary development of Chromium, retains the original Chrome UI, and retains your usage habits.$\r$\n\
-$\nCreate NFTs with ease$\r$\n\
-CYFS Browser can help you easily create NFT works, and convert any file into NFT in just a few simple steps.$\r$\n\
-$\nBrowse Decentralized Data$\r$\n\
-The CYFS Browser makes the 404 situation in the centralized network disappear and browses the decentralized data permanently.$\r$\n\
 $\nprivacy protection$\r$\n\
 CYFS Browser supports anonymous browsing mode to protect your online privacy.$\r$\n\
+$\nBrowse Decentralized Data$\r$\n\
+The CYFS Browser makes the 404 situation in the centralized network disappear and browses the decentralized data permanently.$\r$\n\
+$\nCreate NFTs with ease$\r$\n\
+CYFS Browser can help you easily create NFT works, and convert any file into NFT in just a few simple steps.$\r$\n\
 "
 
 !define MUI_LICENSEPAGE_TEXT_TOP "Press Page Down to see the terms of the agreement."

@@ -37,7 +37,7 @@ cyfs-runtime
 .gclient
 .gclient_entries
 
-/browser_install/Cyfs_Browser/
+/browser_install/CYFS_Browser/
 /browser_install/cyfs-runtime-pack/www/
 /browser_install/cyfs-runtime-pack/tools
 /browser_install/cyfs-runtime-pack/*.exe
