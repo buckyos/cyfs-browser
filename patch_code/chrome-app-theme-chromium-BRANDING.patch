@@ -1,5 +1,5 @@
 diff --git a/chrome/app/theme/chromium/BRANDING b/chrome/app/theme/chromium/BRANDING
-index f8363d5b294fe210ebfdd18374e95b54d6ff5c17..9f056c358ddea8623cd677506bc17881bcc4e00f 100644
+index f8363d5b294fe210ebfdd18374e95b54d6ff5c17..df62f5e4436c8053b7453833061c67178c652d76 100644
 --- a/chrome/app/theme/chromium/BRANDING
 +++ b/chrome/app/theme/chromium/BRANDING
 @@ -1,10 +1,10 @@
@@ -11,8 +11,6 @@ index f8363d5b294fe210ebfdd18374e95b54d6ff5c17..9f056c358ddea8623cd677506bc17881
 -PRODUCT_INSTALLER_SHORTNAME=Chromium Installer
 -COPYRIGHT=Copyright @LASTCHANGE_YEAR@ The Chromium Authors. All rights reserved.
 -MAC_BUNDLE_ID=org.chromium.Chromium
--MAC_CREATOR_CODE=Cr24
--MAC_TEAM_ID=
 +COMPANY_FULLNAME=CYFS Core Dev Team
 +COMPANY_SHORTNAME=CYFS Core Dev Team
 +PRODUCT_FULLNAME=CYFS Browser
@@ -21,5 +19,5 @@ index f8363d5b294fe210ebfdd18374e95b54d6ff5c17..9f056c358ddea8623cd677506bc17881
 +PRODUCT_INSTALLER_SHORTNAME=CYFS Browser Installer
 +COPYRIGHT=Copyright @LASTCHANGE_YEAR@ The CYFS Core Dev Team. All rights reserved.
 +MAC_BUNDLE_ID=com.cyfs.browser
-+ MAC_CREATOR_CODE=Cr24
-+ MAC_TEAM_ID=
+ MAC_CREATOR_CODE=Cr24
+ MAC_TEAM_ID=
