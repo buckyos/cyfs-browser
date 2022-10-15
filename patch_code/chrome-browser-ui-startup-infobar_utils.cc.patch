@@ -1,7 +1,20 @@
 diff --git a/chrome/browser/ui/startup/infobar_utils.cc b/chrome/browser/ui/startup/infobar_utils.cc
-index aeb1f881016b1ccf2d34503d7b6193f768c04d6b..3aa0b643f17c61739ba28027d26c44cc24110759 100644
+index aeb1f881016b1ccf2d34503d7b6193f768c04d6b..0891ccfe322b7d932da981958b934ca530dae6f8 100644
 --- a/chrome/browser/ui/startup/infobar_utils.cc
 +++ b/chrome/browser/ui/startup/infobar_utils.cc
+@@ -80,9 +80,9 @@ void AddInfoBarsIfNecessary(Browser* browser,
+     return;
+ 
+   // Web apps should not display the session restore bubble (crbug.com/1264121)
+-  if (!is_web_app && HasPendingUncleanExit(browser->profile()))
+-    SessionCrashedBubble::ShowIfNotOffTheRecordProfile(
+-        browser, /*skip_tab_checking=*/false);
++  // if (!is_web_app && HasPendingUncleanExit(browser->profile()))
++  //   SessionCrashedBubble::ShowIfNotOffTheRecordProfile(
++  //       browser, /*skip_tab_checking=*/false);
+ 
+   // These info bars are not shown when the browser is being controlled by
+   // automated tests, so that they don't interfere with tests that assume no
 @@ -113,8 +113,8 @@ void AddInfoBarsIfNecessary(Browser* browser,
      infobars::ContentInfoBarManager* infobar_manager =
          infobars::ContentInfoBarManager::FromWebContents(web_contents);
