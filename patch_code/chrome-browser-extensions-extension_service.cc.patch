@@ -1,27 +1,35 @@
 diff --git a/chrome/browser/extensions/extension_service.cc b/chrome/browser/extensions/extension_service.cc
-index 40f44b412069077deeb218727d99afac62646ae4..5a8dbfe39bed4eb7cbbb13c25c7ae04447b566c0 100644
+index 40f44b412069077deeb218727d99afac62646ae4..5f90dd21df1bc7ae59415c650bc3b5ae3beda1bc 100644
 --- a/chrome/browser/extensions/extension_service.cc
 +++ b/chrome/browser/extensions/extension_service.cc
-@@ -73,6 +73,7 @@
- #include "chrome/common/extensions/extension_constants.h"
- #include "chrome/common/pref_names.h"
- #include "chrome/common/url_constants.h"
-+#include "chrome/common/pref_names.h"
- #include "components/crx_file/id_util.h"
- #include "components/favicon_base/favicon_url_parser.h"
- #include "content/public/browser/browser_thread.h"
-@@ -779,6 +780,16 @@ bool ExtensionService::UninstallExtension(
+@@ -79,6 +79,7 @@
+ #include "content/public/browser/notification_service.h"
+ #include "content/public/browser/render_process_host.h"
+ #include "content/public/browser/storage_partition.h"
++#include "extensions/browser/pref_names.h"
+ #include "extensions/browser/blocklist_extension_prefs.h"
+ #include "extensions/browser/blocklist_state.h"
+ #include "extensions/browser/disable_reason.h"
+@@ -779,6 +780,24 @@ bool ExtensionService::UninstallExtension(
    // Callers should not send us nonexistent extensions.
    CHECK(extension.get());
  
-+  VLOG(1) << "uninstall extension, path = " << extension->path()
++  {
++    base::FilePath extension_path = extension->path();
++    VLOG(1) << "uninstall extension, path = " << extension_path
 +          << " id = " << extension->id();
-+  std::string extension_path_name = extension->path().BaseName().AsUTF8Unsafe();
-+  VLOG(1) << "extension_path_name " << extension_path_name;
-+  if (!extension_path_name.compare("metamask-chrome")) {
-+    VLOG(1) << "uninstall extension " << extension_path_name
-+            << ", set browser.load_ours_extensions false";
-+    profile()->GetPrefs()->SetBoolean(prefs::kLoadOursExtensions, false);
++    std::string extension_path_name = extension_path.BaseName().AsUTF8Unsafe();
++    {
++      PrefService* prefs = profile()->GetPrefs();
++      ListPrefUpdate update(prefs, pref_names::KDefaultExtensionBlackList);
++      base::Value* default_extension_blacklist = update.Get();
++      VLOG(1) << "Add extension " << extension_path_name << " to default extension black list";
++      default_extension_blacklist->Append(extension_path_name);
++    }
++    // delete extension path
++    if (base::PathExists(extension_path)) {
++      base::DeletePathRecursively(extension_path);
++    }
 +  }
 +
    ManagementPolicy* by_policy = system_->management_policy();

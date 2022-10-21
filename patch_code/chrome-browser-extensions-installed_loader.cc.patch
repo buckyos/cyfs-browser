@@ -1,0 +1,207 @@
+diff --git a/chrome/browser/extensions/installed_loader.cc b/chrome/browser/extensions/installed_loader.cc
+index 37b0cc64a6dbcc42a5c219ed5fe0ad3f399c8d5e..81ed0b7e1fa93692cb2225dea7e7d2e2f219344b 100644
+--- a/chrome/browser/extensions/installed_loader.cc
++++ b/chrome/browser/extensions/installed_loader.cc
+@@ -9,14 +9,23 @@
+ #include <string>
+ #include <vector>
+ 
++#include "base/ranges/algorithm.h"
+ #include "base/files/file_path.h"
++#include "base/files/file_util.h"
++#include "base/files/file_enumerator.h"
++#include "base/path_service.h"
+ #include "base/metrics/histogram_functions.h"
+ #include "base/metrics/histogram_macros.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "base/threading/thread_restrictions.h"
+ #include "base/trace_event/trace_event.h"
++#include "base/strings/strcat.h"
+ #include "base/values.h"
++#include "base/logging.h"
++#include "base/debug/stack_trace.h"
++#include "base/containers/cxx20_erase_vector.h"
+ #include "chrome/browser/browser_process.h"
++#include "chrome/browser/extensions/unpacked_installer.h"
+ #include "chrome/browser/extensions/corrupted_extension_reinstaller.h"
+ #include "chrome/browser/extensions/extension_management.h"
+ #include "chrome/browser/extensions/extension_service.h"
+@@ -28,6 +37,8 @@
+ #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
+ #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
+ #include "chrome/common/webui_url_constants.h"
++#include "chrome/common/chrome_paths.h"
++#include "chrome/common/chrome_paths_internal.h"
+ #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+ #include "content/public/browser/browser_thread.h"
+ #include "content/public/browser/notification_service.h"
+@@ -41,6 +52,7 @@
+ #include "extensions/browser/management_policy.h"
+ #include "extensions/browser/pref_types.h"
+ #include "extensions/browser/ui_util.h"
++#include "extensions/browser/pref_names.h"
+ #include "extensions/common/extension.h"
+ #include "extensions/common/extension_l10n_util.h"
+ #include "extensions/common/extension_set.h"
+@@ -53,6 +65,8 @@
+ #include "extensions/common/permissions/permissions_data.h"
+ #include "third_party/abseil-cpp/absl/types/optional.h"
+ 
++#include "third_party/zlib/google/zip.h"
++
+ using content::BrowserThread;
+ 
+ namespace extensions {
+@@ -259,6 +273,43 @@ void LogHostPermissionsAccess(const Extension& extension) {
+   }
+ }
+ 
++base::FilePath GetInstallBasePath() {
++  base::FilePath extension_base_path;
++#if defined(OS_WIN)
++  base::PathService::Get(base::DIR_EXE, &extension_base_path);
++#elif defined(OS_MAC)
++  extension_base_path = chrome::GetFrameworkBundlePath();
++  extension_base_path = extension_base_path.DirName().DirName().DirName().DirName();
++#endif
++  extension_base_path = extension_base_path.AppendASCII("Extensions");
++  return extension_base_path;
++}
++
++base::FilePath GetDefaultExtensionPath(Profile* profile) {
++  base::FilePath install_extension_base_path = profile->GetPath().AppendASCII("cyfs_extensions");
++  return install_extension_base_path;
++}
++
++base::FilePath GetMatchExtensionZip(base::FilePath extension_base_path, const base::FilePath::StringType& extension_path_name) {
++  const base::FilePath::StringType regular_pattern = base::StrCat({extension_path_name, FILE_PATH_LITERAL("*.zip")});
++  base::FilePath zip_file_path;
++  base::FileEnumerator traversal(extension_base_path, false,
++              base::FileEnumerator::FILES,
++              regular_pattern);
++  std::vector<base::FilePath> match_zips;
++  for (base::FilePath current = traversal.Next(); !current.empty(); current = traversal.Next()) {
++    match_zips.push_back(current);
++  }
++  base::ranges::for_each(match_zips, [regular_pattern](const base::FilePath& zip_name) {
++    VLOG(1) << "Found " << zip_name << " match " << regular_pattern;
++  });
++
++  if (!match_zips.empty()) {
++    zip_file_path = match_zips.front();
++  }
++  return zip_file_path;
++}
++
+ }  // namespace
+ 
+ InstalledLoader::InstalledLoader(ExtensionService* extension_service)
+@@ -270,6 +321,10 @@ InstalledLoader::~InstalledLoader() {
+ }
+ 
+ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
++  VLOG(1) << base::debug::StackTrace().ToString();
++  VLOG(1) << "Cureent extension info: extensionId = " << info.extension_id
++    << " , extension filePath = " << info.extension_path << " , extension manifest = "
++    << info.extension_manifest;
+   // TODO(asargent): add a test to confirm that we can't load extensions if
+   // their ID in preferences does not match the extension's actual ID.
+   if (invalid_extensions_.find(info.extension_path) !=
+@@ -369,6 +424,8 @@ void InstalledLoader::LoadAllExtensions() {
+   std::vector<int> reload_reason_counts(NUM_MANIFEST_RELOAD_REASONS, 0);
+   bool should_write_prefs = false;
+ 
++  std::vector<base::FilePath> default_install_extensions = GetDefaultInstalledExtensions();
++
+   for (size_t i = 0; i < extensions_info->size(); ++i) {
+     ExtensionInfo* info = extensions_info->at(i).get();
+ 
+@@ -413,7 +470,21 @@ void InstalledLoader::LoadAllExtensions() {
+     if (extensions_info->at(i)->extension_location !=
+         mojom::ManifestLocation::kCommandLine)
+       Load(*extensions_info->at(i), should_write_prefs);
++    base::FilePath current_path = extensions_info->at(i)->extension_path;
++    auto predicate = [current_path](const base::FilePath& path) { return path == current_path; };
++    base::EraseIf(default_install_extensions, predicate);
++  }
++
++  for (auto extension_path : default_install_extensions) {
++    scoped_refptr<extensions::UnpackedInstaller> unpacked_installer =
++                extensions::UnpackedInstaller::Create(extension_service_);
++    unpacked_installer->set_be_noisy_on_failure(false);
++    VLOG(1) << "Begin load extension " << extension_path;
++    unpacked_installer->Load(extension_path);
++    VLOG(1) << "End load extension " << extension_path;
+   }
++  VLOG(1) << "End Installed default extensions";
++
+ 
+   // The histograms Extensions.ManifestReload* allow us to validate
+   // the assumption that reloading manifest is a rare event.
+@@ -432,6 +503,66 @@ void InstalledLoader::LoadAllExtensions() {
+   RecordExtensionsMetrics();
+ }
+ 
++std::vector<std::string> InstalledLoader::GetExtensionBlacklist() {
++  std::vector<std::string> blocklist_extension_names;
++  PrefService* pref = extension_service_->profile()->GetPrefs();
++  if (!pref->HasPrefPath(pref_names::KDefaultExtensionBlackList)) {
++    return blocklist_extension_names;
++  }
++  std::set<std::string> extension_names;
++  const base::Value* blocklisted_extensions = pref->GetList(pref_names::KDefaultExtensionBlackList);
++  const base::Value::List& blocklisted_extensions_list = blocklisted_extensions->GetList();
++  for (const base::Value& i : blocklisted_extensions_list) {
++    const std::string extension_path_name = i.GetString();
++    extension_names.insert(extension_path_name);
++  }
++  blocklist_extension_names.assign(extension_names.begin(), extension_names.end());
++  base::ranges::for_each(blocklist_extension_names, [](std::string extension_path_name) {
++     VLOG(1) << "Extension " << extension_path_name << " is block to be installed";
++  });
++  return blocklist_extension_names;
++}
++
++bool CheckExtensionNeedInstall(base::FilePath current_extension_path, const std::vector<std::string>& block_list) {
++  const std::string extension_path_name = current_extension_path.BaseName().AsUTF8Unsafe();
++  return !base::Contains(block_list, extension_path_name);
++}
++
++std::vector<base::FilePath> InstalledLoader::GetDefaultInstalledExtensions() {
++  std::vector<base::FilePath> default_install_extensions;
++
++  base::FilePath extension_base_path = GetInstallBasePath();
++  base::FilePath install_extension_base_path = GetDefaultExtensionPath(extension_service_->profile());
++  std::vector<std::string> extension_blocklist = GetExtensionBlacklist();
++  for (int i = 0; i < extensions::kDefaultExtensionNum; i++) {
++    const base::FilePath::CharType* default_extension_name = extensions::kDefaultExtensionNames[i];
++    base::FilePath install_extension_path = install_extension_base_path.Append(default_extension_name);
++    if (!CheckExtensionNeedInstall(install_extension_path, extension_blocklist)) {
++      continue;
++    }
++    if (!base::PathExists(install_extension_path)) {
++      VLOG(1) << install_extension_path.AsUTF8Unsafe() << " not found, need unzip";
++      base::FilePath zip_file_path = GetMatchExtensionZip(extension_base_path, default_extension_name);
++      if (!base::PathExists(zip_file_path)) {
++        VLOG(1) << "Can't find match extension to load " << default_extension_name << "in directory " << extension_base_path;
++        continue;
++      }
++
++      VLOG(1) << "Begin Unzip " << zip_file_path << " to " << install_extension_path;
++      (void)zip::Unzip(zip_file_path, install_extension_path);
++      VLOG(1) << "End Unzip " << zip_file_path << " to " << install_extension_path;
++    }
++
++    if (base::PathExists(install_extension_path)) {
++      default_install_extensions.push_back(install_extension_path);
++    }
++  }
++  base::ranges::for_each(default_install_extensions, [](const base::FilePath& extension_path_name) {
++    VLOG(1) << "Extension " << extension_path_name << " need install";
++  });
++  return default_install_extensions;
++}
++
+ void InstalledLoader::RecordExtensionsMetricsForTesting() {
+   RecordExtensionsMetrics();
+ }

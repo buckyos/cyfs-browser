@@ -215,6 +215,8 @@ Section "delete_browser_old_files" 1
   ;return up-level directory and delete all files
   SetOutPath $APPDATA
   RMDir /r  $INSTDIR
+  RMDir /r "$LOCALAPPDATA\${BROWSER_USER_DATA_DIR}\User Data\Extensions"
+  RMDir /r "$LOCALAPPDATA\${BROWSER_USER_DATA_DIR}\User Data\Default\cyfs_extensions"
 SectionEnd
 
 Section "regedit_browser_info" 2

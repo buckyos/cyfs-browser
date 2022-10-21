@@ -1,16 +1,16 @@
 diff --git a/chrome/common/pref_names.cc b/chrome/common/pref_names.cc
-index b6fbd833b97693b917e32df4da9b586cd8440f43..661e3714ae955730393019ff5629008c49a7947f 100644
+index b6fbd833b97693b917e32df4da9b586cd8440f43..283993dc10c1663433cfa0168362a5bd4ec1877f 100644
 --- a/chrome/common/pref_names.cc
 +++ b/chrome/common/pref_names.cc
-@@ -1641,6 +1641,7 @@ const char kWebRTCAllowLegacyTLSProtocols[] =
+@@ -1641,7 +1641,6 @@ const char kWebRTCAllowLegacyTLSProtocols[] =
  #if !BUILDFLAG(IS_ANDROID)
  // Whether or not this profile has been shown the Welcome page.
  const char kHasSeenWelcomePage[] = "browser.has_seen_welcome_page";
-+const char kLoadOursExtensions[] = "browser.load_ours_extensions";
- 
+-
  // The restriction imposed on managed accounts.
  const char kManagedAccountsSigninRestriction[] =
-@@ -3277,6 +3278,8 @@ const char kMediaFeedsSafeSearchEnabled[] = "media_feeds_safe_search_enabled";
+     "profile.managed_accounts.restriction.value";
+@@ -3277,6 +3276,8 @@ const char kMediaFeedsSafeSearchEnabled[] = "media_feeds_safe_search_enabled";
  // This pref enables automated selection of Media Feeds to fetch.
  const char kMediaFeedsAutoSelectEnabled[] = "media_feeds_auto_select_enabled";
  
@@ -19,7 +19,7 @@ index b6fbd833b97693b917e32df4da9b586cd8440f43..661e3714ae955730393019ff5629008c
  #if BUILDFLAG(IS_CHROMEOS_ASH)
  // Boolean pref indicating whether the notification informing the user that
  // adb sideloading had been disabled by their admin was shown.
-@@ -3435,6 +3438,9 @@ const char kLastWhatsNewVersion[] = "browser.last_whats_new_version";
+@@ -3435,6 +3436,9 @@ const char kLastWhatsNewVersion[] = "browser.last_whats_new_version";
  const char kLensRegionSearchEnabled[] = "policy.lens_region_search_enabled";
  #endif
  

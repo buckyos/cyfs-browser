@@ -1,20 +1,16 @@
 diff --git a/extensions/common/extension.cc b/extensions/common/extension.cc
-index f6c71dbee7c915b3d75d3b7966dd38d9b76e873e..8a1d5ce9dba955113bfaa3caa23a5f58b946db17 100644
+index f6c71dbee7c915b3d75d3b7966dd38d9b76e873e..e99d206477d01f9a1ca3b3e1dbc9c8ec2598a661 100644
 --- a/extensions/common/extension.cc
 +++ b/extensions/common/extension.cc
-@@ -51,6 +51,16 @@ namespace keys = manifest_keys;
+@@ -51,6 +51,12 @@ namespace keys = manifest_keys;
  namespace values = manifest_values;
  namespace errors = manifest_errors;
  
-+const char* kOurExtensionFilenames[] = {
-+  "metamask-chrome-10.9.3.zip",
-+  "CyberChat-1.0.3.zip",
++const base::FilePath::CharType* kDefaultExtensionNames[]= {
++    FILE_PATH_LITERAL("metamask-chrome"),
++    FILE_PATH_LITERAL("CyberChat"),
 +};
-+const char* kOurExtensionDirnames[] = {
-+  "metamask-chrome-10.9.3",
-+  "CyberChat-1.0.3",
-+};
-+const int kOurNumExtensions = 2;
++const int kDefaultExtensionNum = 2;
 +
  namespace {
  
