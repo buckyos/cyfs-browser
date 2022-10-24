@@ -50,8 +50,8 @@ echo remove ${PLIST}
 [ -f ${PLIST} ] && rm -rf ${PLIST}
 
 echo remove last browser extension dir
-[ -d ${OLD_DEFAULT_EXTENSION_DIR} ] && rm -rf ${OLD_DEFAULT_EXTENSION_DIR}
-[ -d ${NEW_DEFAULT_EXTENSION_DIR} ] && rm -rf ${NEW_DEFAULT_EXTENSION_DIR}
+[ -d "${OLD_DEFAULT_EXTENSION_DIR}" ] && rm -rf "${OLD_DEFAULT_EXTENSION_DIR}"
+[ -d "${NEW_DEFAULT_EXTENSION_DIR}" ] && rm -rf "${NEW_DEFAULT_EXTENSION_DIR}"
 
 
 exit 0
