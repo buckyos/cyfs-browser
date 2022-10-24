@@ -1,5 +1,5 @@
 diff --git a/net/url_request/url_request.cc b/net/url_request/url_request.cc
-index af554caadbebc99c92141826852afe9d8679c29a..d083240f5cdfd7469eed6bf579f7eacfb63926b8 100644
+index af554caadbebc99c92141826852afe9d8679c29a..9acfdbf762d2e870c4a0d854ef22aabf671dceff 100644
 --- a/net/url_request/url_request.cc
 +++ b/net/url_request/url_request.cc
 @@ -548,19 +548,19 @@ void URLRequest::Start() {
@@ -35,6 +35,15 @@ index af554caadbebc99c92141826852afe9d8679c29a..d083240f5cdfd7469eed6bf579f7eacf
  
    StartJob(context_->job_factory()->CreateJob(this));
  }
+@@ -681,7 +681,7 @@ void URLRequest::StartJob(std::unique_ptr<URLRequestJob> job) {
+     if (!network_delegate() ||
+         !network_delegate()->CancelURLRequestWithPolicyViolatingReferrerHeader(
+             *this, url(), referrer_url)) {
+-      referrer_.clear();
++      // referrer_.clear();
+     } else {
+       // We need to clear the referrer anyway to avoid an infinite recursion
+       // when starting the error job.
 @@ -998,6 +998,10 @@ bool URLRequest::DefaultCanUseCookies() {
    return g_default_can_use_cookies;
  }
