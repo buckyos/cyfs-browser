@@ -5,23 +5,34 @@ import {
     $
 } from 'chrome://resources/js/util.m.js';
 
-var UpdateIntervalID;
+var UpdateProcessStatusIntervalID;
+var UpdateProxyStatusIntervalID;
 let isFirstRun = undefined;
-let currentRuntimeBindStatus = undefined;
-let lastRuntimeBindStatus = undefined;
+let proxyServerReady = false;
+
+
+const returnRuntimeProxystatus = function(status) {
+    if (status == true) {
+        proxyServerReady = true;
+        console.log(`runtime proxy server ready: ${status}`);
+        if (UpdateProxyStatusIntervalID) {
+            clearInterval(UpdateProxyStatusIntervalID);
+        }
+    } else {
+        console.log(`runtime proxy server is not ready, please wait`);
+    }
+}
 
 function returnRuntimePorcessStatus(status) {
-    if (status == true) {
+    if (status == true && proxyServerReady == true) {
         console.log(`runtime process status is running }`);
-        // window.location.href = "cyfs://static/browser.html";
         let target_url = loadTimeData.getStringF('browser_url');
         if (isFirstRun) {
-            // browser_url = browser_url + '?first=true';
             target_url = loadTimeData.getStringF('guide_url');
         }
         window.location.href = target_url;
-        if (UpdateIntervalID)
-            clearInterval(UpdateIntervalID);
+        if (UpdateProcessStatusIntervalID)
+            clearInterval(UpdateProcessStatusIntervalID);
     } else {
         console.log(`runtime process is not running, please wait`);
     }
@@ -36,28 +47,13 @@ function startUpdateRequests() {
     };
     getFirstRunStatus();
 
-    const getRuntimeBindingStatus = function () {
-        sendWithPromise('getRuntimeBindStatus').then(status => {
-            console.log(`current runtime bind status: ${status}`);
-            currentRuntimeBindStatus = status;
-        });
-    };
-    getRuntimeBindingStatus();
-
-    const getRuntimeBindStatusFromProfile = function () {
-        sendWithPromise('getRuntimeBindStatusFromProfile').then(status => {
-            console.log(`last runtime bind status: ${status}`);
-            lastRuntimeBindStatus = status;
-        });
-    };
-    getRuntimeBindStatusFromProfile();
-
     const getRuntimeProxystatus = function() {
         sendWithPromise('getRuntimeProxystatus').then(status => {
-            console.log(`runtime proxy status: ${status}`);
+            returnRuntimeProxystatus(status);
         })
     }
     getRuntimeProxystatus();
+    UpdateProxyStatusIntervalID = setInterval(getRuntimeProxystatus, 200);
 
     const getRuntimeRunningStatus = function () {
         sendWithPromise('getRuntimeProcessStatus').then(status => {
@@ -65,7 +61,7 @@ function startUpdateRequests() {
         });
     };
     getRuntimeRunningStatus();
-    UpdateIntervalID = setInterval(getRuntimeRunningStatus, 200);
+    UpdateProcessStatusIntervalID = setInterval(getRuntimeRunningStatus, 200);
 }
 
 function main() {

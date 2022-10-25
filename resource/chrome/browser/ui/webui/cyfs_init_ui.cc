@@ -117,9 +117,6 @@ class CyfsInitMessageHandler : public content::WebUIMessageHandler {
     VLOG(1) << "Get Current Runtime First Run status";
     AllowJavascript();
     const std::string& callback_id = value[0].GetString();
-    // CyfsRuntimeInitService* runtime_service =
-    //     CyfsRuntimeInitServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-    // auto isFirst = runtime_service->IsFirstRunning();
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
     bool isFirst = prefs->GetBoolean(prefs::kCyfsRuntimeFirstRun);
     VLOG(1) << "Current User runtime is " << (isFirst ? "" : "not")
