@@ -6,16 +6,13 @@ import argparse
 import platform
 import subprocess
 
-from lib.patch import apply_patchs
 from lib.ninja import build_browser
 from lib.pack import make_installer
 from lib.common import MAC_CPUS, static_page_path, src_path, ts_sdk_path, cyfs_tools_path
 from lib.util import is_dir_exists
 from lib.git_patch import GitPatcher
+from lib.build_cyfs_component import prepare_cyfs_components
 
-
-root = os.path.normpath(os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), os.pardir))
 
 IS_MAC = platform.system() == "Darwin"
 
@@ -33,6 +30,11 @@ def _parse_args(args):
         help="The target cpu, like X86 and ARM, just for Macos",
         type=str,
         default='ARM',
+        required=False)
+    parser.add_argument("--channel",
+        help="The cyfs channel, like nightly and beta",
+        type=str,
+        default='nightly',
         required=False)
     opt = parser.parse_args(args)
 
@@ -78,16 +80,19 @@ def check_chromium_branch(src):
         sys.exit(msg)
 
 def main(args):
+    root = os.path.normpath(os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), os.pardir))
+
     opt = _parse_args(args)
+    prepare_cyfs_components(root, opt.channel, opt.version)
     check_requirements(opt.target_cpu)
     ### patch
-    # apply_patchs(root)
     GitPatcher.update(root)
     ### use chromium gn and ninja tool compile source code
     build_browser(src_path(root), opt.project_name, opt.target_cpu)
 
     ### pack
-    make_installer(root, opt.project_name, opt.version, opt.target_cpu)
+    make_installer(root, opt.project_name, opt.version, opt.target_cpu, opt.channel)
 
     print("Build finished!!")
 

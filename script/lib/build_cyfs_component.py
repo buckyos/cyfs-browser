@@ -5,11 +5,12 @@ import sys
 import shutil
 import subprocess
 import platform
-from lib.util import is_dir_exists, make_dir_exist, make_file_not_exist
-from lib.common import runtime_pack_path, tools_pack_path, cyfs_ts_pack_path, web_page_pack_path
+import argparse
+from util import is_dir_exists, make_dir_exist, make_file_not_exist
+from common import runtime_pack_path, tools_pack_path, cyfs_ts_pack_path, web_page_pack_path
 
-root = os.path.normpath(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), os.pardir))
+# root = os.path.normpath(os.path.join(
+#     os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir))
 
 IS_WIN = platform.system() == 'Windows'
 _NPM = 'npm.cmd' if IS_WIN else 'npm'
@@ -44,6 +45,22 @@ def git_reset_repo(local_path):
         print('Execute cmd %s failed: %s' % (' '.join(cmd), e))
         raise
 
+def get_current_branch_name(local_path):
+    try:
+        cmd = ['git', 'symbolic-ref', '--short', 'HEAD']
+        return subprocess.check_output(cmd, cwd=local_path).decode('ascii').rstrip()
+    except Exception as e:
+        print('Execute cmd %s failed: %s' % (' '.join(cmd), e))
+        return None
+
+def git_clone_repo(repo_url, local_path, branch_name):
+    try:
+        cmd = ['git', 'clone', '-b', branch_name, repo_url]
+        execute_cmd(cmd, cwd=local_path)
+    except Exception as e:
+        print('Execute cmd %s failed: %s' % (' '.join(cmd), e))
+        raise
+
 def git_pull_repo(repo_url, local_path):
     try:
         cmd = ['git', 'pull', repo_url]
@@ -52,40 +69,50 @@ def git_pull_repo(repo_url, local_path):
         print('Execute cmd %s failed: %s' % (' '.join(cmd), e))
         raise
 
-def git_clone_repo(repo_url, local_path):
+def git_checkout(local_path, branch_name):
     try:
-        cmd = ['git', 'clone', repo_url]
+        cmd = ['git', 'checkout', branch_name ]
         execute_cmd(cmd, cwd=local_path)
     except Exception as e:
         print('Execute cmd %s failed: %s' % (' '.join(cmd), e))
         raise
 
-def fetch_source_code(root, repo_url, local_repo_name=None):
+def fetch_source_code(root, repo_url, branch_name, local_repo_name=None):
     try:
         repo_name = local_repo_name or get_repo_name_from_url(repo_url)
         local_path = os.path.join(root, repo_name)
         if not os.path.exists(os.path.join(local_path, '.git')):
-            git_clone_repo(repo_url, root)
-            # cmd = ['git', 'clone', repo_url]
-            # cwd = root
+            git_clone_repo(repo_url, root, branch_name)
         else:
             git_reset_repo(local_path)
+            current_branch_name = get_current_branch_name(local_path)
+            if current_branch_name == None or current_branch_name != branch_name:
+                git_checkout(local_path, branch_name)
             git_pull_repo(repo_url, local_path)
-        # execute_cmd(cmd, cwd=cwd)
         return local_path
     except Exception as e:
         msg = 'Get %s failed: %s' % (repo_url, e)
         print(msg)
         sys.exit(msg)
 
+def get_runtime_dependencies(root, channel, version):
+    local_path = build_cyfs_runtime(root, channel, version)
+    copy_runtime_target(root, local_path)
 
-def get_runtime_dependencies():
-    local_path = build_cyfs_runtime()
-    copy_runtime_target(local_path)
+def get_brnach_by_channel(channel):
+    assert channel in ['nightly', 'beta']
+    channel_branch_map = {
+        'nightly': 'main',
+        'beta': 'beta',
+    }
+    return channel_branch_map[channel]
 
-def build_cyfs_runtime():
+def build_cyfs_runtime(root, channel, version):
+    branch_name = get_brnach_by_channel(channel)
+    os.environ['CHANNEL'] = channel
+    os.environ['VERSION'] = version
     try:
-        local_path = fetch_source_code(root, CYFS_URL)
+        local_path = fetch_source_code(root, CYFS_URL, branch_name)
         src_path = os.path.join(local_path, 'src')
         cmd_args = ['cargo', 'build']
         for tool in CYFS_RUNTIMES:
@@ -98,7 +125,7 @@ def build_cyfs_runtime():
         print(msg)
         sys.exit(msg)
 
-def copy_runtime_target(local_path):
+def copy_runtime_target(root, local_path):
     target_bin_path = os.path.join(local_path, 'src', 'target', 'release')
     for bin_name in CYFS_RUNTIMES:
         bin_name += _EXE
@@ -112,13 +139,16 @@ def copy_runtime_target(local_path):
             make_dir_exist(base_path)
             shutil.copy(local_bin, os.path.join(base_path, bin_name))
 
-def get_tools_dependencies():
-    local_path = build_cyfs_tools()
-    copy_tools_target(local_path)
+def get_tools_dependencies(root, channel, version):
+    local_path = build_cyfs_tools(root, channel, version)
+    copy_tools_target(root, local_path)
 
-def build_cyfs_tools():
+def build_cyfs_tools(root, channel, version):
+    branch_name = get_brnach_by_channel(channel)
+    os.environ['CHANNEL'] = channel
+    os.environ['VERSION'] = version
     try:
-        local_path = fetch_source_code(root, CYFS_URL)
+        local_path = fetch_source_code(root, CYFS_URL, branch_name)
         src_path = os.path.join(local_path, 'src')
         cmd_args = ['cargo', 'build']
         for tool in CYFS_TOOLS:
@@ -130,7 +160,7 @@ def build_cyfs_tools():
         print('Build CYFS TOOLS failed, with %s' % e)
         raise
 
-def copy_tools_target(local_path):
+def copy_tools_target(root, local_path):
     target_bin_path = os.path.join(local_path, 'src', 'target', 'release')
 
     for bin_name in CYFS_TOOLS:
@@ -145,22 +175,27 @@ def copy_tools_target(local_path):
             make_dir_exist(base_path)
             shutil.copy(local_bin, os.path.join(base_path, bin_name))
 
-def get_cyfs_ts_dependencies():
-    local_path = build_cyfs_ts_sdk()
-    copy_cyfs_ts_target(local_path)
+def get_cyfs_ts_dependencies(root, channel, version):
+    local_path = build_cyfs_ts_sdk(root, channel, version)
+    copy_cyfs_ts_target(root, local_path)
 
-def build_cyfs_ts_sdk():
+def build_cyfs_ts_sdk(root, channel, version):
+    channel_branch_map = {
+        'nightly': 'master',
+        'beta': 'beta',
+    }
+    branch_name = channel_branch_map[channel]
     try:
-        local_path = fetch_source_code(root, CYFS_TS_SDK_URL)
+        local_path = fetch_source_code(root, CYFS_TS_SDK_URL, branch_name)
         execute_cmd([_NPM, 'install'], cwd=local_path)
-        execute_cmd([_NPM, 'run', 'build','h5'], cwd=local_path)
+        execute_cmd([_NPM, 'run', 'build','h5', channel], cwd=local_path)
         return local_path
     except Exception as e:
         msg = 'Build CYFS TS SDK failed, with %s' % e
         print(msg)
         sys.exit(msg)
 
-def copy_cyfs_ts_target(local_path):
+def copy_cyfs_ts_target(root, local_path):
     target_file_path = os.path.join(local_path, 'out')
     bin_name = 'cyfs.js'
 
@@ -174,13 +209,14 @@ def copy_cyfs_ts_target(local_path):
         make_dir_exist(pack_path)
         shutil.copy(local_bin, os.path.join(pack_path, bin_name))
 
-def get_web_page_dependencies():
-    local_path = build_cyfs_browser_webpage()
-    copy_web_page_target(local_path)
+def get_web_page_dependencies(root, channel, version):
+    local_path = build_cyfs_browser_webpage(root, channel, version)
+    copy_web_page_target(root, local_path)
 
-def build_cyfs_browser_webpage():
+def build_cyfs_browser_webpage(root, channel, version):
+    branch_name = get_brnach_by_channel(channel)
     try:
-        local_path = fetch_source_code(root, CYFS_WEB_PAGE_URL)
+        local_path = fetch_source_code(root, CYFS_WEB_PAGE_URL, branch_name)
         execute_cmd([_NPM, 'install'], cwd=local_path)
         execute_cmd([_NPM, 'run', 'build'], cwd=local_path)
         return local_path
@@ -189,7 +225,7 @@ def build_cyfs_browser_webpage():
         print(msg)
         sys.exit(msg)
 
-def copy_web_page_target(local_path):
+def copy_web_page_target(root, local_path):
     dir_name = 'www'
     local_pages = os.path.join(local_path, dir_name)
     if not is_dir_exists(local_pages):
@@ -201,16 +237,48 @@ def copy_web_page_target(local_path):
         make_file_not_exist(pack_path)
         shutil.copytree(local_pages, pack_path)
 
-def main():
-    get_runtime_dependencies()
-    get_tools_dependencies()
-    get_web_page_dependencies()
-    get_cyfs_ts_dependencies()
+def prepare_cyfs_components(root, channel, version):
+    get_runtime_dependencies(root, channel, version)
+    get_tools_dependencies(root, channel, version)
+    get_web_page_dependencies(root, channel, version)
+    get_cyfs_ts_dependencies(root, channel, version)
+
+
+def _parse_args(args):
+    root = os.path.normpath(os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root",
+                    help="The components build path",
+                    type=str,
+                    default=root,
+                    required=False)
+    parser.add_argument("--version",
+                    help="The build version.",
+                    type=str,
+                    default='0',
+                    required=False)
+    parser.add_argument("--channel",
+                    help="The cyfs channel, like nightly and beta, just for Macos",
+                    type=str,
+                    default='nightly',
+                    required=False)
+    opt = parser.parse_args(args)
+    return opt
+
+
+def main(args):
+    opt = _parse_args(args)
+    channel = opt.channel if opt.channel else 'nightly'
+    assert channel in [ 'nightly', 'beta']
+    version = opt.version if opt.version else '0'
+    prepare_cyfs_components(opt.root, channel, version)
+
 
 if __name__ == '__main__':
     try:
         print(''.join(sys.argv))
-        sys.exit(main())
+        sys.exit(main(sys.argv[1:]))
     except KeyboardInterrupt:
         sys.stderr.write('interrupted\n')
         sys.exit(1)

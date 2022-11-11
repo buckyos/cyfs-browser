@@ -49,22 +49,15 @@ gclient sync --with_branch_heads --with_tags
 
 ### Build CYFS Browser
 
-1. Update and compile Cyfs componment
+1. Compile CYFS Browser source code
 ```cmd
 cd ${root}/script
 
-python(python3) prepare_cyfs_dependency.py
+python(python3) build.py --project-name=${project_name} --version=${version} --channel=${channel}
+
+### like this: python(python3) build.py --project-name=Browser --version=1 --channel=beta
 ```
 
-2. Compile CYFS Browser source code
-```cmd
-cd ${root}/script
+2.Find the CYFS Browser installation package
 
-python(python3) build.py --project-name=${project_name} --version=${version}
-
-### like this: python(python3) build.py --project-name=Browser --version=1
-```
-
-3.Find the CYFS Browser installation package
-
-`${root}/\browser_install/CYFS_Browser_${version}.exe`
+`${root}/browser_install/CYFS_Browser_${version}.exe`

@@ -11,12 +11,14 @@ from common import pack_app_path,build_target, build_app_path, build_target_path
 
 
 class Pack:
-    def __init__(self, root, target_cpu, project_name, version):
+    def __init__(self, root, target_cpu, project_name, version, channel):
         self._root = root
         self._target_cpu = target_cpu
         self._project_name = project_name
-        self._version = version
+        self._channel = channel
         self._build_target = build_target(target_cpu, project_name)
+        channel_version = 1 if self._channel == "beta" else 0
+        self._version = '1.0.%s.%s' % (channel_version, version)
 
     @property
     def pack_base_path(self):
@@ -85,8 +87,11 @@ class PackForWindows(Pack):
 
     def make_nsis_installer(self):
         try:
-            cmd = [self.nsis_bin_path,  '/DBrowserVersion=%s' %
-                       self._version, self.nsis_script]
+            cmd = [self.nsis_bin_path,
+            '/DBrowserVersion=%s' % self._version,
+            '/Dchannel=%s' % self._channel,
+            self.nsis_script
+        ]
             self.execute_cmd(cmd)
             print('Make installer success')
         except Exception as e:
@@ -248,19 +253,19 @@ PACK_TYPE_MAP = {
 }
 
 
-def PackFactory(type_name, root, target_cpu, project_name, version):
+def PackFactory(type_name, root, target_cpu, project_name, version, channel):
     '''Factory to build Pack class instances.'''
     class_ = PACK_TYPE_MAP.get(type_name)
     if not class_:
         raise KeyError('unrecognized pack type: %s' % type_name)
-    return class_(root, target_cpu, project_name, version)
+    return class_(root, target_cpu, project_name, version, channel)
 
 
-def make_installer(root, project_name, version, target_cpu):
+def make_installer(root, project_name, version, target_cpu, channel):
     assert platform.system() in ['Windows', 'Darwin']
     try:
         pack = PackFactory(platform.system(), root,
-                           target_cpu, project_name, version)
+                           target_cpu, project_name, version, channel)
         pack.pack()
     except Exception as e:
         print('Make Installer failed, error: %s' % e)

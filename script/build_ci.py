@@ -13,9 +13,6 @@ from lib.common import src_path, MAC_CPUS
 from lib.git_patch import GitPatcher
 
 
-root = os.path.normpath(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), os.pardir))
-
 IS_MAC = platform.system() == "Darwin"
 IS_WIN = platform.system() == "Windows"
 
@@ -34,6 +31,11 @@ def _parse_args(args):
                         type=str,
                         default='ARM',
                         required=False)
+    parser.add_argument("--channel",
+                    help="The cyfs channel, like nightly and beta",
+                    type=str,
+                    default='nightly',
+                    required=False)
     opt = parser.parse_args(args)
 
     assert opt.project_name.strip()
@@ -49,7 +51,7 @@ def _parse_args(args):
 def set_env_variables():
     print('Begin setting environment variables')
     if IS_WIN:
-        depot_tool_path = os.environ.get('DEPOT_TOOL_PATH', 'C:\\buildtools\\depot_tools')
+        depot_tool_path = os.environ.get('DEPOT_TOOL_PATH')
         print('depot_tool_path = %s' % depot_tool_path)
         assert os.path.exists(depot_tool_path), 'Please provide [DEPOT_TOOL_PATH] env variable'
         os.environ['PATH'] = depot_tool_path + os.path.pathsep + os.environ['PATH']
@@ -61,6 +63,8 @@ def set_env_variables():
 
 
 def main(args):
+    root = os.path.normpath(os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), os.pardir))
     opt = _parse_args(args)
     current_os = platform.system()
     assert current_os in ['Windows', 'Darwin']
@@ -81,7 +85,7 @@ def main(args):
         build_browser(src_path(root), opt.project_name, opt.target_cpu)
 
     ### pack
-    make_installer(root, opt.target_cpu, opt.project_name, opt.version, is_match_cache)
+    make_installer(root, opt.target_cpu, opt.project_name, opt.version, is_match_cache, opt.channel)
     if not is_match_cache:
         check.update_build_cache_and_version()
 

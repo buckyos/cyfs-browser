@@ -56,24 +56,17 @@ gclient sync --with_branch_heads --with_tags
 
 ### Build CYFS Browser
 
-1. Update and compile Cyfs componment
-```bash
-cd ${root}/script
-
-python(python3) prepare_cyfs_dependency.py
-```
-
-2. Compile CYFS Browser source code
+1. Compile CYFS Browser source code
 [note] if you build machine is macos, you must to set target-cpu argument like `ARM` and `X86`
 ARM is mean m1 cpu machine, and X86 is mean x86 cpu machine
 ```bash
 cd ${root}/script
 
-python(python3) build.py --project-name=${project_name} --version=${version} --target-cpu=${target_cpu}
+python(python3) build.py --project-name=${project_name} --version=${version} --target-cpu=${target_cpu} --channel=${channel}
 
-### like this: python(python3) build.py --project-name=Browser --version=1 --target-cpu=ARM
+### like this: python(python3) build.py --project-name=Browser --version=1 --target-cpu=ARM --channel=beta
 ```
 
-3.Find the CYFS Browser installation package
+2.Find the CYFS Browser installation package
 
 `${root}/dmg/${target_cpu}/cyfs-browser-installer-${version}.dmg`

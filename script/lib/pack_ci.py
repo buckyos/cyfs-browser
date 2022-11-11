@@ -11,13 +11,15 @@ from common import local_nft_web_path, local_nft_bin_path, local_extension_path,
 
 
 class Pack:
-    def __init__(self, root, target_cpu, project_name, version, is_match_cache):
+    def __init__(self, root, target_cpu, project_name, version, is_match_cache, channel):
         self._root = root
         self._target_cpu = target_cpu
         self._project_name = project_name
-        self._version = version
+        self._channel = channel
         self._is_match_cache = is_match_cache
         self._build_target = build_target(target_cpu, project_name)
+        channel_version = 1 if self._channel == "beta" else 0
+        self._version = '1.0.%s.%s' % (channel_version, version)
 
     @property
     def static_page_path(self):
@@ -201,8 +203,11 @@ class PackForWindows(Pack):
 
     def make_nsis_installer(self):
         try:
-            cmd = [self.nsis_bin_path,  '/DBrowserVersion=%s' %
-                    self._version, self.nsis_script]
+            cmd = [self.nsis_bin_path,
+                '/DBrowserVersion=%s' % self._version,
+                '/Dchannel=%s' % self._channel,
+                self.nsis_script
+            ]
             self.execute_cmd(cmd)
             print('Make installer success')
         except Exception as e:
@@ -225,7 +230,6 @@ class PackForMacos(Pack):
     @property
     def dmg_file(self):
         cpu_type = 'aarch64' if self._target_cpu == 'ARM' else 'x86'
-        # version = '1.0.0.%s' % self._version
         dmg_filename = "cyfs-browser-%s-%s.dmg" % (self._version, cpu_type)
         return os.path.join(self.pack_base_path, dmg_filename)
 
@@ -338,18 +342,18 @@ PACK_TYPE_MAP = {
 }
 
 
-def PackFactory(type_name, root, target_cpu, project_name, version, is_match_cache):
+def PackFactory(type_name, root, target_cpu, project_name, version, is_match_cache, channel):
     """Factory to build Pack class instances."""
     class_ = PACK_TYPE_MAP.get(type_name)
     if not class_:
         raise KeyError('unrecognized pack type: %s' % type_name)
-    return class_(root, target_cpu, project_name, version, is_match_cache)
+    return class_(root, target_cpu, project_name, version, is_match_cache, channel)
 
 
-def make_installer(root, target_cpu, project_name, version, is_match_cache):
+def make_installer(root, target_cpu, project_name, version, is_match_cache, channel):
     assert platform.system() in ["Windows", "Darwin"]
     try:
-        pack = PackFactory(platform.system(), root, target_cpu, project_name, version, is_match_cache)
+        pack = PackFactory(platform.system(), root, target_cpu, project_name, version, is_match_cache, channel)
         pack.pack()
     except Exception:
         print("Make Installer failed, error: %s" % Exception)

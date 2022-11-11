@@ -11,6 +11,7 @@
 !define RUNTIME_EXE_NAME "${PRODUCT_RUNTIME_NAME}.exe"
 !define RUNTIME_DESKTOP_NAME "Cyfs Runtime"
 !define PRODUCT_VERSION "${BrowserVersion}"
+!define PRODUCT_CHANNEL "${channel}"
 !define RUNTIME_PRODUCT_VERSION "${RuntimeVersion}"
 !define PRODUCT_PUBLISHER "CYFS Core Dev Team"
 !define PRODUCT_WEB_SITE "https://cyfs.com"
@@ -73,12 +74,12 @@ CYFS Browser can help you easily create NFT works, and convert any file into NFT
 
 !define MUI_LICENSEPAGE_TEXT_TOP "Press Page Down to see the terms of the agreement."
 !define MUI_LICENSEPAGE_TEXT_BOTTOM "If you accept the terms of the agreement, click I Agree to continue."
-!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "Please wait while CYFS Browser (V ${BrowserVersion}) is being installed"
+!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "Please wait while CYFS Browser (V ${BrowserVersion} ${channel}) is being installed"
 ; !define MUI_INSTFILESPAGE_FINISHHEADER_SUBTEXT
 
 
 !define MUI_FINISHPAGE_TITLE "CYFS Browser install complete"
-!define MUI_FINISHPAGE_TEXT "CYFS Browser (V ${BrowserVersion}) has been installed on your computer.$\r$\n\
+!define MUI_FINISHPAGE_TEXT "CYFS Browser (V ${BrowserVersion} ${channel}) has been installed on your computer.$\r$\n\
 $\nClick finish to close Setup."
 
 ; !define MUI_TEXTCOLOR "000000"
@@ -105,10 +106,10 @@ $\nClick finish to close Setup."
 !insertmacro MUI_LANGUAGE "English"
 
 
-Name "${BROWSER_NAME_ALIAS} ${PRODUCT_VERSION}"
+Name "${BROWSER_NAME_ALIAS} ${PRODUCT_VERSION} ${channel}"
 ; Name "${BROWSER_NAME_ALIAS}"
 OutFile "${PRODUCT_NAME}_${PRODUCT_VERSION}.exe"
-Caption "${BROWSER_NAME_ALIAS} Install (V ${BrowserVersion})"
+Caption "${BROWSER_NAME_ALIAS} Install (V ${BrowserVersion} ${channel})"
 
 ;ShowInstDetails nevershow
 ;ShowUnInstDetails nevershow
