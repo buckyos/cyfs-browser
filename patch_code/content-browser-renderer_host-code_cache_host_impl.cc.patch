@@ -1,12 +1,14 @@
 diff --git a/content/browser/renderer_host/code_cache_host_impl.cc b/content/browser/renderer_host/code_cache_host_impl.cc
-index 364a513fd343812321c2233fad73e4c4fd305e8d..68444760211ec6781703d979404ab72b826c9597 100644
+index 364a513fd343812321c2233fad73e4c4fd305e8d..b87e9944ee75f8ed1767c69728041181f77ffd59 100644
 --- a/content/browser/renderer_host/code_cache_host_impl.cc
 +++ b/content/browser/renderer_host/code_cache_host_impl.cc
-@@ -82,6 +82,8 @@ bool CheckSecurityForAccessingCodeCacheData(const GURL& resource_url,
+@@ -82,6 +82,10 @@ bool CheckSecurityForAccessingCodeCacheData(const GURL& resource_url,
      return true;
    }
  
 +  if (resource_url.SchemeIsCYFS()) return true;
++
++  if (resource_url.SchemeIsIPFS() || resource_url.SchemeIsIPNS()) return true;
 +
    if (operation == Operation::kWrite) {
      mojo::ReportBadMessage("Invalid URL scheme for code cache.");

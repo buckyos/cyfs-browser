@@ -1,13 +1,14 @@
 diff --git a/content/browser/child_process_security_policy_impl.cc b/content/browser/child_process_security_policy_impl.cc
-index bbc7c3ece412305782f32da392715e1639467b57..0570e9321ca370f0828340e9fb55578589d3d1ef 100644
+index bbc7c3ece412305782f32da392715e1639467b57..2b3fd3a32ae01dd2a4f71e6c974b3534c437f40f 100644
 --- a/content/browser/child_process_security_policy_impl.cc
 +++ b/content/browser/child_process_security_policy_impl.cc
-@@ -1149,6 +1149,8 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
-     }
-   }
- 
-+  if (url.SchemeIsCYFS()) return true;
-+
-   // Also allow URLs destined for ShellExecute and not the browser itself.
-   return !GetContentClient()->browser()->IsHandledURL(url);
- }
+@@ -730,6 +730,9 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl()
+   // We know about these schemes and believe them to be safe.
+   RegisterWebSafeScheme(url::kHttpScheme);
+   RegisterWebSafeScheme(url::kHttpsScheme);
++  RegisterWebSafeScheme(url::kCyfsScheme);
++  RegisterWebSafeScheme(url::kIpnsScheme);
++  RegisterWebSafeScheme(url::kIpfsScheme);
+ #if BUILDFLAG(ENABLE_WEBSOCKETS)
+   RegisterWebSafeScheme(url::kWsScheme);
+   RegisterWebSafeScheme(url::kWssScheme);
