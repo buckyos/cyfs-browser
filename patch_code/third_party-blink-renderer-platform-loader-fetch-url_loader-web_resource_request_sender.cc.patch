@@ -1,0 +1,42 @@
+diff --git a/third_party/blink/renderer/platform/loader/fetch/url_loader/web_resource_request_sender.cc b/third_party/blink/renderer/platform/loader/fetch/url_loader/web_resource_request_sender.cc
+index adf5be9ca3fffc1fad6955ae6912d18023da9bab..9baaa662a412ab0b1b00e6c23535c54d16d87652 100644
+--- a/third_party/blink/renderer/platform/loader/fetch/url_loader/web_resource_request_sender.cc
++++ b/third_party/blink/renderer/platform/loader/fetch/url_loader/web_resource_request_sender.cc
+@@ -24,6 +24,7 @@
+ #include "net/base/load_flags.h"
+ #include "net/base/net_errors.h"
+ #include "net/base/request_priority.h"
++#include "net/http/http_request_headers.h"
+ #include "net/http/http_response_headers.h"
+ #include "net/url_request/referrer_policy.h"
+ #include "services/network/public/cpp/features.h"
+@@ -180,6 +181,14 @@ void WebResourceRequestSender::SendSync(
+         resource_load_info_notifier_wrapper) {
+   CheckSchemeForReferrerPolicy(*request);
+ 
++  auto request_initiator_string = request->request_initiator.value_or(url::Origin()).Serialize();
++  const std::string EXTENSION_PREFIX = "chrome-extension://";
++  if (base::StartsWith(request_initiator_string, EXTENSION_PREFIX)) {
++    std::string extension_id;
++    base::TrimString(request_initiator_string, EXTENSION_PREFIX, &extension_id);
++    request->headers.SetHeaderIfMissing(net::HttpRequestHeaders::KCyfsBrowserExtension, extension_id);
++  }
++
+   DCHECK(loader_options & network::mojom::kURLLoadOptionSynchronous);
+   DCHECK(request->load_flags & net::LOAD_IGNORE_LIMITS);
+ 
+@@ -250,6 +259,14 @@ int WebResourceRequestSender::SendAsync(
+     WebBackForwardCacheLoaderHelper back_forward_cache_loader_helper) {
+   CheckSchemeForReferrerPolicy(*request);
+ 
++  auto request_initiator_string = request->request_initiator.value_or(url::Origin()).Serialize();
++  const std::string EXTENSION_PREFIX = "chrome-extension://";
++  if (base::StartsWith(request_initiator_string, EXTENSION_PREFIX)) {
++    std::string extension_id;
++    base::TrimString(request_initiator_string, EXTENSION_PREFIX, &extension_id);
++    request->headers.SetHeaderIfMissing(net::HttpRequestHeaders::KCyfsBrowserExtension, extension_id);
++  }
++
+   // Compute a unique request_id for this renderer process.
+   int request_id = MakeRequestID();
+   request_info_ = std::make_unique<PendingRequestInfo>(

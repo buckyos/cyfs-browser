@@ -1,0 +1,12 @@
+diff --git a/net/http/http_request_headers.h b/net/http/http_request_headers.h
+index dbc3124def71bc6e639ae6484c35eb412f6d5370..db4d7d74b8c474fe7c15af1e2b179f9c7053d818 100644
+--- a/net/http/http_request_headers.h
++++ b/net/http/http_request_headers.h
+@@ -96,6 +96,7 @@ class NET_EXPORT HttpRequestHeaders {
+   static const char kReferer[];
+   static const char kTransferEncoding[];
+   static const char kUserAgent[];
++  static const char KCyfsBrowserExtension[];
+ 
+   HttpRequestHeaders();
+   HttpRequestHeaders(const HttpRequestHeaders& other);

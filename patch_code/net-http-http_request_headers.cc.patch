@@ -1,0 +1,12 @@
+diff --git a/net/http/http_request_headers.cc b/net/http/http_request_headers.cc
+index 5e5a4b85fd0fdb38594a549a1431fecda249ad6c..31acf741f055eb6325ed522ccc03605a76d1333c 100644
+--- a/net/http/http_request_headers.cc
++++ b/net/http/http_request_headers.cc
+@@ -55,6 +55,7 @@ const char HttpRequestHeaders::kRange[] = "Range";
+ const char HttpRequestHeaders::kReferer[] = "Referer";
+ const char HttpRequestHeaders::kTransferEncoding[] = "Transfer-Encoding";
+ const char HttpRequestHeaders::kUserAgent[] = "User-Agent";
++const char HttpRequestHeaders::KCyfsBrowserExtension[] = "cyfs-browser-extension";
+ 
+ HttpRequestHeaders::HeaderKeyValuePair::HeaderKeyValuePair() = default;
+ 

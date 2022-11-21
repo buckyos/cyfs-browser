@@ -1,0 +1,13 @@
+diff --git a/services/network/public/cpp/url_util.cc b/services/network/public/cpp/url_util.cc
+index f41b8934ff7bc17f5d2f0cc4242bb83fd8ac8704..f4c862e394536bc95b8214a9061b8892296be3ce 100644
+--- a/services/network/public/cpp/url_util.cc
++++ b/services/network/public/cpp/url_util.cc
+@@ -9,7 +9,7 @@
+ namespace network {
+ 
+ bool IsURLHandledByNetworkService(const GURL& url) {
+-  return (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS());
++  return (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS() || url.SchemeIsCYFS());
+ }
+ 
+ }  // namespace network
