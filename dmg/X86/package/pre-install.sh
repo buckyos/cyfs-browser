@@ -1,9 +1,9 @@
 #!/bin/sh
 
-readonly PLIST=${HOME}/Library/LaunchAgents/com.cyfs.runtime-monitor.plist
-readonly RUNTIME_DIR=${HOME}/Library/Application\ Support/cyfs/services/runtime
-readonly OLD_DEFAULT_EXTENSION_DIR=${HOME}/Library/Application\ Support/cyber/Extensions
-readonly NEW_DEFAULT_EXTENSION_DIR=${HOME}/Library/Application\ Support/cyber/Default/cyfs_extensions
+readonly PLIST="${HOME}/Library/LaunchAgents/com.cyfs.runtime-monitor.plist"
+readonly RUNTIME_DIR="${HOME}/Library/Application\ Support/cyfs/services/runtime"
+readonly OLD_DEFAULT_EXTENSION_DIR="${HOME}/Library/Application\ Support/cyber/Extensions"
+readonly NEW_DEFAULT_EXTENSION_DIR="${HOME}/Library/Application\ Support/cyber/Default/cyfs_extensions"
 
 # unload cyfs-runtime monitor task if task is exist
 monitor_task_id=`launchctl list | grep com.cyfs.runtime-monitor | grep -v "grep"`
