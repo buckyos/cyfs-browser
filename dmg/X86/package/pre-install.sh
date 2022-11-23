@@ -2,8 +2,7 @@
 
 readonly PLIST="${HOME}/Library/LaunchAgents/com.cyfs.runtime-monitor.plist"
 readonly RUNTIME_DIR="${HOME}/Library/Application\ Support/cyfs/services/runtime"
-readonly OLD_DEFAULT_EXTENSION_DIR="${HOME}/Library/Application\ Support/cyber/Extensions"
-readonly NEW_DEFAULT_EXTENSION_DIR="${HOME}/Library/Application\ Support/cyber/Default/cyfs_extensions"
+
 
 # unload cyfs-runtime monitor task if task is exist
 monitor_task_id=`launchctl list | grep com.cyfs.runtime-monitor | grep -v "grep"`
@@ -48,10 +47,6 @@ echo remove "${RUNTIME_DIR}"
 # remove plist file if the file is exist
 echo remove ${PLIST}
 [ -f ${PLIST} ] && rm -rf ${PLIST}
-
-echo remove last browser extension dir
-[ -d "${OLD_DEFAULT_EXTENSION_DIR}" ] && rm -rf "${OLD_DEFAULT_EXTENSION_DIR}"
-[ -d "${NEW_DEFAULT_EXTENSION_DIR}" ] && rm -rf "${NEW_DEFAULT_EXTENSION_DIR}"
 
 
 exit 0
