@@ -33,7 +33,7 @@ def cyfs_runtime_path(root, target_cpu=None):
         return os.path.join(root, "browser_install", "cyfs-runtime-pack")
     elif IS_MAC:
         assert target_cpu is not None
-        return os.path.join(root, "dmg", target_cpu)
+        return os.path.join(root, "dmg", target_cpu, "runtime")
     else:
         raise Exception("Unsupported platform")
 

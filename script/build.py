@@ -48,7 +48,7 @@ def _parse_args(args):
 
     return opt
 
-def check_requirements(target_cpu):
+def check_requirements(root, target_cpu):
     _static_page_path = static_page_path(root, target_cpu)
     if not is_dir_exists(_static_page_path):
         sys.exit("cyfs static page %s is not available, please check!" % _static_page_path)
@@ -85,7 +85,7 @@ def main(args):
 
     opt = _parse_args(args)
     prepare_cyfs_components(root, opt.channel, opt.version)
-    check_requirements(opt.target_cpu)
+    check_requirements(root, opt.target_cpu)
     ### patch
     GitPatcher.update(root)
     ### use chromium gn and ninja tool compile source code

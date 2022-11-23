@@ -6,7 +6,7 @@ import subprocess
 import shutil
 import zipfile
 from common import local_extension_path, static_page_path, ts_sdk_path
-from common import src_path, build_target, pack_app_path, local_nft_web_path, local_nft_bin_path
+from common import src_path, build_target, pack_app_path, build_app_path, local_nft_web_path, local_nft_bin_path
 from util import make_dir_exist, is_dir_exists, make_file_not_exist
 
 def download_file(remote_path, local_path, is_dir=False):
@@ -291,6 +291,10 @@ class CheckForMacosCIBuild(CheckForCIBuild):
         return pack_app_path(self._root, self._target_cpu, self._app_name)
 
     @property
+    def build_app_path(self):
+        return build_app_path(self._root, self._target_cpu, self._app_name)
+
+    @property
     def cache_version_file(self):
         local_mark = os.path.join(self._root, self.cache_mark_file)
         remote_mark = os.path.join(self.remote_cache_path, self._target_cpu, self.cache_mark_file)
@@ -405,6 +409,11 @@ class CheckForMacosCIBuild(CheckForCIBuild):
             raise
 
     def get_match_build_cache(self):
+        if os.path.exists(self.pack_app_path):
+            shutil.rmtree(self.pack_app_path)
+
+        if os.path.exists(self.build_app_path):
+            os.rmdir(self.build_app_path)
         is_match = False
         try:
             commit_id = self.get_repo_version()
