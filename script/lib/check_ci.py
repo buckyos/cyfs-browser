@@ -292,7 +292,7 @@ class CheckForMacosCIBuild(CheckForCIBuild):
 
     @property
     def build_app_path(self):
-        return build_app_path(self._root, self._target_cpu, self._app_name)
+        return build_app_path(self._root, self._build_target, self._app_name)
 
     @property
     def cache_version_file(self):
@@ -413,7 +413,7 @@ class CheckForMacosCIBuild(CheckForCIBuild):
             shutil.rmtree(self.pack_app_path)
 
         if os.path.exists(self.build_app_path):
-            os.rmdir(self.build_app_path)
+            shutil.rmtree(self.build_app_path)
         is_match = False
         try:
             commit_id = self.get_repo_version()
