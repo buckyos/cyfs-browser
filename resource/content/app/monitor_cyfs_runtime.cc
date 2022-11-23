@@ -22,13 +22,17 @@ namespace {
 
 base::FilePath GetLocalAppData() {
   base::FilePath app_data_dir;
+#if BUILDFLAG(IS_WIN)
   int key = base::DIR_ROAMING_APP_DATA;
-#if BUILDFLAG(IS_MAC)
-  key = base::DIR_APP_DATA;
-#endif
   if (!base::PathService::Get(key, &app_data_dir)) {
     VLOG(1) << "Can't get app data dir";
   }
+#else
+  int key = base::DIR_APP_DATA;
+  if (!base::PathService::Get(key, &app_data_dir)) {
+    VLOG(1) << "Can't get app data dir";
+  }
+#endif
   return app_data_dir;
 }
 
