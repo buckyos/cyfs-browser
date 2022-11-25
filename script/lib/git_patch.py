@@ -245,6 +245,7 @@ class GitPatcher:
             print('Read %s failed, error: %s' %(patch_json_file, e))
 
         for relpath, patchs in patch_json_data.items():
+            relpath = relpath.replace("\\",'/')
             src_path = os.path.normpath(os.path.join(root_src_path, relpath))
             patch_base_path = os.path.normpath(os.path.join(root_patch_base_path, relpath))
             git_patcher = cls(src_path, patch_base_path, patchs)
