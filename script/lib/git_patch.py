@@ -41,11 +41,11 @@ def git_cmd(command, **kwargs):
         print('Git cmd %s failed, error: %s' % (command, e))
         raise
 
-def reset_repo_files(src, all_repo_paths):
+def reset_repo_files(src_path, all_repo_paths):
     assert isinstance(all_repo_paths, list)
     try:
         cmd = ['git', 'checkout'] + all_repo_paths
-        git_cmd(cmd, cwd=src)
+        git_cmd(cmd, cwd=src_path)
     except Exception as e:
         msg = 'Reset repo files failed, error: %s' % e
         print(msg)
@@ -72,81 +72,63 @@ def get_patch_info(patch_info):
 
 class GitPatch:
     def __init__(self, src_path, patch_base_path, patch_name):
-        self._src_path = src_path
-        self._base_path = patch_base_path
+        self._src_path = os.path.normpath(src_path)
+        self._base_path = os.path.normpath(patch_base_path)
         self._patch_name = patch_name
-        self._origin_files = get_patch_apply_to(self.full_path)
-        assert len(self._origin_files)
 
-    @property
-    def full_path(self):
-        return os.path.join(self._base_path, self._patch_name)
+        self._patch_path = os.path.normpath(os.path.join(self._base_path, self._patch_name))
+        origin_files = get_patch_apply_to(self._patch_path)
+        self._origin_files = [ os.path.normpath(x) for x in origin_files]
 
-    @property
-    def hash(self):
-        return get_file_hash(self.full_path)
-
-    @property
-    def apply_to(self):
-        return self._origin_files
-
-    @property
-    def patch_info_abspath(self):
         pacth_info_file = self._patch_name[:-len(patch_suffix)] + patchinfo_suffix
-        return os.path.join(self._base_path, pacth_info_file)
-
-    def get_src_file_hash(self, filename):
-        full_path = os.path.join(self._src_path, filename)
-        return get_file_hash(full_path)
+        self._patch_info_path = os.path.normpath(os.path.join(self._base_path, pacth_info_file))
 
     def write_patch_info(self):
         json_string = dict()
         json_string['write_time'] = datetime.datetime.now()
         json_string['file'] = self._patch_name
-        json_string['hash'] = self.hash
+        json_string['hash'] = get_file_hash(self._patch_path)
         origin_file_infos = json_string["apply_to"] = list()
-        for origin_file in self.apply_to:
-            file_hash = self.get_src_file_hash(origin_file)
+        for origin_file in self._origin_files:
+            origin_file_full_path = os.path.join(self._src_path, origin_file)
+            file_hash = get_file_hash(origin_file_full_path)
             file_info = {'file': origin_file, 'hash': file_hash}
             origin_file_infos.append(file_info)
 
-        with open(self.patch_info_abspath, 'w') as f:
+        with open(self._patch_info_path, 'w') as f:
             json.dump(json_string, f, indent=4, default=str)
 
     def reset_related_file(self):
-        print('Begin Reset last modify file %s ' % (' '.join(self.apply_to)))
-        reset_repo_files(self._src_path, self.apply_to)
+        print('Begin Reset last modify file %s ' % (' '.join(self._origin_files)))
+        reset_repo_files(self._src_path, self._origin_files)
         print('End Reset last modify file')
 
     def apply_patch(self):
-        print('Begin Applying patche %s' % self.full_path)
-        apply_patch(self._src_path, self.full_path)
-        print('End Applying patche %s' % self.full_path)
+        print('Begin Applying patche %s' % self._patch_path)
+        apply_patch(self._src_path, self._patch_path)
+        print('End Applying patche %s' % self._patch_path)
 
 class GitPatcher:
-    change_record = 'change_files.json'
-    def __init__(self, root):
-        self._root = root
+    def __init__(self, src_path, patch_base_path, patchs):
+        self._src_path = src_path
+        self._patch_base_path = patch_base_path
+        self._patchs = patchs
         self._git_patchs = []
 
     @property
     def src_path(self):
-        return os.path.join(self._root, "src")
+        return self._src_path
 
     @property
     def patch_base_path(self):
-        return os.path.join(self._root, "patch_code")
-
-    @property
-    def resource_base_path(self):
-        return os.path.join(self._root, "resource")
+        return self._patch_base_path
 
     def get_src_file_hash(self, filename):
-        full_path = os.path.join(self.src_path, filename)
+        full_path = os.path.normpath(os.path.join(self.src_path, filename))
         return get_file_hash(full_path)
 
-    def get_patch_hash(self, filename):
-        full_path = os.path.join(self.patch_base_path, filename)
+    def get_patch_hash(self,filename):
+        full_path = os.path.normpath(os.path.join(self.patch_base_path, filename))
         return get_file_hash(full_path)
 
     def check_if_needed_apply(self, patch_name):
@@ -154,7 +136,7 @@ class GitPatcher:
             if cureent patch file's hash is same like last pacth which have same name,
             it mean this patch no neened apply to chromium src file '''
         patch_info_file = patch_name[:-len(patch_suffix)] + patchinfo_suffix
-        patch_info_file_abspath = os.path.join(self.patch_base_path, patch_info_file)
+        patch_info_file_abspath = os.path.normpath(os.path.join(self.patch_base_path, patch_info_file))
         if not os.path.exists(patch_info_file_abspath):
             return True
 
@@ -176,16 +158,14 @@ class GitPatcher:
 
     def apply_patchs(self):
         print('Begin apply patches')
-        all_files = os.listdir(self.patch_base_path)
-        patchs = list(filter(lambda x: x.endswith(patch_suffix), all_files))
-        for patch in patchs:
+
+        for patch in self._patchs:
             if self.check_if_needed_apply(patch):
                 git_patch = GitPatch(self.src_path, self.patch_base_path, patch)
                 self._git_patchs.append(git_patch)
             else:
                 print('Current patch %s is same as last patch, no needed apply patch' % patch)
         print('Found %s patch needs to be applied' % len(self._git_patchs))
-
 
         self.perform_apply_for_patches()
 
@@ -247,39 +227,51 @@ class GitPatcher:
 
         print('End Handle obsolet patch infos')
 
-    def update_resource_file(self, file):
-        src_path = os.path.join(self.resource_base_path, file)
-        if not os.path.exists(src_path):
-            return
-        is_dir = os.path.isdir(src_path)
-        dst_path = os.path.join(self.src_path, file)
-        if not os.path.exists(os.path.dirname(dst_path)):
-            os.makedirs(os.path.dirname(dst_path), exist_ok=True)
-        print('Update Resource File %s to %s' % (src_path, dst_path))
-        if not is_dir:
-            shutil.copy(src_path, dst_path)
-        else:
-            shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
-
-    def update_resource_files(self):
-        print('Begin update source files')
-        change_record_file = os.path.join(self.resource_base_path, self.change_record)
-        if not os.path.exists(change_record_file):
-            return
-
-        with open(change_record_file, 'r') as f:
-            json_string = json.load(f)
-            need_copy_files = json_string['Add']['files'] + json_string['Update']['files']
-
-        for file in need_copy_files:
-            self.update_resource_file(file)
-        print('End update source files')
-
     @classmethod
     def update(cls, root):
-        git_patcher = cls(root)
-        git_patcher.apply_patchs()
-        git_patcher.update_resource_files()
+        root_src_path = os.path.join(root, 'src')
+        root_resource_path = os.path.join(root, 'resource')
+        change_json_file = os.path.join(root_resource_path, 'change_files.json')
+        root_patch_base_path = os.path.join(root, 'patch_code')
+        patch_json_file = os.path.join(root_patch_base_path, 'patch_files.json')
+        patch_json_data = dict()
+        try:
+            with open(patch_json_file, 'r') as f:
+                patch_json_data = json.load(f)
+        except Exception as e:
+            print('Read %s failed, error: %s' %(patch_json_file, e))
+
+        for relpath, patchs in patch_json_data.items():
+            src_path = os.path.normpath(os.path.join(root_src_path, relpath))
+            patch_base_path = os.path.normpath(os.path.join(root_patch_base_path, relpath))
+            git_patcher = cls(src_path, patch_base_path, patchs)
+            git_patcher.apply_patchs()
+
+        need_copy_files = []
+        try:
+            with open(change_json_file, 'r') as f:
+                change_json_data = json.load(f)
+                need_copy_files = change_json_data['Add']['files'] + change_json_data['Update']['files']
+        except Exception as e:
+            print('Read %s failed, error: %s' %(change_json_file, e))
+
+        print('Begin copying files')
+        for file in need_copy_files:
+            file = os.path.normpath(file)
+            src_file = os.path.normpath(os.path.join(root_resource_path, file))
+            if not os.path.exists(src_file):
+                continue
+            is_dir = os.path.isdir(src_file)
+            dst_file = os.path.join(root_src_path, file)
+            if not os.path.exists(os.path.dirname(dst_file)):
+                os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+            print('Update Resource File %s to %s' % (src_file, dst_file))
+            if not is_dir:
+                shutil.copy(src_file, dst_file)
+            else:
+                shutil.copytree(src_file, dst_file, dirs_exist_ok=True)
+        print('End copying files')
+
 
 def main():
     this_path = os.path.dirname(os.path.abspath(__file__))

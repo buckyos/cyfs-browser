@@ -12,7 +12,8 @@ not_patched_end_path = []
 not_patched_file = []
 
 update_suffix = ['.xtb', '.grd', '.grdp']
-update_files = ['chrome/browser/resources/cyfs_init/starting.png']
+root_update_files = ['chrome/browser/resources/cyfs_init/starting.png']
+update_files = []
 not_update_suffix = ['.log']
 
 create_patch_args = ['--src-prefix=a/', '--dst-prefix=b/', '--full-index']
@@ -37,12 +38,22 @@ def check_patch_filter(file):
 
 class UpdatePatcher:
     change_record = 'change_files.json'
-    def __init__(self, root, src_path=[], patch_path=None, commid_ids=[], resource_path=None):
+    patch_record = 'patch_files.json'
+    def __init__(self, root, src_path, root_patch_path, root_resource_path, is_3rd_party = False, commid_ids=[]):
         assert len(commid_ids) == 2 or len(commid_ids) == 0
         self._root = root
-        self._src_path = src_path or 'src'
-        self._resource_path = resource_path or 'resource'
-        self._patch_path = patch_path or 'patch_code'
+        self._root_src_path = os.path.join(root, "src")
+        self._src_path = src_path
+        self._is_3rd_party = is_3rd_party
+        self._root_resource_path = root_resource_path
+        self._root_patch_path = root_patch_path
+
+        self._resource_path = root_resource_path
+        self._patch_path = root_patch_path
+        if self._is_3rd_party:
+            relpath = os.path.relpath(self._src_path, self._root_src_path)
+            self._patch_path = os.path.join(root_patch_path, relpath)
+
         self._commid_ids = commid_ids
 
         self._success_patch = []
@@ -50,11 +61,15 @@ class UpdatePatcher:
 
     @property
     def src_path(self):
-        return os.path.join(self._root, self._src_path)
+        return self._src_path
 
     @property
     def change_record_file(self):
-        return os.path.join(self.resource_path, self.change_record)
+        return os.path.join(self._root_resource_path, self.change_record)
+
+    @property
+    def patch_record_file(self):
+        return os.path.join(self._root_patch_path, self.patch_record)
 
     @property
     def commid_ids(self):
@@ -62,15 +77,13 @@ class UpdatePatcher:
 
     @property
     def patch_path(self):
-        path = os.path.join(self._root, self._patch_path)
-        os.makedirs(path, exist_ok=True)
-        return path
+        os.makedirs(self._patch_path, exist_ok=True)
+        return self._patch_path
 
     @property
     def resource_path(self):
-        path = os.path.join(self._root, self._resource_path)
-        os.makedirs(path, exist_ok=True)
-        return path
+        os.makedirs(self._resource_path, exist_ok=True)
+        return self._resource_path
 
     @staticmethod
     def git_cmd_output(command, **kwargs):
@@ -152,6 +165,20 @@ class UpdatePatcher:
             self.write_patch_file(path)
         print('End write pacth files')
 
+    def update_patch_records(self):
+        relpath = os.path.relpath(self.patch_path, self._root_patch_path)
+        json_data = dict()
+        try:
+            with open(self.patch_record_file, 'r') as f:
+                json_data = json.load(f)
+        except Exception as e:
+            print('load json failed: %s' % e)
+
+        json_data.update({relpath: self._success_patch})
+        with open(self.patch_record_file, 'w') as f:
+            json.dump(json_data, f, indent=4, default=str)
+
+
     def delete_last_create_patch(self):
         print('Begin delete last create patchs')
         all_files = os.listdir(self.patch_path)
@@ -166,19 +193,36 @@ class UpdatePatcher:
 
     def create_patch(self):
         self.write_patch_files()
+        self.update_patch_records()
         self.delete_last_create_patch()
         if self._failure_patch:
             print('Patch failed: %s' % ' '.join(self._failure_patch))
 
     def update_change_file_record(self, change_infos):
-        json_string = dict()
-        for action, file_records in change_infos.items():
-            change_file_info = json_string[action] = dict()
-            change_file_info['update_time'] = datetime.datetime.now()
-            change_file_info['files'] = file_records
-        full_path = os.path.join(self.resource_path, self.change_record)
-        with open(full_path, 'w') as f:
-            json.dump(json_string, f, indent=4, default=str)
+        ### first update for chromium source code
+        if not self._is_3rd_party:
+            json_string = dict()
+            for action, file_records in change_infos.items():
+                change_file_info = json_string[action] = dict()
+                change_file_info['update_time'] = datetime.datetime.now()
+                change_file_info['files'] = file_records
+            with open(self.change_record_file, 'w') as f:
+                json.dump(json_string, f, indent=4, default=str)
+        ### for 3rd party code
+        else:
+            json_data = dict()
+            with open(self.change_record_file, 'r') as f:
+                json_data = json.load(f)
+            relpath = os.path.relpath(self._src_path, self._root_src_path)
+
+            for action, file_records in change_infos.items():
+                    file_records = [ (relpath + os.sep + file_name) for file_name in file_records]
+                    file_records = [ os.path.normpath(x) for x in file_records]
+                    json_data[action]['files'] += file_records
+                    json_data[action]['update_time'] = datetime.datetime.now()
+            with open(self.change_record_file, 'w') as f:
+                json.dump(json_data, f, indent=4, default=str)
+
 
     def get_files_by_action(self, action_):
         unstaged_file_infos = UpdatePatcher.get_unstaged_files(self.src_path)
@@ -192,7 +236,8 @@ class UpdatePatcher:
         unstaged_files = self.get_files_by_action('?')
         unstaged_files = [x for x in unstaged_files if os.path.splitext(x)[
             1] not in not_update_suffix]
-        unstaged_files += update_files
+        if not self._is_3rd_party:
+            unstaged_files += root_update_files
         staged_files = self.get_files_by_action('M')
         staged_files = [x for x in staged_files if os.path.splitext(x)[
             1] in not_patched_suffix]
@@ -200,7 +245,8 @@ class UpdatePatcher:
         for file in need_copy_files:
             src_path = os.path.join(self.src_path, file)
             is_dir = os.path.isdir(src_path)
-            dst_path = os.path.join(self.resource_path, file)
+            relpath = os.path.relpath(self.src_path, self._root_src_path)
+            dst_path = os.path.join(self.resource_path, relpath, file)
             os.makedirs(os.path.dirname(dst_path), exist_ok=True)
             print('Copy %s to %s' % (src_path, dst_path))
             if not is_dir:
@@ -212,17 +258,38 @@ class UpdatePatcher:
         print('End update add files')
 
     @classmethod
-    def update_patch(cls, root):
-        update_patcher = cls(root)
+    def update_patch(cls, root, src_path, resource_path, patch_path, is_3rd_party):
+        update_patcher = cls(root, src_path, resource_path, patch_path, is_3rd_party)
         update_patcher.create_patch()
         update_patcher.update_change_files()
 
 
 def main(args):
+    print('Begin create patch')
     this_path = os.path.dirname(os.path.abspath(__file__))
     root = os.path.normpath(os.path.join(this_path, os.pardir))
-    # commit_ids = ['dd97e81','f659c44']
-    UpdatePatcher.update_patch(root)
+
+    root_patch_path = os.path.join(root, 'patch_code')
+    root_resource_path = os.path.join(root, 'resource')
+    # change_record_file = os.path.join(root_resource_path, 'change_files.json')
+
+
+    ### Create patch for chromium src
+    print('Begin create patch for chromium src')
+    src_path = os.path.join(root, 'src')
+    UpdatePatcher.update_patch(root, src_path, root_patch_path, root_resource_path, False)
+    print('End create patch for chromium src')
+
+    ## Crearte patch for chromium 3rd party src
+    print('Begin create patch for chromium 3rd party src')
+    sub_paths = ['third_party\devtools-frontend\src']
+    for sub_path in sub_paths:
+        src_path = os.path.join(src_path, sub_path)
+        assert os.path.exists(src_path)
+        UpdatePatcher.update_patch(root, src_path, root_patch_path, root_resource_path, True)
+    print('End create patch for chromium src')
+
+    print('End create patch')
 
 
 if __name__ == '__main__':
