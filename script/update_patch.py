@@ -19,6 +19,8 @@ not_update_suffix = ['.log']
 create_patch_args = ['--src-prefix=a/', '--dst-prefix=b/', '--full-index']
 get_diff_args = ['--diff-filter=M', '--name-only', '--ignore-space-at-eol']
 
+sub_paths = ['third_party\devtools-frontend\src']
+
 
 def check_patch_filter(file):
     is_need_patched = False
@@ -112,13 +114,17 @@ class UpdatePatcher:
         cmd = ['git', 'status', '-z', '--untracked-files=all']
         change_lines = UpdatePatcher.git_cmd_output(
             cmd, cwd=src_path).rstrip('\x00')
+        print(change_lines)
         unstaged_changes = dict()
-        for line in change_lines.split('\x00'):
-            assert len(line) >= 4, 'Unexpected change line format %s' % line
-            if line[1] == ' ':
-                continue  # Already staged for commit.
-            path = line[3:]
-            unstaged_changes[path] = line[1]
+        try:
+            for line in change_lines.split('\x00'):
+                assert len(line) >= 4, 'Unexpected change line format %s' % line
+                if line[1] == ' ':
+                    continue  # Already staged for commit.
+                path = line[3:]
+                unstaged_changes[path] = line[1]
+        except Exception as e:
+            print('get_unstaged_files failed: %s' % e)
         return unstaged_changes
 
     def add_patch_status(self, patch_name, is_ok=True):
@@ -282,7 +288,6 @@ def main(args):
 
     ## Crearte patch for chromium 3rd party src
     print('Begin create patch for chromium 3rd party src')
-    sub_paths = ['third_party\devtools-frontend\src']
     for sub_path in sub_paths:
         src_path = os.path.join(src_path, sub_path)
         assert os.path.exists(src_path)

@@ -42,7 +42,8 @@ def git_cmd(command, **kwargs):
         raise
 
 def reset_repo_files(src_path, all_repo_paths):
-    assert isinstance(all_repo_paths, list)
+    if not isinstance(all_repo_paths, list):
+        all_repo_paths = [ all_repo_paths ]
     try:
         cmd = ['git', 'checkout'] + all_repo_paths
         git_cmd(cmd, cwd=src_path)
@@ -157,7 +158,7 @@ class GitPatcher:
         return False
 
     def apply_patchs(self):
-        print('Begin apply patches')
+        print('Begin apply patches for %s ' %self._src_path)
 
         for patch in self._patchs:
             if self.check_if_needed_apply(patch):
@@ -170,7 +171,7 @@ class GitPatcher:
         self.perform_apply_for_patches()
 
         self.handle_obsolet_patch_infos()
-        print('End apply patches')
+        print('End apply patches for %s ' %self._src_path)
 
     def perform_apply_for_patches(self):
         print('Begin perform apply patches')
@@ -214,9 +215,11 @@ class GitPatcher:
             print('Change %s to initial state failed' % full_path)
 
     def handle_obsolet_patch_infos(self):
-        print('Begin Handle obsolet patch infos')
+        print('Begin Handle obsolete patch infos')
         obsolet_patch_infos = self.get_obsolet_patch_infos()
-        if not obsolet_patch_infos: return
+        if not obsolet_patch_infos:
+            print('No obsolete patch infos need delete')
+            return
 
         full_paths = [os.path.join(self.patch_base_path, x)
                       for x in obsolet_patch_infos]
@@ -225,7 +228,7 @@ class GitPatcher:
             self.restore_last_modify_file(origin_file_infos)
             os.remove(full_path)
 
-        print('End Handle obsolet patch infos')
+        print('End Handle obsolete patch infos')
 
     @classmethod
     def update(cls, root):
