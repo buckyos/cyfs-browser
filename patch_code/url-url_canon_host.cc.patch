@@ -1,0 +1,65 @@
+diff --git a/url/url_canon_host.cc b/url/url_canon_host.cc
+index c2cd9d1d77a09bf331e6674a006935e71d658544..b7da29b00e2eb2c33a2add28799d05fd9a36555b 100644
+--- a/url/url_canon_host.cc
++++ b/url/url_canon_host.cc
+@@ -68,6 +68,23 @@ const unsigned char kHostCharLookup[0x80] = {
+ //   p    q    r    s    t    u    v    w    x    y    z    {    |    }    ~
+     'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',kEsc,kEsc,kEsc,  0 ,  0 };
+ 
++const unsigned char kHostCharLookupForIpfs[0x80] = {
++// 00-1f: all are invalid
++     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
++     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
++//  ' '   !    "    #    $    %    &    '    (    )    *    +    ,    -    .    /
++   kEsc,kEsc,kEsc,kEsc,kEsc,  0, kEsc,kEsc,kEsc,kEsc,kEsc, '+',kEsc, '-', '.',  0,
++//   0    1    2    3    4    5    6    7    8    9    :    ;    <    =    >    ?
++    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':',  0 ,kEsc,kEsc,kEsc,  0 ,
++//   @    A    B    C    D    E    F    G    H    I    J    K    L    M    N    O
++   kEsc, 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
++//   P    Q    R    S    T    U    V    W    X    Y    Z    [    \    ]    ^    _
++    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[',  0 , ']',  0 , '_',
++//   `    a    b    c    d    e    f    g    h    i    j    k    l    m    n    o
++   kEsc, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
++//   p    q    r    s    t    u    v    w    x    y    z    {    |    }    ~
++    'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',kEsc,kEsc,kEsc,  0 ,  0 };
++
+ // RFC1034 maximum FQDN length.
+ constexpr int kMaxHostLength = 253;
+ 
+@@ -102,6 +119,18 @@ void ScanHostname(const CHAR* spec,
+   }
+ }
+ 
++template<typename OUTCHAR>
++bool SchemeIsIpfs(const OUTCHAR* spec, int length) {
++  if (!spec || length <= 6) {
++    return false;
++  }
++  auto number1 = static_cast<OUTCHAR>(spec[0]);
++  auto number2 = static_cast<OUTCHAR>(spec[1]);
++  auto number3 = static_cast<OUTCHAR>(spec[2]);
++  auto number4 = static_cast<OUTCHAR>(spec[3]);
++  return ((number1 == 0x69) && (number2 == 0x70) && (number3 == 0x66) && (number4 == 0x73));
++}
++
+ // Canonicalizes a host name that is entirely 8-bit characters (even though
+ // the type holding them may be 16 bits. Escaped characters will be unescaped.
+ // Non-7-bit characters (for example, UTF-8) will be passed unchanged.
+@@ -130,6 +159,7 @@ bool DoSimpleHost(const INCHAR* host,
+                   bool* has_non_ascii) {
+   *has_non_ascii = false;
+ 
++  bool scheme_is_ipfs = SchemeIsIpfs(output->data(), output->length());
+   bool success = true;
+   for (int i = 0; i < host_len; ++i) {
+     unsigned int source = host[i];
+@@ -150,6 +180,9 @@ bool DoSimpleHost(const INCHAR* host,
+     if (source < 0x80) {
+       // We have ASCII input, we can use our lookup table.
+       unsigned char replacement = kHostCharLookup[source];
++      if (scheme_is_ipfs) {
++        replacement = kHostCharLookupForIpfs[source];
++      }
+       if (!replacement) {
+         // Invalid character, add it as percent-escaped and mark as failed.
+         AppendEscapedChar(source, output);

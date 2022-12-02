@@ -1,0 +1,19 @@
+diff --git a/url/scheme_host_port.cc b/url/scheme_host_port.cc
+index 793d2845b969ad85763577b10f579cb5afb81cd4..ccc7fb537d0f592237419cb91c09fc9bf393b84e 100644
+--- a/url/scheme_host_port.cc
++++ b/url/scheme_host_port.cc
+@@ -146,9 +146,11 @@ SchemeHostPort::SchemeHostPort(std::string scheme,
+                                std::string host,
+                                uint16_t port,
+                                ConstructPolicy policy) {
+-  if (!IsValidInput(scheme, host, port, policy)) {
+-    DCHECK(!IsValid());
+-    return;
++  if (scheme != "ipfs") {
++    if (!IsValidInput(scheme, host, port, policy)) {
++      DCHECK(!IsValid());
++      return;
++    }
+   }
+ 
+   scheme_ = std::move(scheme);

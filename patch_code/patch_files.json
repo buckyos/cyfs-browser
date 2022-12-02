@@ -50,6 +50,7 @@
         "chrome-installer-mini_installer-BUILD.gn.patch",
         "chrome-installer-mini_installer-chrome.release.patch",
         "chrome-installer-util-util_constants.cc.patch",
+        "components-os_crypt-keychain_password_mac.mm.patch",
         "content-app-BUILD.gn.patch",
         "content-app-content_main_runner_impl.cc.patch",
         "content-app-content_main_runner_impl.h.patch",
@@ -85,6 +86,8 @@
         "third_party-blink-renderer-platform-wtf-text-string_statics.cc.patch",
         "url-gurl.cc.patch",
         "url-gurl.h.patch",
+        "url-scheme_host_port.cc.patch",
+        "url-url_canon_host.cc.patch",
         "url-url_constants.cc.patch",
         "url-url_constants.h.patch",
         "url-url_util.cc.patch"
