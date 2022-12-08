@@ -1,14 +1,18 @@
 
 import os, sys, platform
-import re
+import argparse
 sys.path.append(os.path.dirname(__file__))
 
 import subprocess
 import shutil
 from util import is_dir_exists, make_dir_exist, make_file_not_exist
-from common import pack_base_path,pkg_base_path,pkg_build_path, src_path, get_chromium_version
-from common import pack_app_path,build_target, build_app_path, build_target_path
+from common import pack_base_path,pkg_base_path,pkg_build_path, src_path, get_chromium_version, nsis_bin_path
+from common import pack_app_path,build_target, build_app_path, build_target_path, product_name, application_name
+from common import pack_include_files, pack_include_version_files, pack_include_dirs, MAC_CPUS
 
+IS_MAC = platform.system() == "Darwin"
+IS_WIN = platform.system() == "Windows"
+DEFAULT_CPU = "X86"
 
 class Pack:
     def __init__(self, root, target_cpu, project_name, version, channel):
@@ -38,29 +42,9 @@ class Pack:
 
 class PackForWindows(Pack):
 
-    _product_name = 'CYFS_Browser'
-
-    include_files = [
-        'CYFS_Browser.exe', 'chrome_proxy.exe',
-    ]
-    include_version_files = [
-        'chrome_100_percent.pak','chrome_200_percent.pak', 'resources.pak',
-        'chrome.dll', 'chrome_elf.dll', 'mojo_core.dll', 'mojo_core.dll',
-        'd3dcompiler_47.dll', 'libEGL.dll', 'libGLESv2.dll',
-        'vk_swiftshader.dll', 'vulkan-1.dll',
-        'chrome_pwa_launcher.exe', 'notification_helper.exe',
-        'vk_swiftshader_icd.json', 'v8_context_snapshot.bin',
-        'snapshot_blob.bin', 'icudtl.dat',
-        'Logo.png', 'SmallLogo.png',
-    ]
-
-    include_dirs = [
-        'MEIPreload', 'Locales', 'swiftshader', 'resources'
-    ]
-
     @property
     def product_base_path(self):
-        return os.path.join(self.pack_base_path, self._product_name)
+        return os.path.join(self.pack_base_path, product_name())
 
     @property
     def out_path(self):
@@ -68,7 +52,7 @@ class PackForWindows(Pack):
 
     @property
     def nsis_bin_path(self):
-        nsis_bin = 'C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe'
+        nsis_bin = nsis_bin_path()
         assert os.path.exists(nsis_bin)
         return nsis_bin
 
@@ -103,7 +87,7 @@ class PackForWindows(Pack):
         copy_number = 0
         make_dir_exist(self.product_base_path)
         ## {build_dir}/* ==> {package}/*
-        for file_ in self.include_files:
+        for file_ in pack_include_files():
             src_path = os.path.join(self.out_path, file_)
             dst_path = os.path.join(self.product_base_path, file_)
             shutil.copyfile(src_path, dst_path)
@@ -113,7 +97,7 @@ class PackForWindows(Pack):
         version_dir = os.path.join(self.product_base_path, version)
         make_dir_exist(version_dir)
         ## {build_dir}/* ==> {package}/{version}/*
-        for file_ in self.include_version_files:
+        for file_ in pack_include_version_files():
             src_path = os.path.join(self.out_path, file_)
             dst_path = os.path.join(version_dir, file_)
             shutil.copyfile(src_path, dst_path)
@@ -129,7 +113,7 @@ class PackForWindows(Pack):
             _suffixs = ['lib', 'pdb', 'info']
             return bool([ext for ext in _suffixs if file.lower().endswith(ext)])
 
-        for dir_ in self.include_dirs:
+        for dir_ in pack_include_dirs():
             root = os.path.normpath(os.path.join(self.out_path, dir_))
             for (base, _, files) in os.walk(root):
                 copy_files = [x for x in files if not check_not_need_copy(x)]
@@ -148,15 +132,14 @@ class PackForWindows(Pack):
 
 
 class PackForMacos(Pack):
-    app_name = 'CYFS Browser.app'
 
     @property
     def pack_app_path(self):
-        return pack_app_path(self._root, self._target_cpu, self.app_name)
+        return pack_app_path(self._root, self._target_cpu, application_name())
 
     @property
     def build_app_path(self):
-        return build_app_path(self._root, self._build_target, self.app_name)
+        return build_app_path(self._root, self._build_target, application_name())
 
     @property
     def pkg_base_path(self):
@@ -270,3 +253,46 @@ def make_installer(root, project_name, version, target_cpu, channel):
     except Exception as e:
         print('Make Installer failed, error: %s' % e)
 
+def _parse_args(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--project-name",
+                        help="The project name.",
+                        type=str,
+                        required=True)
+    parser.add_argument("--version",
+                        help="The build version.",
+                        type=str,
+                        required=True)
+    parser.add_argument("--target-cpu",
+                        help="The target cpu, like X86 and ARM",
+                        type=str,
+                        default=DEFAULT_CPU,
+                        required=False)
+    parser.add_argument("--channel",
+                    help="The cyfs channel, like nightly and beta",
+                    type=str,
+                    default='nightly',
+                    required=False)
+    opt = parser.parse_args(args)
+
+    assert opt.project_name.strip()
+    assert opt.version.strip()
+    if IS_MAC:
+        assert opt.target_cpu.strip()
+        assert opt.target_cpu in MAC_CPUS
+
+    return opt
+
+def main(args):
+    root = os.path.normpath(os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), os.pardir, os.pardir))
+    opt = _parse_args(args)
+    make_installer(root, opt.project_name, opt.version, opt.target_cpu, opt.channel)
+
+if __name__ == "__main__":
+    try:
+        print(str(sys.argv))
+        sys.exit(main(sys.argv[1:]))
+    except KeyboardInterrupt:
+        sys.stderr.write("interrupted\n")
+        sys.exit(1)

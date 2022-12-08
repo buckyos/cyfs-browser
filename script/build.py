@@ -15,6 +15,7 @@ from lib.build_cyfs_component import prepare_cyfs_components
 
 
 IS_MAC = platform.system() == "Darwin"
+DEFAULT_CPU = "X86"
 
 def _parse_args(args):
     parser = argparse.ArgumentParser()
@@ -27,9 +28,9 @@ def _parse_args(args):
         type=str,
         required=True)
     parser.add_argument("--target-cpu",
-        help="The target cpu, like X86 and ARM, just for Macos",
+        help="The target cpu, like X86 and ARM",
         type=str,
-        default='ARM',
+        default=DEFAULT_CPU,
         required=False)
     parser.add_argument("--channel",
         help="The cyfs channel, like nightly and beta",
@@ -43,8 +44,6 @@ def _parse_args(args):
     if IS_MAC:
         assert opt.target_cpu.strip()
         assert opt.target_cpu in MAC_CPUS
-    else:
-        opt.target_cpu = None
 
     return opt
 
@@ -84,7 +83,7 @@ def main(args):
         os.path.abspath(__file__)), os.pardir))
 
     opt = _parse_args(args)
-    prepare_cyfs_components(root, opt.channel, opt.version)
+    prepare_cyfs_components(root, opt.channel, opt.target_cpu, opt.version)
     check_requirements(root, opt.target_cpu)
     ### patch
     GitPatcher.update(root)

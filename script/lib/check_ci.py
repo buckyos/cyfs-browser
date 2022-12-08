@@ -5,8 +5,9 @@ sys.path.append(os.path.dirname(__file__))
 import subprocess
 import shutil
 import zipfile
-from common import local_extension_path, static_page_path, ts_sdk_path
-from common import src_path, build_target, pack_app_path, build_app_path, local_nft_web_path, local_nft_bin_path
+from common import local_extension_path, static_page_path, ts_sdk_path, product_name, application_name, code_zip_name
+from common import src_path, build_target, pack_app_path, build_app_path, local_nft_web_path, local_nft_bin_path, pack_base_path
+from common import remote_extensions_path, remote_nft_web_path, remote_nft_bin_path, remote_cache_path, remote_code_path
 from util import make_dir_exist, is_dir_exists, make_file_not_exist
 
 def download_file(remote_path, local_path, is_dir=False):
@@ -54,28 +55,16 @@ class CheckForCIBuild:
         return src_path(self._root)
 
     @property
+    def install_path(self):
+        return pack_base_path(self._root, self._target_cpu)
+
+    @property
     def chrome_path(self):
         return os.path.join(self.src_path, "chrome")
 
     @property
     def remote_base_path(self):
         return self._remote_base_path
-
-    @property
-    def remote_extensions_path(self):
-        path = os.path.join(self.remote_base_path, "chromium_extensions", "Extensions")
-        return os.path.normpath(path)
-
-
-    @property
-    def remote_nft_web_path(self):
-        path = os.path.join(self.remote_base_path, "cyfs-nft", "nft-web", "pub")
-        return os.path.normpath(path)
-
-    @property
-    def remote_nft_bin_path(self):
-        path = os.path.join(self.remote_base_path, "cyfs-nft", "nft-creator", "pub")
-        return os.path.normpath(path)
 
     @property
     def local_nft_web_path(self):
@@ -103,16 +92,16 @@ class CheckForCIBuild:
 
     def download_nft_web_files(self):
         make_file_not_exist(self.local_nft_web_path)
-        download_file(self.remote_nft_web_path, self.local_nft_web_path, True)
+        download_file(remote_nft_web_path(self.remote_base_path), self.local_nft_web_path, True)
 
 
     def download_nft_files(self):
         make_file_not_exist(self.local_nft_bin_path)
-        download_file(self.remote_nft_bin_path, self.local_nft_bin_path, True)
+        download_file(remote_nft_bin_path(self.remote_base_path), self.local_nft_bin_path, True)
 
     def download_default_extensions(self):
         make_file_not_exist(self.local_extension_path)
-        download_file(self.remote_extensions_path, self.local_extension_path, True)
+        download_file(remote_extensions_path(self.remote_base_path), self.local_extension_path, True)
 
     def update_default_extensions(self):
         pass
@@ -154,36 +143,15 @@ class CheckForCIBuild:
             raise
 
 class CheckForWindowsCIBuild(CheckForCIBuild):
-    _product_name = "CYFS_Browser"
-    _code_zip_name = "chromium_code_pc.zip"
-
-    @property
-    def remote_code_path(self):
-        path = os.path.join(self.remote_base_path, "chromium_code_pc")
-        return os.path.normpath(path)
-
-    @property
-    def remote_code_zip(self):
-        path = os.path.join(self.remote_code_path, self._code_zip_name)
-        return os.path.normpath(path)
-
-    @property
-    def remote_cache_path(self):
-        path = os.path.join(self.remote_base_path, "browser_build_cache", "windows")
-        return os.path.normpath(path)
-
-    @property
-    def install_path(self):
-        return os.path.join(self._root, "browser_install")
 
     @property
     def browser_file_path(self):
-        return os.path.join(self.install_path, self._product_name)
+        return os.path.join(self.install_path, product_name())
 
     @property
     def cache_version_file(self):
         local_mark = os.path.join(self._root, self.cache_mark_file)
-        remote_mark = os.path.join(self.remote_cache_path, self.cache_mark_file)
+        remote_mark = os.path.join(remote_cache_path(self.remote_base_path), self._target_cpu, self.cache_mark_file)
         return (local_mark, remote_mark)
 
     def cache_zip_name(self, commit_id):
@@ -194,9 +162,10 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
             print('%s already exists' % (self.src_path))
             return
 
-        local_code_zip = os.path.join(self._root, self._code_zip_name)
+        local_code_zip = os.path.join(self._root, code_zip_name())
         if not os.path.exists(local_code_zip):
-            download_file(self.remote_code_zip, local_code_zip)
+            remote_code_zip = os.path.join(remote_code_path(self.remote_base_path), code_zip_name())
+            download_file(remote_code_zip, local_code_zip)
 
         print('Begin unzip %s to %s' % (local_code_zip, self.src_path))
         with zipfile.ZipFile(local_code_zip, 'r', zipfile.ZIP_DEFLATED, True) as zf:
@@ -206,6 +175,7 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
             msg = "%s is not exists" % (self.src_path)
             print(msg)
             sys.exit(msg)
+        os.remove(local_code_zip)
 
     def check_requirements(self):
         assert is_dir_exists(self.static_page_path)
@@ -222,7 +192,7 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
 
 
     def remote_zip_file(self, zip_name):
-        return os.path.join(self.remote_cache_path, zip_name)
+        return os.path.join(remote_cache_path(self.remote_base_path), self._target_cpu, zip_name)
 
     def local_zip_file(self, zip_name):
         return os.path.join(self.install_path, zip_name)
@@ -243,6 +213,7 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
             if os.path.exists(local_zip):
                 upload_file(local_zip, self.remote_zip_file(zip_name))
                 self.update_cache_version(self.cache_version_file, commit_id)
+                os.remove(local_zip)
         except Exception as e:
             print("Update build cache failed, error: %s" % e)
             raise
@@ -267,37 +238,26 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
                 zf.extractall(self.browser_file_path)
             print("End unzip cache %s" % (local_zip))
             if is_dir_exists(self.browser_file_path): is_match = True
+            os.remove(local_zip)
         except Exception as e:
             print('Get match build cache failed, error: %s' % e)
         finally:
             return is_match
 
 class CheckForMacosCIBuild(CheckForCIBuild):
-    _app_name = "CYFS Browser.app"
-    _code_zip_name = "chromium_mac_code.tar.gz"
-
-    @property
-    def remote_code_path(self):
-        path = os.path.join(self.remote_base_path, "chromium_code_mac")
-        return os.path.normpath(path)
-
-    @property
-    def remote_cache_path(self):
-        path = os.path.join(self.remote_base_path, "browser_build_cache", "mac")
-        return os.path.normpath(path)
 
     @property
     def pack_app_path(self):
-        return pack_app_path(self._root, self._target_cpu, self._app_name)
+        return pack_app_path(self._root, self._target_cpu, application_name())
 
     @property
     def build_app_path(self):
-        return build_app_path(self._root, self._build_target, self._app_name)
+        return build_app_path(self._root, self._build_target, application_name())
 
     @property
     def cache_version_file(self):
         local_mark = os.path.join(self._root, self.cache_mark_file)
-        remote_mark = os.path.join(self.remote_cache_path, self._target_cpu, self.cache_mark_file)
+        remote_mark = os.path.join(remote_cache_path(self.remote_base_path), self._target_cpu, self.cache_mark_file)
         return (local_mark, remote_mark)
 
     def cache_zip_name(self, commit_id):
@@ -309,18 +269,19 @@ class CheckForMacosCIBuild(CheckForCIBuild):
             return
 
         print("Chromium code is not exists, need download chromium zip file!")
-        _local_code_zip = os.path.join(self._root, self._code_zip_name)
-        if not os.path.exists(_local_code_zip):
-            _remote_code_zip = os.path.join(self.remote_code_path, self._code_zip_name)
-            download_file(_remote_code_zip, _local_code_zip)
+        local_code_zip = os.path.join(self._root, code_zip_name())
+        if not os.path.exists(local_code_zip):
+            remote_code_zip = os.path.join(remote_code_path(self.remote_base_path), code_zip_name())
+            download_file(remote_code_zip, local_code_zip)
 
-        print('Begin unzip %s' % _local_code_zip)
-        self.make_unzip(_local_code_zip, self._root)
-        print('End unzip %s' % _local_code_zip)
+        print('Begin unzip %s' % local_code_zip)
+        self.make_unzip(local_code_zip, self._root)
+        print('End unzip %s' % local_code_zip)
         if not os.path.exists(self.src_path):
             msg = '%s is not exists' % (self.src_path)
             print(msg)
             sys.exit(msg)
+        os.remove(local_code_zip)
 
     def update_default_extensions(self):
         extenions_path = os.path.join(
@@ -384,10 +345,10 @@ class CheckForMacosCIBuild(CheckForCIBuild):
             raise
 
     def remote_zip_file(self, zip_name):
-        return os.path.join(self.remote_cache_path, self._target_cpu, zip_name)
+        return os.path.join(remote_cache_path(self.remote_base_path), self._target_cpu, zip_name)
 
     def local_zip_file(self, zip_name):
-        return os.path.join(self._root, "dmg", self._target_cpu, zip_name)
+        return os.path.join(self.install_path, zip_name)
 
     def update_build_cache_and_version(self):
         commit_id = self.get_repo_version()
@@ -404,6 +365,7 @@ class CheckForMacosCIBuild(CheckForCIBuild):
             if os.path.exists(local_zip_file):
                 upload_file(local_zip_file, self.remote_zip_file(zip_name))
                 self.update_cache_version(self.cache_version_file, commit_id)
+                os.remove(local_zip_file)
         except Exception as e:
             print("Update build cache failed, error: %s" % e)
             raise

@@ -4,7 +4,7 @@ readonly RUNTIME_DIR="${HOME}/Library/Application Support/cyfs/services/runtime"
 readonly TOOLS_DIR="${HOME}/Library/Application Support/cyfs/services/runtime/tools"
 
 readonly BROWSER_EXTENSION_DIR="${HOME}/Library/Application Support/cyber/Default/cyfs_extensions"
-readonly BROWSER_OLD_EXTENSION_DIR="${HOME}/Library/Application\ Support/cyber/Extensions"
+readonly BROWSER_OLD_EXTENSION_DIR="${HOME}/Library/Application Support/cyber/Extensions"
 
 cd "$RUNTIME_DIR"
 

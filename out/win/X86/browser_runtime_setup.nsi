@@ -9,6 +9,8 @@
 !define NFT_TOOL_EXE "nft-creator.exe"
 !define PRODUCT_RUNTIME_NAME "cyfs-runtime"
 !define RUNTIME_EXE_NAME "${PRODUCT_RUNTIME_NAME}.exe"
+!define IPFS_PROXY_BIN_NAME "ipfs-proxy.exe"
+!define IPFS_RUNTIME_BIN_NAME "ipfs.exe"
 !define RUNTIME_DESKTOP_NAME "Cyfs Runtime"
 !define PRODUCT_VERSION "${BrowserVersion}"
 !define PRODUCT_CHANNEL "${channel}"
@@ -58,28 +60,28 @@ Unicode True
 !define MUI_WELCOMEFINISHPAGE_BITMAP ".\images\left.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP ".\images\left.bmp"
 
-!define MUI_WELCOMEPAGE_TITLE "Welcome to install CYFS Browser"
+!define MUI_WELCOMEPAGE_TITLE "Welcome to install ${BROWSER_NAME_ALIAS}"
 ## $\n == blank line
 ## $\r$\n == new line
 !define MUI_WELCOMEPAGE_TEXT "A truly decentralized browser. Support CYFS link browsing, new web3 product experience.$\r$\n\
 $\nLow threshold for use$\r$\n\
-The CYFS Browser is based on the secondary development of Chromium, retains the original Chrome UI, and retains your usage habits.$\r$\n\
+The ${BROWSER_NAME_ALIAS} is based on the secondary development of Chromium, retains the original Chrome UI, and retains your usage habits.$\r$\n\
 $\nprivacy protection$\r$\n\
-CYFS Browser supports anonymous browsing mode to protect your online privacy.$\r$\n\
+${BROWSER_NAME_ALIAS} supports anonymous browsing mode to protect your online privacy.$\r$\n\
 $\nBrowse Decentralized Data$\r$\n\
-The CYFS Browser makes the 404 situation in the centralized network disappear and browses the decentralized data permanently.$\r$\n\
+The ${BROWSER_NAME_ALIAS} makes the 404 situation in the centralized network disappear and browses the decentralized data permanently.$\r$\n\
 $\nCreate NFTs with ease$\r$\n\
-CYFS Browser can help you easily create NFT works, and convert any file into NFT in just a few simple steps.$\r$\n\
+${BROWSER_NAME_ALIAS} can help you easily create NFT works, and convert any file into NFT in just a few simple steps.$\r$\n\
 "
 
 !define MUI_LICENSEPAGE_TEXT_TOP "Press Page Down to see the terms of the agreement."
 !define MUI_LICENSEPAGE_TEXT_BOTTOM "If you accept the terms of the agreement, click I Agree to continue."
-!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "Please wait while CYFS Browser (V ${BrowserVersion} ${channel}) is being installed"
+!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "Please wait while ${BROWSER_NAME_ALIAS} (V ${BrowserVersion} ${channel}) is being installed"
 ; !define MUI_INSTFILESPAGE_FINISHHEADER_SUBTEXT
 
 
-!define MUI_FINISHPAGE_TITLE "CYFS Browser install complete"
-!define MUI_FINISHPAGE_TEXT "CYFS Browser (V ${BrowserVersion} ${channel}) has been installed on your computer.$\r$\n\
+!define MUI_FINISHPAGE_TITLE "${BROWSER_NAME_ALIAS} install complete"
+!define MUI_FINISHPAGE_TEXT "${BROWSER_NAME_ALIAS} (V ${BrowserVersion} ${channel}) has been installed on your computer.$\r$\n\
 $\nClick finish to close Setup."
 
 ; !define MUI_TEXTCOLOR "000000"
@@ -161,6 +163,8 @@ Function .onInit
   !insertmacro ForceKillProcess ${RUNTIME_EXE_NAME}
   !insertmacro ForceKillProcess ${BROWSER_EXE_NAME}
   !insertmacro ForceKillProcess ${NFT_TOOL_EXE}
+  !insertmacro ForceKillProcess ${IPFS_PROXY_BIN_NAME}
+  !insertmacro ForceKillProcess ${IPFS_RUNTIME_BIN_NAME}
 FunctionEnd
 
 Function AutoBoot
@@ -208,6 +212,8 @@ Section "delete_browser_old_files" 1
   !insertmacro ForceKillProcess ${BROWSER_EXE_NAME}
   !insertmacro ForceKillProcess ${RUNTIME_EXE_NAME}
   !insertmacro ForceKillProcess ${NFT_TOOL_EXE}
+  !insertmacro ForceKillProcess ${IPFS_PROXY_BIN_NAME}
+  !insertmacro ForceKillProcess ${IPFS_RUNTIME_BIN_NAME}
   Delete "$DESKTOP\${BROWSER_DESKTOP_NAME}.lnk"
   Delete "$SMPROGRAMS\${BROWSER_DESKTOP_NAME}.lnk"
   ;delete old version shortcut dir
@@ -224,7 +230,7 @@ Section "regedit_browser_info" 2
   SetOutPath "$INSTDIR"
   ; if old same name file is exists, directly overwrite
   SetOverwrite on
-  ;File /r /x *.nsi /x ${OutFile} /x .git /x "\cyfs-runtime-pack\*.*"  *.*
+  ;File /r /x *.nsi /x ${OutFile} /x .git /x "\runtime\*.*"  *.*
   SetOutPath "$INSTDIR\CYFS_Browser"
   File /r "CYFS_Browser\*.*"
   SetOutPath "$INSTDIR"
@@ -269,11 +275,11 @@ Section "copy_runtime_file" 5
   SetOutPath "$APPDATA\cyfs\services\runtime"
   ; if old same name file is exists, directly overwrite
   SetOverwrite on
-  File /r /x  "cyfs-runtime-pack\acl.toml" /x  "cyfs-runtime-pack\runtime.toml" /x "cyfs-runtime-pack\tools\*.*" "cyfs-runtime-pack\*.*"
+  File /r /x  "runtime\acl.toml" /x  "runtime\runtime.toml" /x "runtime\tools\*.*" "runtime\*.*"
   File "restart_runtime.ico" "RestartRuntime.bat"
 
   SetOutPath "$APPDATA\cyfs\etc\acl"
-  File "cyfs-runtime-pack\acl.toml"
+  File "runtime\acl.toml"
 
   IfFileExists "$APPDATA\cyfs\etc\runtime" exists not_exists
   not_exists:
@@ -281,10 +287,10 @@ Section "copy_runtime_file" 5
   exists:
     LogText "$APPDATA\cyfs\etc\runtime is exists"
   SetOutPath "$APPDATA\cyfs\etc\runtime"
-  File "cyfs-runtime-pack\runtime.toml"
+  File "runtime\runtime.toml"
 
   SetOutPath "$APPDATA\cyfs\services\runtime\tools"
-  File /r "cyfs-runtime-pack\tools\*.*"
+  File /r "runtime\tools\*.*"
 
   SetOutPath "$APPDATA\cyfs\services\runtime"
   Delete "$APPDATA\cyfs\services\runtime\runtime.toml"

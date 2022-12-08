@@ -17,7 +17,6 @@ def build_target(target_cpu, project_name):
 def src_path(root):
     return os.path.join(root, "src")
 
-
 def local_extension_path(root):
     return os.path.join(root, "Extensions")
 
@@ -27,63 +26,41 @@ def local_nft_bin_path(root):
 def local_nft_web_path(root):
     return os.path.join(root, "nft_web")
 
+def cyfs_runtime_path(root, target_cpu):
+    return os.path.join(pack_base_path(root, target_cpu), "runtime")
 
-def cyfs_runtime_path(root, target_cpu=None):
-    if IS_WIN:
-        return os.path.join(root, "browser_install", "cyfs-runtime-pack")
-    elif IS_MAC:
-        assert target_cpu is not None
-        return os.path.join(root, "dmg", target_cpu, "runtime")
-    else:
-        raise Exception("Unsupported platform")
-
-def cyfs_tools_path(root, target_cpu=None):
+def cyfs_tools_path(root, target_cpu):
     return os.path.join(cyfs_runtime_path(root, target_cpu), "tools")
 
-def static_page_path(root, target_cpu=None):
+def static_page_path(root, target_cpu):
     return os.path.join(cyfs_runtime_path(root, target_cpu), "www")
 
 def ts_sdk_path(root, target_cpu):
     return os.path.join(static_page_path(root, target_cpu), "cyfs_sdk")
 
-def runtime_pack_path(root):
-    if IS_WIN:
-        return [cyfs_runtime_path(root, None)]
-    elif IS_MAC:
-        return [cyfs_runtime_path(root, cpu) for cpu in MAC_CPUS]
-    return []
+def application_name():
+    return "CYFS Browser.app"
 
-def tools_pack_path(root):
-    if IS_WIN:
-        return [cyfs_tools_path(root, None)]
-    elif IS_MAC:
-        return [cyfs_tools_path(root, cpu) for cpu in MAC_CPUS]
-    return []
+def product_name():
+    return "CYFS_Browser"
 
-def cyfs_ts_pack_path(root):
+def code_zip_name():
     if IS_WIN:
-        return [ts_sdk_path(root, None)]
+        return "chromium_code_pc.zip"
     elif IS_MAC:
-        return [ts_sdk_path(root, cpu) for cpu in MAC_CPUS]
-    return []
+        return "chromium_mac_code.tar.gz"
+    return None
 
-def web_page_pack_path(root):
-    if IS_WIN:
-        return [static_page_path(root, None)]
-    elif IS_MAC:
-        return [static_page_path(root, cpu) for cpu in MAC_CPUS]
-    else:
-        return []
+def nsis_bin_path():
+    return 'C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe'
 
-def pack_base_path(root, target_cpu=None):
+def pack_base_path(root, target_cpu):
     if IS_WIN:
-        return os.path.join(root, "browser_install")
+        return os.path.join(root, "out", "win", target_cpu)
     elif IS_MAC:
-        assert target_cpu is not None
-        return os.path.join(root, "dmg", target_cpu)
+        return os.path.join(root, "out", "mac", target_cpu)
     else:
         raise Exception("Unsupported platform")
-
 
 def pkg_base_path(root, target_cpu):
     assert IS_MAC, 'Current function just for Macos'
@@ -100,17 +77,40 @@ def pack_app_path(root, target_cpu, app):
 def build_target_path(src_root, target):
     return os.path.join(src_root, "out", target)
 
-
 def build_app_path(root, target, app):
     assert IS_MAC, 'Current function just for Macos'
     return os.path.join(build_target_path(src_path(root), target), app)
-
 
 def last_args_file(src_root, target):
     return os.path.join(build_target_path(src_root, target), "args.gn")
 
 def toolchain_ninja_file(src_root, target):
     return os.path.join(build_target_path(src_root, target), "toolchain.ninja")
+
+def pack_include_files():
+    include_files = [
+        'CYFS_Browser.exe', 'chrome_proxy.exe',
+    ]
+    return include_files
+
+def pack_include_version_files():
+    include_version_files = [
+        'chrome_100_percent.pak','chrome_200_percent.pak', 'resources.pak',
+        'chrome.dll', 'chrome_elf.dll', 'mojo_core.dll', 'mojo_core.dll',
+        'd3dcompiler_47.dll', 'libEGL.dll', 'libGLESv2.dll',
+        'vk_swiftshader.dll', 'vulkan-1.dll',
+        'chrome_pwa_launcher.exe', 'notification_helper.exe',
+        'vk_swiftshader_icd.json', 'v8_context_snapshot.bin',
+        'snapshot_blob.bin', 'icudtl.dat',
+        'Logo.png', 'SmallLogo.png',
+    ]
+    return include_version_files
+
+def pack_include_dirs():
+    include_dirs = [
+        'MEIPreload', 'Locales', 'swiftshader', 'resources'
+    ]
+    return include_dirs
 
 def get_chromium_version(root):
     major = 0
@@ -129,3 +129,30 @@ def get_chromium_version(root):
         elif line.startswith('PATCH='):
             patch = line[6:]
     return '%s.%s.%s.%s' % (major, minor, build, patch)
+
+
+def remote_extensions_path(remote_base_path):
+    path = os.path.join(remote_base_path, "chromium_extensions", "Extensions")
+    return os.path.normpath(path)
+
+def remote_nft_web_path(remote_base_path):
+    path = os.path.join(remote_base_path, "cyfs-nft", "nft-web", "pub")
+    return os.path.normpath(path)
+
+def remote_nft_bin_path(remote_base_path):
+    path = os.path.join(remote_base_path, "cyfs-nft", "nft-creator", "pub")
+    return os.path.normpath(path)
+
+def remote_code_path(remote_base_path):
+    if IS_MAC:
+        return os.path.normpath(os.path.join(remote_base_path, "chromium_code_mac"))
+    if IS_WIN:
+        return os.path.normpath(os.path.join(remote_base_path, "chromium_code_pc"))
+    return None
+
+def remote_cache_path(remote_base_path):
+    if IS_MAC:
+        return os.path.normpath(os.path.join(remote_base_path, "browser_build_cache", "mac"))
+    if IS_WIN:
+        return os.path.normpath(os.path.join(remote_base_path, "browser_build_cache", "windows"))
+    return None

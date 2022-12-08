@@ -16,13 +16,15 @@ src_path = os.path.join(root, 'src')
 
 IS_MAC = platform.system() == 'Darwin'
 IS_WIN = platform.system() == 'Windows'
+DEFAULT_CPU = "X86"
 
 def execute_cmd(cmd, **kwargs):
     try:
         print('Execute cmd: %s' % ' '.join(cmd))
         log_fd = kwargs.pop('log_fd', None)
-        kwargs['stdout'] = log_fd
-        kwargs['stderr'] = log_fd
+        if log_fd is not None:
+            kwargs['stdout'] = log_fd
+            kwargs['stderr'] = log_fd
         kwargs['shell'] = IS_WIN
         subprocess.call(cmd, **kwargs)
     except Exception as e:
@@ -101,7 +103,7 @@ class LogRecord:
     def __init__(self, root, build_target, build_type):
         self._build_target = build_target
         self._build_type = build_type
-        self._log_root = os.path.join(root, "build_log")
+        self._log_root = os.path.join(root, os.pardir, "build_log")
         make_dir_exist(self._log_root)
 
     def __enter__(self):
@@ -250,9 +252,9 @@ def main(args):
         default='Browser',
         required=True)
     parser.add_argument('--target-cpu',
-        help='The target cpu, like X86 and ARM, just for Macos',
+        help='The target cpu, like X86 and ARM',
         type=str,
-        default='ARM',
+        default=DEFAULT_CPU,
         required=False)
     opt = parser.parse_args(args)
 
@@ -265,8 +267,6 @@ def main(args):
 
     if IS_MAC:
         assert opt.target_cpu in MAC_CPUS
-    else:
-        opt.target_cpu = None
 
     build_browser(opt.src_path, opt.project_name, opt.target_cpu)
 

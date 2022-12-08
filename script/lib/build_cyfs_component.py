@@ -7,7 +7,7 @@ import subprocess
 import platform
 import argparse
 from util import is_dir_exists, make_dir_exist, make_file_not_exist
-from common import runtime_pack_path, tools_pack_path, cyfs_ts_pack_path, web_page_pack_path
+from common import cyfs_runtime_path, cyfs_tools_path, ts_sdk_path, static_page_path
 
 # root = os.path.normpath(os.path.join(
 #     os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir))
@@ -15,6 +15,7 @@ from common import runtime_pack_path, tools_pack_path, cyfs_ts_pack_path, web_pa
 IS_WIN = platform.system() == 'Windows'
 _NPM = 'npm.cmd' if IS_WIN else 'npm'
 _EXE = '.exe' if IS_WIN else ''
+DEFAULT_CPU = "X86"
 
 CYFS_URL = 'https://github.com/buckyos/CYFS.git'
 CYFS_TS_SDK_URL = 'https://github.com/buckyos/cyfs-ts-sdk.git'
@@ -95,9 +96,9 @@ def fetch_source_code(root, repo_url, branch_name, local_repo_name=None):
         print(msg)
         sys.exit(msg)
 
-def get_runtime_dependencies(root, channel, version):
+def get_runtime_dependencies(root, channel, target_cpu, version):
     local_path = build_cyfs_runtime(root, channel, version)
-    copy_runtime_target(root, local_path)
+    copy_runtime_target(root, local_path, target_cpu)
 
 def get_brnach_by_channel(channel):
     assert channel in ['nightly', 'beta']
@@ -125,7 +126,7 @@ def build_cyfs_runtime(root, channel, version):
         print(msg)
         sys.exit(msg)
 
-def copy_runtime_target(root, local_path):
+def copy_runtime_target(root, local_path, target_cpu):
     target_bin_path = os.path.join(local_path, 'src', 'target', 'release')
     for bin_name in CYFS_RUNTIMES:
         bin_name += _EXE
@@ -135,13 +136,13 @@ def copy_runtime_target(root, local_path):
             print(msg)
             sys.exit(msg)
 
-        for base_path in runtime_pack_path(root):
-            make_dir_exist(base_path)
-            shutil.copy(local_bin, os.path.join(base_path, bin_name))
+        base_path = cyfs_runtime_path(root, target_cpu)
+        make_dir_exist(base_path)
+        shutil.copy(local_bin, os.path.join(base_path, bin_name))
 
-def get_tools_dependencies(root, channel, version):
+def get_tools_dependencies(root, channel, target_cpu, version):
     local_path = build_cyfs_tools(root, channel, version)
-    copy_tools_target(root, local_path)
+    copy_tools_target(root, local_path, target_cpu)
 
 def build_cyfs_tools(root, channel, version):
     branch_name = get_brnach_by_channel(channel)
@@ -160,7 +161,7 @@ def build_cyfs_tools(root, channel, version):
         print('Build CYFS TOOLS failed, with %s' % e)
         raise
 
-def copy_tools_target(root, local_path):
+def copy_tools_target(root, local_path, target_cpu):
     target_bin_path = os.path.join(local_path, 'src', 'target', 'release')
 
     for bin_name in CYFS_TOOLS:
@@ -171,13 +172,13 @@ def copy_tools_target(root, local_path):
             print(msg)
             sys.exit(msg)
 
-        for base_path in tools_pack_path(root):
-            make_dir_exist(base_path)
-            shutil.copy(local_bin, os.path.join(base_path, bin_name))
+        base_path = cyfs_tools_path(root, target_cpu)
+        make_dir_exist(base_path)
+        shutil.copy(local_bin, os.path.join(base_path, bin_name))
 
-def get_cyfs_ts_dependencies(root, channel, version):
+def get_cyfs_ts_dependencies(root, channel, target_cpu, version):
     local_path = build_cyfs_ts_sdk(root, channel, version)
-    copy_cyfs_ts_target(root, local_path)
+    copy_cyfs_ts_target(root, local_path, target_cpu)
 
 def build_cyfs_ts_sdk(root, channel, version):
     channel_branch_map = {
@@ -195,7 +196,7 @@ def build_cyfs_ts_sdk(root, channel, version):
         print(msg)
         sys.exit(msg)
 
-def copy_cyfs_ts_target(root, local_path):
+def copy_cyfs_ts_target(root, local_path, target_cpu):
     target_file_path = os.path.join(local_path, 'out')
     bin_name = 'cyfs.js'
 
@@ -205,13 +206,13 @@ def copy_cyfs_ts_target(root, local_path):
         print(msg)
         sys.exit(msg)
 
-    for pack_path in cyfs_ts_pack_path(root):
-        make_dir_exist(pack_path)
-        shutil.copy(local_bin, os.path.join(pack_path, bin_name))
+    pack_path = ts_sdk_path(root, target_cpu)
+    make_dir_exist(pack_path)
+    shutil.copy(local_bin, os.path.join(pack_path, bin_name))
 
-def get_web_page_dependencies(root, channel, version):
+def get_web_page_dependencies(root, channel, target_cpu, version):
     local_path = build_cyfs_browser_webpage(root, channel, version)
-    copy_web_page_target(root, local_path)
+    copy_web_page_target(root, local_path, target_cpu)
 
 def build_cyfs_browser_webpage(root, channel, version):
     branch_name = get_brnach_by_channel(channel)
@@ -221,11 +222,11 @@ def build_cyfs_browser_webpage(root, channel, version):
         execute_cmd([_NPM, 'run', 'build'], cwd=local_path)
         return local_path
     except Exception as e:
-        msg = 'Build CYFS BROWSER PAGE failed, with %s' % e
+        msg = 'Build BROWSER PAGE failed, with %s' % e
         print(msg)
         sys.exit(msg)
 
-def copy_web_page_target(root, local_path):
+def copy_web_page_target(root, local_path, target_cpu):
     dir_name = 'www'
     local_pages = os.path.join(local_path, dir_name)
     if not is_dir_exists(local_pages):
@@ -233,15 +234,15 @@ def copy_web_page_target(root, local_path):
         print(msg)
         sys.exit(msg)
 
-    for pack_path in web_page_pack_path(root):
-        make_file_not_exist(pack_path)
-        shutil.copytree(local_pages, pack_path)
+    pack_path = static_page_path(root, target_cpu)
+    make_file_not_exist(pack_path)
+    shutil.copytree(local_pages, pack_path)
 
-def prepare_cyfs_components(root, channel, version):
-    get_runtime_dependencies(root, channel, version)
-    get_tools_dependencies(root, channel, version)
-    get_web_page_dependencies(root, channel, version)
-    get_cyfs_ts_dependencies(root, channel, version)
+def prepare_cyfs_components(root, channel, target_cpu, version):
+    get_runtime_dependencies(root, channel, target_cpu, version)
+    get_tools_dependencies(root, channel, target_cpu, version)
+    get_web_page_dependencies(root, channel, target_cpu, version)
+    get_cyfs_ts_dependencies(root, channel, target_cpu, version)
 
 
 def _parse_args(args):
@@ -259,9 +260,14 @@ def _parse_args(args):
                     default='0',
                     required=False)
     parser.add_argument("--channel",
-                    help="The cyfs channel, like nightly and beta, just for Macos",
+                    help="The cyfs channel, like nightly and beta",
                     type=str,
                     default='nightly',
+                    required=False)
+    parser.add_argument("--target-cpu",
+                    help="The target cpu, like X86 and ARM",
+                    type=str,
+                    default=DEFAULT_CPU,
                     required=False)
     opt = parser.parse_args(args)
     return opt
@@ -272,7 +278,7 @@ def main(args):
     channel = opt.channel if opt.channel else 'nightly'
     assert channel in [ 'nightly', 'beta']
     version = opt.version if opt.version else '0'
-    prepare_cyfs_components(opt.root, channel, version)
+    prepare_cyfs_components(opt.root, channel, opt.target_cpu,  version)
 
 
 if __name__ == '__main__':

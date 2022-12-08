@@ -6,8 +6,9 @@ import subprocess
 import shutil
 from util import is_dir_exists, make_dir_exist, make_file_not_exist
 from common import pack_base_path, pkg_base_path, pkg_build_path, build_app_path, pack_app_path
-from common import src_path, build_target, get_chromium_version, build_target_path
-from common import local_nft_web_path, local_nft_bin_path, local_extension_path, static_page_path
+from common import src_path, build_target, get_chromium_version, build_target_path, application_name, product_name
+from common import local_nft_web_path, local_nft_bin_path, local_extension_path, static_page_path, nsis_bin_path
+from common import pack_include_files, pack_include_version_files, pack_include_dirs
 
 
 class Pack:
@@ -60,25 +61,6 @@ class Pack:
 
 
 class PackForWindows(Pack):
-    _product_name = "CYFS_Browser"
-
-    include_files = [
-        'CYFS_Browser.exe', 'chrome_proxy.exe',
-    ]
-    include_version_files = [
-        'chrome_100_percent.pak','chrome_200_percent.pak', 'resources.pak',
-        'chrome.dll', 'chrome_elf.dll', 'mojo_core.dll', 'mojo_core.dll',
-        'd3dcompiler_47.dll', 'libEGL.dll', 'libGLESv2.dll',
-        'vk_swiftshader.dll', 'vulkan-1.dll',
-        'chrome_pwa_launcher.exe', 'notification_helper.exe',
-        'vk_swiftshader_icd.json', 'v8_context_snapshot.bin',
-        'snapshot_blob.bin', 'icudtl.dat',
-        'Logo.png', 'SmallLogo.png',
-    ]
-
-    include_dirs = [
-        'MEIPreload', 'Locales', 'swiftshader', 'resources'
-    ]
 
     @property
     def out_path(self):
@@ -86,11 +68,11 @@ class PackForWindows(Pack):
 
     @property
     def product_base_path(self):
-        return os.path.join(self.pack_base_path, self._product_name)
+        return os.path.join(self.pack_base_path, product_name())
 
     @property
     def nsis_bin_path(self):
-        nsis_bin = 'C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe'
+        nsis_bin = nsis_bin_path()
         assert os.path.exists(nsis_bin)
         return nsis_bin
 
@@ -113,7 +95,7 @@ class PackForWindows(Pack):
             copy_number = 0
             make_dir_exist(self.product_base_path)
             ## {build_dir}/* ==> {package}/*
-            for file_ in self.include_files:
+            for file_ in pack_include_files():
                 src_path = os.path.join(self.out_path, file_)
                 dst_path = os.path.join(self.product_base_path, file_)
                 shutil.copyfile(src_path, dst_path)
@@ -123,7 +105,7 @@ class PackForWindows(Pack):
             version_dir = os.path.join(self.product_base_path, version)
             make_dir_exist(version_dir)
             ## {build_dir}/* ==> {package}/{version}/*
-            for file_ in self.include_version_files:
+            for file_ in pack_include_version_files():
                 src_path = os.path.join(self.out_path, file_)
                 dst_path = os.path.join(version_dir, file_)
                 shutil.copyfile(src_path, dst_path)
@@ -139,7 +121,7 @@ class PackForWindows(Pack):
                 return bool([ext for ext in _suffixs if file.lower().endswith(ext)])
 
             ## {build_dir}/*/* ==> {package}/{version}/*/*
-            for dir_ in self.include_dirs:
+            for dir_ in pack_include_dirs():
                 root = os.path.normpath(os.path.join(self.out_path, dir_))
                 for (base, _, files) in os.walk(root):
                     copy_files = [x for x in files if not check_not_need_copy(x)]
@@ -217,7 +199,6 @@ class PackForWindows(Pack):
 
 
 class PackForMacos(Pack):
-    _app_name = "CYFS Browser.app"
 
     @property
     def pkg_base_path(self):
@@ -235,11 +216,11 @@ class PackForMacos(Pack):
 
     @property
     def pack_app_path(self):
-        return pack_app_path(self._root, self._target_cpu, self._app_name)
+        return pack_app_path(self._root, self._target_cpu, application_name())
 
     @property
     def build_app_path(self):
-        return build_app_path(self._root, self._build_target, self._app_name)
+        return build_app_path(self._root, self._build_target, application_name())
 
     def pack(self):
         self.check_requirements()

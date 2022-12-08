@@ -15,6 +15,7 @@ from lib.git_patch import GitPatcher
 
 IS_MAC = platform.system() == "Darwin"
 IS_WIN = platform.system() == "Windows"
+DEFAULT_CPU = "X86"
 
 def _parse_args(args):
     parser = argparse.ArgumentParser()
@@ -27,9 +28,9 @@ def _parse_args(args):
                         type=str,
                         required=True)
     parser.add_argument("--target-cpu",
-                        help="The target cpu, like X86 and ARM, just for Macos",
+                        help="The target cpu, like X86 and ARM",
                         type=str,
-                        default='ARM',
+                        default=DEFAULT_CPU,
                         required=False)
     parser.add_argument("--channel",
                     help="The cyfs channel, like nightly and beta",
@@ -43,8 +44,6 @@ def _parse_args(args):
     if IS_MAC:
         assert opt.target_cpu.strip()
         assert opt.target_cpu in MAC_CPUS
-    else:
-        opt.target_cpu = None
 
     return opt
 
