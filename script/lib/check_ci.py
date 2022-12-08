@@ -88,7 +88,7 @@ class CheckForCIBuild:
 
     @property
     def cache_mark_file(self):
-        return "%s_commit_id.txt" % (self._target_cpu) if self._target_cpu else "commit_id.txt"
+        return "%s_commit_id.txt" % (self._target_cpu)
 
     def download_nft_web_files(self):
         make_file_not_exist(self.local_nft_web_path)
@@ -150,7 +150,7 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
 
     @property
     def cache_version_file(self):
-        local_mark = os.path.join(self._root, self.cache_mark_file)
+        local_mark = os.path.join(self.install_path, self.cache_mark_file)
         remote_mark = os.path.join(remote_cache_path(self.remote_base_path), self._target_cpu, self.cache_mark_file)
         return (local_mark, remote_mark)
 
@@ -256,7 +256,7 @@ class CheckForMacosCIBuild(CheckForCIBuild):
 
     @property
     def cache_version_file(self):
-        local_mark = os.path.join(self._root, self.cache_mark_file)
+        local_mark = os.path.join(self.install_path, self.cache_mark_file)
         remote_mark = os.path.join(remote_cache_path(self.remote_base_path), self._target_cpu, self.cache_mark_file)
         return (local_mark, remote_mark)
 
