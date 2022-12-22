@@ -1,0 +1,29 @@
+diff --git a/chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc b/chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc
+index 2e69ca1574584d6fbd0dcc36805ace1f12e3b3f1..ffe2098f06210a122db86417de3b016b5eb05e40 100644
+--- a/chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc
++++ b/chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc
+@@ -138,6 +138,11 @@ bool ChromeLocationBarModelDelegate::
+ 
+ security_state::SecurityLevel ChromeLocationBarModelDelegate::GetSecurityLevel()
+     const {
++  GURL url;
++  GetURL(&url);
++  if (url.SchemeIsCYFS() || url.SchemeIsIPFS()) {
++    return security_state::SECURE;
++  }
+   content::WebContents* web_contents = GetActiveWebContents();
+   // If there is no active WebContents (which can happen during toolbar
+   // initialization), assume no security style.
+@@ -190,6 +195,12 @@ const gfx::VectorIcon* ChromeLocationBarModelDelegate::GetVectorIconOverride()
+ 
+   if (url.SchemeIs(extensions::kExtensionScheme))
+     return &omnibox::kExtensionAppIcon;
++  if (url.SchemeIsCYFS()) {
++    return &omnibox::kHttpsValidInChipIcon;
++  }
++  if (url.SchemeIsIPFS()) {
++    return &omnibox::kHttpsValidInChipIcon;
++  }
+ #endif
+ 
+   return nullptr;
