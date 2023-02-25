@@ -131,8 +131,8 @@ def get_chromium_version(root):
     return '%s.%s.%s.%s' % (major, minor, build, patch)
 
 
-def remote_extensions_path(remote_base_path):
-    path = os.path.join(remote_base_path, "chromium_extensions", "Extensions")
+def remote_extensions_path(remote_base_path, channel):
+    path = os.path.join(remote_base_path, "chromium_extensions", "Extensions", channel)
     return os.path.normpath(path)
 
 def remote_nft_web_path(remote_base_path):

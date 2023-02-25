@@ -39,8 +39,9 @@ def upload_file(local_path, remote_path, is_dir=False):
 
 class CheckForCIBuild:
     default_branch = "cyfs_branch"
-    def __init__(self, root, target_cpu, project_name):
+    def __init__(self, root, target_cpu, project_name, channel):
         self._root = root
+        self._channel = channel
         self._target_cpu = target_cpu
         self._build_target = build_target(target_cpu, project_name)
         self._cache_version = ""
@@ -405,9 +406,9 @@ CHECK_TYPE_MAP = {
 }
 
 
-def CheckFactory(type_name, root, target_cpu, project_name):
+def CheckFactory(type_name, root, target_cpu, project_name, channel):
     """Factory to build Checkout class instances."""
     class_ = CHECK_TYPE_MAP.get(type_name)
     if not class_:
         raise KeyError('unrecognized checkout type: %s' % type_name)
-    return class_(root, target_cpu, project_name)
+    return class_(root, target_cpu, project_name, channel)
