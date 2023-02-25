@@ -1,5 +1,5 @@
 diff --git a/chrome/app/chrome_version.rc.version b/chrome/app/chrome_version.rc.version
-index 0ec74bdd42dd5b6c4439696218d0778d4fad91a8..691914ad40bb47175229eb561b4f578d74e79d7e 100644
+index 0ec74bdd42dd5b6c4439696218d0778d4fad91a8..95fd34150232753fa3cf9a80c1c491d3cd85877f 100644
 --- a/chrome/app/chrome_version.rc.version
 +++ b/chrome/app/chrome_version.rc.version
 @@ -10,8 +10,8 @@
@@ -13,16 +13,17 @@ index 0ec74bdd42dd5b6c4439696218d0778d4fad91a8..691914ad40bb47175229eb561b4f578d
   FILEFLAGSMASK 0x17L
  #ifdef _DEBUG
   FILEFLAGS 0x1L
-@@ -29,11 +29,13 @@ BEGIN
+@@ -28,12 +28,12 @@ BEGIN
+         BEGIN
              VALUE "CompanyName", "@COMPANY_FULLNAME@"
              VALUE "FileDescription", "@PRODUCT_FULLNAME@"
-             VALUE "FileVersion", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
+-            VALUE "FileVersion", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
 +            VALUE "FileVersion", "@CYFS_MAJOR@.@CYFS_MINOR@.@CYFS_NIGHTLY@.@CYFS_BUILD@"
              VALUE "InternalName", "@INTERNAL_NAME@"
              VALUE "LegalCopyright", "@COPYRIGHT@"
              VALUE "OriginalFilename", "@ORIGINAL_FILENAME@"
              VALUE "ProductName", "@PRODUCT_FULLNAME@"
-             VALUE "ProductVersion", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
+-            VALUE "ProductVersion", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
 +            VALUE "ProductVersion", "@CYFS_MAJOR@.@CYFS_MINOR@.@CYFS_NIGHTLY@.@CYFS_BUILD@"
              VALUE "CompanyShortName", "@COMPANY_SHORTNAME@"
              VALUE "ProductShortName", "@PRODUCT_SHORTNAME@"

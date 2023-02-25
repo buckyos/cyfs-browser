@@ -1,5 +1,5 @@
 diff --git a/chrome/install_static/chromium_install_modes.cc b/chrome/install_static/chromium_install_modes.cc
-index 80bbb30c7e3683b3216ba2f9c50494c111e375a1..90c5dc4b9410dabe2750123d4b19b0dc67c98dc8 100644
+index 80bbb30c7e3683b3216ba2f9c50494c111e375a1..84fe8a3a335303f18e1d3f903cec1767f1b8f47d 100644
 --- a/chrome/install_static/chromium_install_modes.cc
 +++ b/chrome/install_static/chromium_install_modes.cc
 @@ -16,11 +16,11 @@ namespace install_static {
@@ -7,7 +7,7 @@ index 80bbb30c7e3683b3216ba2f9c50494c111e375a1..90c5dc4b9410dabe2750123d4b19b0dc
  const wchar_t kCompanyPathName[] = L"";
  
 -const wchar_t kProductPathName[] = L"Chromium";
-+const wchar_t kProductPathName[] = L"Cyber";
++const wchar_t kProductPathName[] = L"CYFS_Browser";
  
  const size_t kProductPathNameLength = _countof(kProductPathName) - 1;
  

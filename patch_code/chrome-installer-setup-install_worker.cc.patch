@@ -1,8 +1,8 @@
 diff --git a/chrome/installer/setup/install_worker.cc b/chrome/installer/setup/install_worker.cc
-index eeaa98e95378134e3a9439ace102b110d1846169..153e50e31f1afdfc38b5ad9d2f32d7c07a8810c7 100644
+index eeaa98e95378134e3a9439ace102b110d1846169..05f8f7ae2fd0331bb8e0738288cc99ee5d0944b3 100644
 --- a/chrome/installer/setup/install_worker.cc
 +++ b/chrome/installer/setup/install_worker.cc
-@@ -453,10 +453,13 @@ void AddUninstallShortcutWorkItems(const InstallParams& install_params,
+@@ -453,10 +453,12 @@ void AddUninstallShortcutWorkItems(const InstallParams& install_params,
                                           KEY_WOW64_32KEY,
                                           installer::kUninstallDisplayNameField,
                                           InstallUtil::GetDisplayName(), true);
@@ -12,7 +12,6 @@ index eeaa98e95378134e3a9439ace102b110d1846169..153e50e31f1afdfc38b5ad9d2f32d7c0
          reg_root, uninstall_reg, KEY_WOW64_32KEY,
          installer::kUninstallStringField,
 -        quoted_uninstall_cmd.GetCommandLineString(), true);
-+        // quoted_uninstall_cmd.GetCommandLineString(), true);
 +        ASCIIToWide(uninstall_cmd.AsUTF8Unsafe()), true);
      install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                           KEY_WOW64_32KEY, L"InstallLocation",

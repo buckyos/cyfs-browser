@@ -1,5 +1,5 @@
 diff --git a/chrome/installer/setup/uninstall.cc b/chrome/installer/setup/uninstall.cc
-index d92390e2d73961c04d1e744818d98317bfb31cf6..d57f153ccc0fc2b0c67e778fb763c6f3b1e6cd06 100644
+index d92390e2d73961c04d1e744818d98317bfb31cf6..fac50e04c5952159f34051ee0ca487a95e412f6b 100644
 --- a/chrome/installer/setup/uninstall.cc
 +++ b/chrome/installer/setup/uninstall.cc
 @@ -365,9 +365,9 @@ InstallStatus IsChromeActiveOrUserCancelled(
@@ -7,10 +7,10 @@ index d92390e2d73961c04d1e744818d98317bfb31cf6..d57f153ccc0fc2b0c67e778fb763c6f3
    //          give this method some brains and not kill chrome.exe launched
    //          by us, we will not uninstall if we get this return code).
 -  VLOG(1) << "Launching Chrome to do uninstall tasks.";
-+  VLOG(1) << "Launching Cyfs browser to do uninstall tasks.";
++  VLOG(1) << "Launching CYFS browser to do uninstall tasks.";
    if (LaunchChromeAndWait(installer_state.target_path(), options, &exit_code)) {
 -    VLOG(1) << "chrome.exe launched for uninstall confirmation returned: "
-+    VLOG(1) << "Cyfs_browser.exe launched for uninstall confirmation returned: "
++    VLOG(1) << "CYFS_browser.exe launched for uninstall confirmation returned: "
              << exit_code;
      if ((exit_code == chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE) ||
          (exit_code == chrome::RESULT_CODE_UNINSTALL_USER_CANCEL) ||
@@ -19,7 +19,7 @@ index d92390e2d73961c04d1e744818d98317bfb31cf6..d57f153ccc0fc2b0c67e778fb763c6f3
        return installer::UNINSTALL_DELETE_PROFILE;
    } else {
 -    PLOG(ERROR) << "Failed to launch chrome.exe for uninstall confirmation.";
-+    PLOG(ERROR) << "Failed to launch Cyfs_browser.exe for uninstall confirmation.";
++    PLOG(ERROR) << "Failed to launch CYFS_browser.exe for uninstall confirmation.";
    }
  
    return installer::UNINSTALL_CONFIRMED;

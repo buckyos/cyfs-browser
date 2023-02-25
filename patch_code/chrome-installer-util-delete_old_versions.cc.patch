@@ -1,0 +1,37 @@
+diff --git a/chrome/installer/util/delete_old_versions.cc b/chrome/installer/util/delete_old_versions.cc
+index 1132c3c3e9e5544e416bfb578759445fece6500e..4099f2e142d36f8c946b99e6bce88d929473a365 100644
+--- a/chrome/installer/util/delete_old_versions.cc
++++ b/chrome/installer/util/delete_old_versions.cc
+@@ -31,8 +31,15 @@ using ExecutableMap = std::map<base::FilePath, PathVector>;
+ base::FilePath GetExecutableVersionDirName(const base::FilePath& exe_path) {
+   std::unique_ptr<FileVersionInfo> file_version_info(
+       FileVersionInfo::CreateFileVersionInfo(exe_path));
++  VLOG(1) << __FUNCTION__ << " exe_path " << exe_path.AsUTF16Unsafe();
+   if (!file_version_info.get())
+     return base::FilePath();
++  VLOG(1) << "file info : internal_name = " << file_version_info->internal_name()
++        << ", product_version = " << file_version_info->product_version()
++        << ", product_name = " << file_version_info->product_name()
++        << ", file_version = " << file_version_info->file_version()
++        << ", special_build = " << file_version_info->special_build()
++        << ", original_filename = " << file_version_info->original_filename();
+   return base::FilePath::FromUTF16Unsafe(file_version_info->file_version());
+ }
+ 
+@@ -45,6 +52,8 @@ DirectorySet GetOldVersionDirectories(const base::FilePath& install_dir) {
+       GetExecutableVersionDirName(install_dir.Append(kChromeNewExe));
+   const base::FilePath chrome_exe_version_dir_name =
+       GetExecutableVersionDirName(install_dir.Append(kChromeExe));
++  VLOG(1) << " new_chrome_exe_version_dir_name: " << new_chrome_exe_version_dir_name.AsUTF16Unsafe();
++  VLOG(1) << " chrome_exe_version_dir_name: " << chrome_exe_version_dir_name.AsUTF16Unsafe();
+ 
+   DirectorySet directories;
+   base::FileEnumerator enum_directories(install_dir, false,
+@@ -58,6 +67,7 @@ DirectorySet GetOldVersionDirectories(const base::FilePath& install_dir) {
+         version.components().size() == kNumChromeVersionComponents &&
+         directory_name != new_chrome_exe_version_dir_name &&
+         directory_name != chrome_exe_version_dir_name) {
++      VLOG(1) << "Add directory_name " << directory_name.AsUTF16Unsafe();
+       directories.insert(directory_name);
+     }
+   }

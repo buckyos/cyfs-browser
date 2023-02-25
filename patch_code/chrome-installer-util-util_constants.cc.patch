@@ -1,5 +1,5 @@
 diff --git a/chrome/installer/util/util_constants.cc b/chrome/installer/util/util_constants.cc
-index a05091fd48bead3dbebfb3151007745883551af6..8ebacd1ecdc051cc4b67c93291e13bda498c28e0 100644
+index a05091fd48bead3dbebfb3151007745883551af6..63f54a0a5e5cc4daf112d49ba772396beb39e56f 100644
 --- a/chrome/installer/util/util_constants.cc
 +++ b/chrome/installer/util/util_constants.cc
 @@ -214,7 +214,7 @@ const char kGoogleUpdateIsMachineEnvVar[] = "GoogleUpdateIsMachine";
@@ -15,7 +15,7 @@ index a05091fd48bead3dbebfb3151007745883551af6..8ebacd1ecdc051cc4b67c93291e13bda
  const wchar_t kChromeChannelStable[] = L"";
  const wchar_t kChromeChannelStableExplicit[] = L"stable";
  
-+const wchar_t kCyfsUninstallBin[] = L"Cyfs_browser_uninstaller.exe";
++const wchar_t kCyfsUninstallBin[] = L"CYFS_Browser_uninstaller.exe";
 +
  const size_t kMaxAppModelIdLength = 64U;
  

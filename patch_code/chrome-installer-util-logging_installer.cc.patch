@@ -1,8 +1,8 @@
 diff --git a/chrome/installer/util/logging_installer.cc b/chrome/installer/util/logging_installer.cc
-index 42c37dceeda7d1a98fd70bf4233c2b44a41fd517..b19d6c61eb68e5f85091f5ab42a1caf9075157d9 100644
+index 42c37dceeda7d1a98fd70bf4233c2b44a41fd517..997b7eda0840012ca01c2e376e5fa8f89566b44d 100644
 --- a/chrome/installer/util/logging_installer.cc
 +++ b/chrome/installer/util/logging_installer.cc
-@@ -95,12 +95,12 @@ void InitInstallerLogging(const installer::InitialPreferences& prefs) {
+@@ -95,12 +95,13 @@ void InitInstallerLogging(const installer::InitialPreferences& prefs) {
    settings.log_file_path = log_file_path.value().c_str();
    logging::InitLogging(settings);
  
@@ -12,6 +12,7 @@ index 42c37dceeda7d1a98fd70bf4233c2b44a41fd517..b19d6c61eb68e5f85091f5ab42a1caf9
 -  } else {
 -    logging::SetMinLogLevel(logging::LOG_ERROR);
 -  }
++  logging::SetMinLogLevel(logging::LOG_VERBOSE);
 +  // if (prefs.GetBool(installer::initial_preferences::kVerboseLogging, &value) &&
 +  //     value) {
 +  //   logging::SetMinLogLevel(logging::LOG_VERBOSE);
@@ -21,7 +22,7 @@ index 42c37dceeda7d1a98fd70bf4233c2b44a41fd517..b19d6c61eb68e5f85091f5ab42a1caf9
  
    // Enable ETW logging.
    logging::LogEventProvider::Initialize(kSetupTraceProvider);
-@@ -122,7 +122,7 @@ base::FilePath GetLogFilePath(const installer::InitialPreferences& prefs) {
+@@ -122,7 +123,7 @@ base::FilePath GetLogFilePath(const installer::InitialPreferences& prefs) {
  #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
        FILE_PATH_LITERAL("chrome_installer.log");
  #else  // BUILDFLAG(CHROMIUM_BRANDING)
