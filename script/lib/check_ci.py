@@ -14,7 +14,7 @@ def download_file(remote_path, local_path, is_dir=False):
     try:
         print('Begin Download file %s to %s' % (remote_path, local_path))
         if is_dir:
-            shutil.copytree(remote_path, local_path)
+            shutil.copytree(remote_path, local_path, dirs_exist_ok=True)
         else:
             shutil.copy(remote_path, local_path)
         print('End Download file %s' % remote_path)
@@ -28,7 +28,7 @@ def upload_file(local_path, remote_path, is_dir=False):
         os.makedirs(os.path.dirname(remote_path), exist_ok=True)
         print('Begin Upload file %s to %s' % (local_path, remote_path))
         if is_dir:
-            shutil.copytree(local_path, remote_path)
+            shutil.copytree(local_path, remote_path, dirs_exist_ok=True)
         else:
             shutil.copy(local_path, remote_path)
         print('End Upload file %s' % local_path)
@@ -101,7 +101,7 @@ class CheckForCIBuild:
         download_file(remote_nft_bin_path(self.remote_base_path), self.local_nft_bin_path, True)
 
     def download_default_extensions(self):
-        make_file_not_exist(self.local_extension_path)
+        # make_file_not_exist(self.local_extension_path)
         download_file(remote_extensions_path(self.remote_base_path, self._channel), self.local_extension_path, True)
 
     def update_default_extensions(self):
@@ -147,7 +147,7 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
 
     @property
     def browser_file_path(self):
-        return os.path.join(self.install_path, product_name())
+        return os.path.join(self.install_path, "mini_installer.exe")
 
     @property
     def cache_version_file(self):
@@ -155,8 +155,8 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
         remote_mark = os.path.join(remote_cache_path(self.remote_base_path), self._target_cpu, self.cache_mark_file)
         return (local_mark, remote_mark)
 
-    def cache_zip_name(self, commit_id):
-        return "%s-%s.zip" % (self._build_target, commit_id)
+    def cache_installer_name(self, commit_id, bin='mini_installer.exe'):
+        return "%s-%s-%s" % (self._build_target, commit_id, bin)
 
     def copy_chromium_source_code(self):
         if os.path.exists(self.src_path):
@@ -191,30 +191,23 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
         assert is_dir_exists(self.chrome_path)
         self.check_chromium_branch()
 
+    def remote_installer_file(self, installer_name):
+        return os.path.join(remote_cache_path(self.remote_base_path), self._target_cpu, installer_name)
 
-    def remote_zip_file(self, zip_name):
-        return os.path.join(remote_cache_path(self.remote_base_path), self._target_cpu, zip_name)
-
-    def local_zip_file(self, zip_name):
-        return os.path.join(self.install_path, zip_name)
-
+    def local_installer_file(self, installer_name):
+        return os.path.join(self.install_path, installer_name)
+  
     def update_build_cache_and_version(self):
         commit_id = self.get_repo_version()
         try:
-            zip_name = self.cache_zip_name(commit_id)
-            print("Begin zip cache file %s" % zip_name)
-            local_zip = self.local_zip_file(zip_name)
-            with zipfile.ZipFile(local_zip, "w", zipfile.ZIP_DEFLATED, True) as zf:
-                for base, _, filenames in os.walk(self.browser_file_path):
-                    fpath = os.path.relpath(base, self.browser_file_path)
-                    for filename in filenames:
-                        zf.write(os.path.join(base, filename),
-                                 os.path.join(fpath, filename))
-            print("End zip cache file %s" % zip_name)
-            if os.path.exists(local_zip):
-                upload_file(local_zip, self.remote_zip_file(zip_name))
+            installer_name = self.cache_installer_name(commit_id)
+            local_installer = self.local_installer_file(installer_name)
+            origin_installer = self.local_installer_file('mini_installer.exe')
+            if os.path.exists(origin_installer):
+                os.rename(origin_installer, local_installer)
+                upload_file(local_installer, self.remote_installer_file(installer_name))
                 self.update_cache_version(self.cache_version_file, commit_id)
-                os.remove(local_zip)
+                os.remove(local_installer)
         except Exception as e:
             print("Update build cache failed, error: %s" % e)
             raise
@@ -228,18 +221,17 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
                 print("There is no match build cache")
                 return is_match
 
-            zip_name = self.cache_zip_name(commit_id)
-            local_zip = self.local_zip_file(zip_name)
-            if not os.path.exists(local_zip):
-                download_file(self.remote_zip_file(zip_name), local_zip)
+            installer_name = self.cache_installer_name(commit_id)
+            local_installer = self.local_installer_file(installer_name)
+            origin_installer = self.local_installer_file('mini_installer.exe')
+            make_file_not_exist(origin_installer)
 
-            print("Begin unzip cache %s" % (local_zip))
-            make_file_not_exist(self.browser_file_path)
-            with zipfile.ZipFile(local_zip, 'r', zipfile.ZIP_DEFLATED, True) as zf:
-                zf.extractall(self.browser_file_path)
-            print("End unzip cache %s" % (local_zip))
-            if is_dir_exists(self.browser_file_path): is_match = True
-            os.remove(local_zip)
+
+            if not os.path.exists(local_installer):
+                download_file(self.remote_installer_file(installer_name), local_installer)
+            os.rename(local_installer, origin_installer)
+
+            if os.path.exists(origin_installer): is_match = True
         except Exception as e:
             print('Get match build cache failed, error: %s' % e)
         finally:

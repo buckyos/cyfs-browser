@@ -12,6 +12,11 @@ from lib.pack_ci import make_installer
 from lib.common import src_path, MAC_CPUS
 from lib.git_patch import GitPatcher
 
+version_template = '''CYFS_MAJOR=%s
+CYFS_MINOR=%s
+CYFS_NIGHTLY=%s
+CYFS_BUILD=%s
+'''
 
 IS_MAC = platform.system() == "Darwin"
 IS_WIN = platform.system() == "Windows"
@@ -60,6 +65,11 @@ def set_env_variables():
         pass
     print('End setting environment variables')
 
+def update_product_version(root, channel, version):
+    channel_number = 1 if channel == 'beta' else 0
+    product_version_file = os.path.join(root, "src", "chrome", "CYFS_VERSION")
+    with open(product_version_file, 'w') as f:
+        f.write(version_template %('1', '0', channel_number, version))
 
 def main(args):
     root = os.path.normpath(os.path.join(
@@ -68,24 +78,26 @@ def main(args):
     current_os = platform.system()
     assert current_os in ['Windows', 'Darwin']
     set_env_variables()
+
     check = CheckFactory(current_os, root, opt.target_cpu, opt.project_name, opt.channel)
-    is_match_cache = check.get_match_build_cache()
     check.check_requirements()
-    ## In Macos environment, externsion must be execute compile
-    if is_match_cache and current_os != 'Darwin':
-        print("Get match build cache, so not need compile")
-    else:
-        print("There have not match build cache, so need compile")
+
+    resuse = False
+    if current_os == 'Windows':
+        resuse = check.get_match_build_cache()
+    if not resuse:
         check.check_browser_src_files()
         ### patch
         GitPatcher.update(root)
+        update_product_version(root, opt.channel, opt.version)
+
         check.update_default_extensions()
-        ## use chromium gn and ninja tool compile source code
+        # use chromium gn and ninja tool compile source code
         build_browser(src_path(root), opt.project_name, opt.target_cpu)
 
     ### pack
-    make_installer(root, opt.target_cpu, opt.project_name, opt.version, is_match_cache, opt.channel)
-    if not is_match_cache:
+    make_installer(root, opt.target_cpu, opt.project_name, opt.version, opt.channel)
+    if not resuse and current_os == 'Windows':
         check.update_build_cache_and_version()
 
     print("Build finished!!")

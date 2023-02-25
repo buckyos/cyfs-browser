@@ -6,9 +6,9 @@ sys.path.append(os.path.dirname(__file__))
 import subprocess
 import shutil
 from util import is_dir_exists, make_dir_exist, make_file_not_exist
-from common import pack_base_path,pkg_base_path,pkg_build_path, src_path, get_chromium_version, nsis_bin_path
-from common import pack_app_path,build_target, build_app_path, build_target_path, product_name, application_name
-from common import pack_include_files, pack_include_version_files, pack_include_dirs, MAC_CPUS
+from common import pack_base_path,pkg_base_path,pkg_build_path, src_path, nsis_bin_path
+from common import pack_app_path,build_target, build_app_path, build_target_path, application_name
+from common import pkg_prefix, MAC_CPUS
 
 IS_MAC = platform.system() == "Darwin"
 IS_WIN = platform.system() == "Windows"
@@ -43,10 +43,6 @@ class Pack:
 class PackForWindows(Pack):
 
     @property
-    def product_base_path(self):
-        return os.path.join(self.pack_base_path, product_name())
-
-    @property
     def out_path(self):
         return build_target_path(src_path(self._root), self._build_target)
 
@@ -69,6 +65,24 @@ class PackForWindows(Pack):
     def check_requirements(self):
         pass
 
+    def copy_browser_installer(self):
+        try:
+            src_path = os.path.join(self.out_path, "mini_installer.exe")
+            dst_path = os.path.join(self.pack_base_path, "mini_installer.exe")
+            make_file_not_exist(dst_path)
+            shutil.copyfile(src_path, dst_path)
+            assert os.path.exists(dst_path), ' Copy %s to %s failed' % (src_path, dst_path)
+        except Exception as e:
+            print("copy browser installer failed: %s" % e)
+
+    def copy_extensions(self):
+        extension_path = os.path.join(self.pack_base_path, "Extensions")
+        make_dir_exist(extension_path)
+
+    def copy_files_for_pack(self):
+        self.copy_browser_installer()
+        self.copy_extensions()
+
     def make_nsis_installer(self):
         try:
             cmd = [self.nsis_bin_path,
@@ -82,53 +96,6 @@ class PackForWindows(Pack):
             msg = 'Make nsis installer failed, error: %s' % e
             print(msg)
             sys.exit(msg)
-
-    def copy_browser_file(self):
-        copy_number = 0
-        make_dir_exist(self.product_base_path)
-        ## {build_dir}/* ==> {package}/*
-        for file_ in pack_include_files():
-            src_path = os.path.join(self.out_path, file_)
-            dst_path = os.path.join(self.product_base_path, file_)
-            shutil.copyfile(src_path, dst_path)
-            copy_number = copy_number + 1
-
-        version = get_chromium_version(self._root)
-        version_dir = os.path.join(self.product_base_path, version)
-        make_dir_exist(version_dir)
-        ## {build_dir}/* ==> {package}/{version}/*
-        for file_ in pack_include_version_files():
-            src_path = os.path.join(self.out_path, file_)
-            dst_path = os.path.join(version_dir, file_)
-            shutil.copyfile(src_path, dst_path)
-            print('%s => %s' % (src_path, dst_path))
-            copy_number = copy_number + 1
-        manifest_file = '{}.manifest'.format(version)
-        shutil.copyfile(os.path.join(self.out_path, manifest_file),
-                        os.path.join(version_dir, manifest_file))
-        copy_number = copy_number + 1
-
-        ## {build_dir}/*/* ==> {package}/{version}/*/*
-        def check_not_need_copy(file):
-            _suffixs = ['lib', 'pdb', 'info']
-            return bool([ext for ext in _suffixs if file.lower().endswith(ext)])
-
-        for dir_ in pack_include_dirs():
-            root = os.path.normpath(os.path.join(self.out_path, dir_))
-            for (base, _, files) in os.walk(root):
-                copy_files = [x for x in files if not check_not_need_copy(x)]
-                for file in copy_files:
-                    src_path = os.path.abspath(os.path.join(base, file))
-                    dst_path = os.path.join(
-                        version_dir, os.path.relpath(src_path, self.out_path))
-                    make_dir_exist(os.path.dirname(dst_path))
-                    print('Copy %s to %s' % (src_path, dst_path))
-                    shutil.copyfile(src_path, dst_path)
-                    copy_number = copy_number + 1
-        print('Copy %s file for nsis' % (copy_number))
-
-    def copy_files_for_pack(self):
-        self.copy_browser_file()
 
 
 class PackForMacos(Pack):
@@ -151,15 +118,19 @@ class PackForMacos(Pack):
 
     @property
     def dmg_file(self):
-        dmg_filename = "cyfs-browser-installer-%s.dmg" % (self._version)
+        cpu_type = 'aarch64' if self._target_cpu == 'ARM' else 'x86'
+        dmg_filename = "cyfs-browser-%s-%s.dmg" % (self._version, cpu_type)
         return os.path.join(self.pack_base_path, dmg_filename)
 
     def pack(self):
         self.check_requirements()
         self.copy_files_for_pack()
-        self.build_pkg('cyfs_browser_package')
-        self.build_pkg('cyfs_browser')
+        one_step_pkg =self.build_pkg('%s_browser_package' % (pkg_prefix()))
+        two_step_pkg = self.build_pkg('%s_browser' % (pkg_prefix()))
+        make_file_not_exist(one_step_pkg)
         self.build_dmg()
+        self.add_custom_icon_for_dmg()
+        make_file_not_exist(two_step_pkg)
 
     def check_requirements(self):
         pass
@@ -197,6 +168,8 @@ class PackForMacos(Pack):
 
     def build_pkg(self, package_name):
         make_dir_exist(self.pkg_build_path)
+        this_pkg_file = os.path.join(self.pkg_build_path, '%s.pkg' % package_name)
+        make_file_not_exist(this_pkg_file)
 
         this_pkgproj = os.path.join(self.pkg_base_path, '%s.pkgproj' % package_name)
         cmd = '/usr/local/bin/packagesbuild --package-version %s %s' % (
@@ -204,17 +177,10 @@ class PackForMacos(Pack):
         print('-> Begin build pkg, cmd = %s' % cmd)
         self.execute_cmd(cmd)
         print('<- End build pkg')
-        this_pkg_file = os.path.join(self.pkg_build_path, '%s.pkg' % package_name)
-        if not os.path.exists(this_pkg_file):
-            msg = 'Build pkg %s failed' % this_pkg_file
-            print(msg)
-            sys.exit(msg)
+        assert os.path.exists(this_pkg_file), 'Build pkg %s failed' % this_pkg_file
+        return this_pkg_file
 
     def build_dmg(self):
-        middle_pkg_file = os.path.join(self.pkg_build_path, 'cyfs_browser_package.pkg')
-        if os.path.exists(middle_pkg_file):
-            os.remove(middle_pkg_file)
-
         dst = os.path.join(self.pkg_build_path, 'uninstall.sh')
         shutil.copyfile(os.path.join(self.pkg_base_path, 'uninstall.sh'), dst)
         os.chmod(dst, 0o755)
@@ -224,10 +190,8 @@ class PackForMacos(Pack):
         print('-> Begin build dmg , cmd = %s' % cmd)
         self.execute_cmd(cmd)
         print('<- End build dmg')
-        if not os.path.exists(self.dmg_file):
-            msg = 'Build dmg %s failed' % (self.dmg_file)
-            print(msg)
-            sys.exit(msg)
+        assert os.path.exists(self.dmg_file),  "Build dmg %s failed" % (self.dmg_file)
+        print("Build dmg %s succeeded" % (self.dmg_file))
 
 
 PACK_TYPE_MAP = {

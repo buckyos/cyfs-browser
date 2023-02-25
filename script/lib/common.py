@@ -44,6 +44,9 @@ def application_name():
 def product_name():
     return "CYFS_Browser"
 
+def pkg_prefix():
+    return 'cyfs'
+
 def code_zip_name():
     if IS_WIN:
         return "chromium_code_pc.zip"
@@ -52,7 +55,10 @@ def code_zip_name():
     return None
 
 def nsis_bin_path():
-    return 'C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe'
+    default_nsis_bin_path = 'C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe'
+    path = os.environ.get('NSIS_BIN_PATH', default=default_nsis_bin_path)
+    assert os.path.exists(path), 'Must to set CYFS_BROWSER_SRC_PATH'
+    return path
 
 def pack_base_path(root, target_cpu):
     if IS_WIN:
@@ -87,50 +93,6 @@ def last_args_file(src_root, target):
 def toolchain_ninja_file(src_root, target):
     return os.path.join(build_target_path(src_root, target), "toolchain.ninja")
 
-def pack_include_files():
-    include_files = [
-        'CYFS_Browser.exe', 'chrome_proxy.exe',
-    ]
-    return include_files
-
-def pack_include_version_files():
-    include_version_files = [
-        'chrome_100_percent.pak','chrome_200_percent.pak', 'resources.pak',
-        'chrome.dll', 'chrome_elf.dll', 'mojo_core.dll', 'mojo_core.dll',
-        'd3dcompiler_47.dll', 'libEGL.dll', 'libGLESv2.dll',
-        'vk_swiftshader.dll', 'vulkan-1.dll',
-        'chrome_pwa_launcher.exe', 'notification_helper.exe',
-        'vk_swiftshader_icd.json', 'v8_context_snapshot.bin',
-        'snapshot_blob.bin', 'icudtl.dat',
-        'Logo.png', 'SmallLogo.png',
-    ]
-    return include_version_files
-
-def pack_include_dirs():
-    include_dirs = [
-        'MEIPreload', 'Locales', 'swiftshader', 'resources'
-    ]
-    return include_dirs
-
-def get_chromium_version(root):
-    major = 0
-    minor = 0
-    build = 0
-    patch = 0
-    version_file = os.path.join(src_path(root), "chrome", "VERSION")
-    for line in open(version_file, 'r'):
-        line = line.rstrip()
-        if line.startswith('MAJOR='):
-            major = line[6:]
-        elif line.startswith('MINOR='):
-            minor = line[6:]
-        elif line.startswith('BUILD='):
-            build = line[6:]
-        elif line.startswith('PATCH='):
-            patch = line[6:]
-    return '%s.%s.%s.%s' % (major, minor, build, patch)
-
-
 def remote_extensions_path(remote_base_path, channel):
     path = os.path.join(remote_base_path, "chromium_extensions", "Extensions", channel)
     return os.path.normpath(path)
@@ -156,3 +118,66 @@ def remote_cache_path(remote_base_path):
     if IS_WIN:
         return os.path.normpath(os.path.join(remote_base_path, "browser_build_cache", "windows"))
     return None
+
+def get_deafult_macos_gn_args_array(target_cpu):
+    assert target_cpu in MAC_CPUS
+    args_array = [
+        'is_debug=false',
+        'dcheck_always_on=false',
+        'is_component_build=false',
+        'enable_nacl=false',
+        'target_os="mac"',
+        'chrome_pgo_phase=0',
+        'clang_use_chrome_plugins=false',
+        'enable_hangout_services_extension=false',
+        'enable_js_type_check=false',
+        'enable_mdns=false',
+        'enable_nacl_nonsfi=false',
+        'enable_reading_list=false',
+        'enable_remoting=false',
+        'enable_service_discovery=false',
+        'enable_widevine=true',
+        'exclude_unwind_tables=true',
+        'fieldtrial_testing_like_official_build=true',
+        'google_api_key=""',
+        'google_default_client_id=""',
+        'google_default_client_secret=""',
+        'treat_warnings_as_errors=false',
+        'use_official_google_api_keys=false',
+        'use_unofficial_version_number=false',
+        'blink_symbol_level=0',
+        'enable_iterator_debugging=false',
+        'enable_swiftshader=true',
+        'fatal_linker_warnings=false',
+        'ffmpeg_branding="Chrome"',
+        'is_clang=true',
+        'is_official_build=true',
+        'proprietary_codecs=true',
+        'symbol_level=0',
+    ]
+    if target_cpu == 'X86':
+        args_array.append('target_cpu="x64"')
+    elif target_cpu == 'ARM':
+        args_array.append('target_cpu="arm64"')
+    return args_array
+
+def get_deafult_windows_gn_args_array():
+    args_array = [
+        'is_debug=false',
+        'dcheck_always_on=false',
+        'is_component_build=false',
+        'symbol_level=0',
+        'blink_symbol_level=0',
+        'ffmpeg_branding="Chrome"',
+        'proprietary_codecs=true',
+        'target_cpu="x64"',
+    ]
+    return args_array
+
+def get_default_args_array(target_cpu):
+    if IS_WIN:
+        return get_deafult_windows_gn_args_array()
+    elif IS_MAC:
+        return get_deafult_macos_gn_args_array(target_cpu)
+    raise Exception("Unsupported platform")
+

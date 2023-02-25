@@ -3,14 +3,16 @@
 readonly RUNTIME_DIR="${HOME}/Library/Application Support/cyfs/services/runtime"
 readonly TOOLS_DIR="${HOME}/Library/Application Support/cyfs/services/runtime/tools"
 
-readonly BROWSER_EXTENSION_DIR="${HOME}/Library/Application Support/cyber/Default/cyfs_extensions"
-readonly BROWSER_OLD_EXTENSION_DIR="${HOME}/Library/Application Support/cyber/Extensions"
+readonly BROWSER_DIR="CYFS_Browser"
+readonly BROWSER_EXTENSION_DIR="${HOME}/Library/Application Support/${BROWSER_DIR}/Default/cyfs_extensions"
+readonly BROWSER_OLD_EXTENSION_DIR="${HOME}/Library/Application Support/${BROWSER_DIR}/Extensions"
 
 cd "$RUNTIME_DIR"
 
 chmod +x cyfs-runtime
 chmod +x ipfs
 chmod +x ipfs-proxy
+chmod +x enslookup
 
 cd "$TOOLS_DIR"
 

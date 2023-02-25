@@ -2,7 +2,6 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "CYFS_Browser"
-!define BROWSER_NAME_ALIAS "CYFS Browser"
 !define BROWSER_DESKTOP_NAME "CYFS Browser"
 !define START_RUNTIME_BAT "Restart Runtime"
 !define BROWSER_EXE_NAME "${PRODUCT_NAME}.exe"
@@ -11,6 +10,8 @@
 !define RUNTIME_EXE_NAME "${PRODUCT_RUNTIME_NAME}.exe"
 !define IPFS_PROXY_BIN_NAME "ipfs-proxy.exe"
 !define IPFS_RUNTIME_BIN_NAME "ipfs.exe"
+!define CYFS_UPLOAD_BIN_NAME "cyfs-file-uploader.exe"
+!define ENS_LOOKUP_BIN_NAME "enslookup.exe"
 !define RUNTIME_DESKTOP_NAME "Cyfs Runtime"
 !define PRODUCT_VERSION "${BrowserVersion}"
 !define PRODUCT_CHANNEL "${channel}"
@@ -23,14 +24,13 @@
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 !define PRODUCT_INST_ROOT_KEY "HKLM"
 !define AUTORUN_ROOT_KEY "HKLM"
-!define NFT_TOOL_ROOT_KEY "HKCR"
 
+!define NFT_TOOL_ROOT_KEY "HKCR"
 !define CYFS_SCHEME_REGKEY "cyfs"
 !define CYFS_SCHEME_ROOT_KEY "HKCR"
 
 !define VC_COMPONENT_KEY "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Vc"
-!define OLD_BROWSER_USER_DATA_DIR "Chromium"
-!define BROWSER_USER_DATA_DIR "Cyber"
+!define RELATED_BROWSER_BIN "kalama.exe"
 
 ; MUI 1.67 compatible ------
 !include "MUI2.nsh"
@@ -60,28 +60,28 @@ Unicode True
 !define MUI_WELCOMEFINISHPAGE_BITMAP ".\images\left.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP ".\images\left.bmp"
 
-!define MUI_WELCOMEPAGE_TITLE "Welcome to install ${BROWSER_NAME_ALIAS}"
+!define MUI_WELCOMEPAGE_TITLE "Welcome to install ${BROWSER_DESKTOP_NAME}"
 ## $\n == blank line
 ## $\r$\n == new line
 !define MUI_WELCOMEPAGE_TEXT "A truly decentralized browser. Support CYFS link browsing, new web3 product experience.$\r$\n\
 $\nLow threshold for use$\r$\n\
-The ${BROWSER_NAME_ALIAS} is based on the secondary development of Chromium, retains the original Chrome UI, and retains your usage habits.$\r$\n\
+The ${BROWSER_DESKTOP_NAME} is based on the secondary development of Chromium, retains the original Chrome UI, and retains your usage habits.$\r$\n\
 $\nprivacy protection$\r$\n\
-${BROWSER_NAME_ALIAS} supports anonymous browsing mode to protect your online privacy.$\r$\n\
+${BROWSER_DESKTOP_NAME} supports anonymous browsing mode to protect your online privacy.$\r$\n\
 $\nBrowse Decentralized Data$\r$\n\
-The ${BROWSER_NAME_ALIAS} makes the 404 situation in the centralized network disappear and browses the decentralized data permanently.$\r$\n\
+The ${BROWSER_DESKTOP_NAME} makes the 404 situation in the centralized network disappear and browses the decentralized data permanently.$\r$\n\
 $\nCreate NFTs with ease$\r$\n\
-${BROWSER_NAME_ALIAS} can help you easily create NFT works, and convert any file into NFT in just a few simple steps.$\r$\n\
+${BROWSER_DESKTOP_NAME} can help you easily create NFT works, and convert any file into NFT in just a few simple steps.$\r$\n\
 "
 
 !define MUI_LICENSEPAGE_TEXT_TOP "Press Page Down to see the terms of the agreement."
 !define MUI_LICENSEPAGE_TEXT_BOTTOM "If you accept the terms of the agreement, click I Agree to continue."
-!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "Please wait while ${BROWSER_NAME_ALIAS} (V ${BrowserVersion} ${channel}) is being installed"
+!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "Please wait while ${BROWSER_DESKTOP_NAME} (V ${BrowserVersion} ${channel}) is being installed"
 ; !define MUI_INSTFILESPAGE_FINISHHEADER_SUBTEXT
 
 
-!define MUI_FINISHPAGE_TITLE "${BROWSER_NAME_ALIAS} install complete"
-!define MUI_FINISHPAGE_TEXT "${BROWSER_NAME_ALIAS} (V ${BrowserVersion} ${channel}) has been installed on your computer.$\r$\n\
+!define MUI_FINISHPAGE_TITLE "${BROWSER_DESKTOP_NAME} install complete"
+!define MUI_FINISHPAGE_TEXT "${BROWSER_DESKTOP_NAME} (V ${BrowserVersion} ${channel}) has been installed on your computer.$\r$\n\
 $\nClick finish to close Setup."
 
 ; !define MUI_TEXTCOLOR "000000"
@@ -108,10 +108,9 @@ $\nClick finish to close Setup."
 !insertmacro MUI_LANGUAGE "English"
 
 
-Name "${BROWSER_NAME_ALIAS} ${PRODUCT_VERSION} ${channel}"
-; Name "${BROWSER_NAME_ALIAS}"
-OutFile "${PRODUCT_NAME}_${PRODUCT_VERSION}.exe"
-Caption "${BROWSER_NAME_ALIAS} Install (V ${BrowserVersion} ${channel})"
+Name "${BROWSER_DESKTOP_NAME} ${PRODUCT_VERSION} ${channel}"
+OutFile "${PRODUCT_NAME}_${PRODUCT_VERSION}-${PRODUCT_CHANNEL}.exe"
+Caption "${BROWSER_DESKTOP_NAME} Install (V ${BrowserVersion} ${channel})"
 
 ;ShowInstDetails nevershow
 ;ShowUnInstDetails nevershow
@@ -119,15 +118,47 @@ Caption "${BROWSER_NAME_ALIAS} Install (V ${BrowserVersion} ${channel})"
 BrandingText "CYFS Core Dev Team"
 
 ; set browser install path
-InstallDir "$APPDATA\${PRODUCT_NAME}"
+InstallDir "$LOCALAPPDATA\${PRODUCT_NAME}"
 
 ; install need admin rights
 ; RequestExecutionLevel admin
 
-InstallDirRegKey ${PRODUCT_INST_ROOT_KEY} "${PRODUCT_DIR_REGKEY}" ""
-; InstallDirRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" ""
 
-Function KillProc
+# Install webview2 by launching the bootstrapper
+# See https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#online-only-deployment
+Function installWebView2
+	# If this key exists and is not empty then webview2 is already installed
+  SetOutPath "$INSTDIR"
+  DetailPrint "Check Installing WebView2 Runtime"
+	ReadRegStr $0 HKLM "SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" "pv"
+
+	${If} ${Errors} 
+	${OrIf} $0 == ""
+		DetailPrint "Installing: WebView2 Runtime"
+    File "MicrosoftEdgeWebview2Setup.exe"
+		ExecWait '"$INSTDIR\MicrosoftEdgeWebview2Setup.exe" /silent /install'
+	${EndIf}
+FunctionEnd
+
+Function InstallVC
+  SetOutPath "$INSTDIR"
+  DetailPrint "Check Installing Visual C++ Runtime"
+  Push $R0
+  ClearErrors
+  ReadRegStr $R0 ${PRODUCT_INST_ROOT_KEY} ${VC_COMPONENT_KEY} "install_vc"
+
+  IfErrors 0 VSRedistInstalled
+  LogText "install vc runtime"
+  File "VC_redist.x64.exe"
+  Exec "$INSTDIR\VC_redist.x64.exe /q /norestart"
+  WriteRegStr ${PRODUCT_INST_ROOT_KEY} "${VC_COMPONENT_KEY}" "install_vc" "1"
+  StrCpy $R0 "-1"
+
+VSRedistInstalled:
+  Exch $R0
+FunctionEnd
+
+Function ForceKillProcess
   Pop $1 ; exe name
   LogText "check $1 is or not running, if yes need kill this process"
 	nsProcess::_FindProcess $1
@@ -153,133 +184,102 @@ Function KillProc
   ${EndIf}
 FunctionEnd
 
-!macro ForceKillProcess EXEName
-	push ${EXEName}
-	Call KillProc
-!macroend
 
-Function .onInit
-  !insertmacro MUI_LANGDLL_DISPLAY
-  !insertmacro ForceKillProcess ${RUNTIME_EXE_NAME}
-  !insertmacro ForceKillProcess ${BROWSER_EXE_NAME}
-  !insertmacro ForceKillProcess ${NFT_TOOL_EXE}
-  !insertmacro ForceKillProcess ${IPFS_PROXY_BIN_NAME}
-  !insertmacro ForceKillProcess ${IPFS_RUNTIME_BIN_NAME}
+Function check_related_browser_running
+  nsProcess::_FindProcess ${RELATED_BROWSER_BIN}
+  Pop $R0
+  ${If} $R0 == 0
+    LogText "${RELATED_BROWSER_BIN} is exits, need kill this process"
+    MessageBox MB_ICONSTOP "${RELATED_BROWSER_BIN} is Running, Please exit ${RELATED_BROWSER_BIN} Application"
+    Quit
+  ${EndIf}
 FunctionEnd
 
-Function AutoBoot
-  WriteRegStr ${AUTORUN_ROOT_KEY} "${AUTORUN_KEYPATH}" "${PRODUCT_NAME}" "$INSTDIR\${PRODUCT_NAME}\${PRODUCT_NAME}.exe"
+Function kill_related_browser_componment_process
+  Push ${RUNTIME_EXE_NAME}
+  Call ForceKillProcess
+  Push ${ENS_LOOKUP_BIN_NAME}
+  Call ForceKillProcess
+  Push ${BROWSER_EXE_NAME}
+  Call ForceKillProcess
+  Push ${NFT_TOOL_EXE}
+  Call ForceKillProcess
+  Push ${IPFS_PROXY_BIN_NAME}
+  Call ForceKillProcess
+  Push ${CYFS_UPLOAD_BIN_NAME}
+  Call ForceKillProcess
+  Sleep 1000
+  Push ${IPFS_RUNTIME_BIN_NAME}
+  Call ForceKillProcess
 FunctionEnd
 
-Function LaunchLink
-  ExecShell "" "$INSTDIR\${PRODUCT_NAME}\${PRODUCT_NAME}.exe"
+Function force_kill_process
+  Pop $R0
+  nsProcess::_FindProcess $R0
+  Pop $R1
+  ${If} $R1 == 0
+    LogText "$R0 is running, need kill this process"
+    Push $R0
+    Call ForceKillProcess
+  ${EndIf}
 FunctionEnd
 
-Function LaunchCyfsRuntime
-  ExecShell "" "$APPDATA\cyfs\services\runtime\${RUNTIME_EXE_NAME}"
-FunctionEnd
-
-Function InstallVC
-  Push $R0
-  ClearErrors
-  ReadRegStr $R0 ${PRODUCT_INST_ROOT_KEY} ${VC_COMPONENT_KEY} "install_vc"
-
-  IfErrors 0 VSRedistInstalled
-  LogText "install vc runtime"
-  Exec "$INSTDIR\VC_redist.x64.exe /q /norestart"
-  WriteRegStr ${PRODUCT_INST_ROOT_KEY} "${VC_COMPONENT_KEY}" "install_vc" "1"
-  StrCpy $R0 "-1"
-
-VSRedistInstalled:
-  Exch $R0
-FunctionEnd
 
 Section "-LogSetOn"
   LogSet on
 SectionEnd
 
-Section "delete_browser_old_files" 1
-  ReadRegStr $0 ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion"
-  LogText "current application version = $0"
 
-  ReadRegStr $1 ${PRODUCT_INST_ROOT_KEY} "${PRODUCT_DIR_REGKEY}" "BrowserInstallDir"
-  LogText "current install path = $1"
+Function delete_old_browser_files
+  RMDir /r "$LOCALAPPDATA\${PRODUCT_NAME}\User Data\Default/cyfs_extensions"
 
-  UserInfo::GetAccountType
-  Pop $R0
-  LogText "current user = $R0"
-
-  !insertmacro ForceKillProcess ${BROWSER_EXE_NAME}
-  !insertmacro ForceKillProcess ${RUNTIME_EXE_NAME}
-  !insertmacro ForceKillProcess ${NFT_TOOL_EXE}
-  !insertmacro ForceKillProcess ${IPFS_PROXY_BIN_NAME}
-  !insertmacro ForceKillProcess ${IPFS_RUNTIME_BIN_NAME}
+  IfFileExists "$APPDATA\${PRODUCT_NAME}\*.*" old_browser_exist old_browser_not_exist
+old_browser_exist:
   Delete "$DESKTOP\${BROWSER_DESKTOP_NAME}.lnk"
   Delete "$SMPROGRAMS\${BROWSER_DESKTOP_NAME}.lnk"
-  ;delete old version shortcut dir
   RMDir /r "$SMPROGRAMS\${PRODUCT_NAME}"
   DeleteRegValue ${AUTORUN_ROOT_KEY} "${AUTORUN_KEYPATH}" "${PRODUCT_NAME}"
-  ;return up-level directory and delete all files
+    DeleteRegValue ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "${PRODUCT_NAME}"
+    DeleteRegValue ${PRODUCT_INST_ROOT_KEY} "${PRODUCT_DIR_REGKEY}" "BrowserInstallDir"
   SetOutPath $APPDATA
+    RMDir /r  "$APPDATA\${PRODUCT_NAME}"
   RMDir /r  $INSTDIR
-  RMDir /r "$LOCALAPPDATA\${BROWSER_USER_DATA_DIR}\User Data\Extensions"
-  RMDir /r "$LOCALAPPDATA\${BROWSER_USER_DATA_DIR}\User Data\Default\cyfs_extensions"
+    RMDir /r "$LOCALAPPDATA\${PRODUCT_NAME}\User Data\Extensions"
+
+    DeleteRegKey ${NFT_TOOL_ROOT_KEY} "*\shell\Create NFT by cyfs link"
+    DeleteRegKey ${NFT_TOOL_ROOT_KEY} "*\shell\Create NFT by cyfs link\command"
+old_browser_not_exist:
+FunctionEnd
+
+Section "preparation" 1
+  Call check_related_browser_running
+  Call kill_related_browser_componment_process
+  Call delete_old_browser_files
 SectionEnd
 
-Section "regedit_browser_info" 2
+Section "main" 2
   SetOutPath "$INSTDIR"
-  ; if old same name file is exists, directly overwrite
-  SetOverwrite on
-  ;File /r /x *.nsi /x ${OutFile} /x .git /x "\runtime\*.*"  *.*
-  SetOutPath "$INSTDIR\CYFS_Browser"
-  File /r "CYFS_Browser\*.*"
-  SetOutPath "$INSTDIR"
-  File browser.ico license.txt VC_redist.x64.exe
 
-  WriteUninstaller "$INSTDIR\uninst.exe"
+  WriteUninstaller "$INSTDIR\${PRODUCT_NAME}_uninstaller.exe"
 
-  WriteRegStr ${PRODUCT_INST_ROOT_KEY} "${PRODUCT_DIR_REGKEY}" "BrowserInstallDir" "$INSTDIR"
+  File "mini_installer.exe"
+  Exec `"$INSTDIR\mini_installer.exe"`
 
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\${PRODUCT_NAME}\${PRODUCT_NAME}.exe,0"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
-
-  WriteRegStr ${CYFS_SCHEME_ROOT_KEY} "${CYFS_SCHEME_REGKEY}" "" "URL:cyfs Protocol"
-  WriteRegStr ${CYFS_SCHEME_ROOT_KEY} "${CYFS_SCHEME_REGKEY}" "URL Protocol" ""
-  WriteRegStr ${CYFS_SCHEME_ROOT_KEY} "${CYFS_SCHEME_REGKEY}\shell\open\command" "" '"$APPDATA\\CYFS_Browser\\CYFS_Browser\\CYFS_Browser.exe" "%1"'
+  Call kill_related_browser_componment_process
 
   Call InstallVC
+  Call installWebView2
 SectionEnd
 
-Section "create_browser_shortcuts" 3
-  ${RefreshShellIcons}
-  SetOutPath "$INSTDIR"
-  CreateShortCut "$SMPROGRAMS\${BROWSER_DESKTOP_NAME}.lnk" "$INSTDIR\${PRODUCT_NAME}\${PRODUCT_NAME}.exe" "" "$INSTDIR\browser.ico"
-  CreateShortCut "$DESKTOP\${BROWSER_DESKTOP_NAME}.lnk" "$INSTDIR\${PRODUCT_NAME}\${BROWSER_EXE_NAME}" "" "$INSTDIR\browser.ico"
-SectionEnd
-
-Section "delete_runtime_old_files" 4
-  Delete "$DESKTOP\${RUNTIME_DESKTOP_NAME}.lnk"
-  Delete "$DESKTOP\${START_RUNTIME_BAT}.lnk"
-  Delete "$SMPROGRAMS\${RUNTIME_DESKTOP_NAME}.lnk"
-  ;delete old version shortcut dir
-  RMDir /r "$SMPROGRAMS\${RUNTIME_DESKTOP_NAME}"
-  ;return up-level directory and delete all files
+Section "install_component" 3
   SetOutPath $APPDATA
   RMDir /r  "$APPDATA\cyfs\services\runtime"
-SectionEnd
 
-Section "copy_runtime_file" 5
   SetOutPath "$APPDATA\cyfs\services\runtime"
-  ; if old same name file is exists, directly overwrite
   SetOverwrite on
   File /r /x  "runtime\acl.toml" /x  "runtime\runtime.toml" /x "runtime\tools\*.*" "runtime\*.*"
-  File "restart_runtime.ico" "RestartRuntime.bat"
+  ; File "restart_runtime.ico" "RestartRuntime.bat"
 
-  SetOutPath "$APPDATA\cyfs\etc\acl"
-  File "runtime\acl.toml"
 
   IfFileExists "$APPDATA\cyfs\etc\runtime" exists not_exists
   not_exists:
@@ -289,84 +289,75 @@ Section "copy_runtime_file" 5
   SetOutPath "$APPDATA\cyfs\etc\runtime"
   File "runtime\runtime.toml"
 
+
   SetOutPath "$APPDATA\cyfs\services\runtime\tools"
   File /r "runtime\tools\*.*"
+
+  SetOutPath "$APPDATA\cyfs\etc\acl"
+  File "runtime\acl.toml"
 
   SetOutPath "$APPDATA\cyfs\services\runtime"
   Delete "$APPDATA\cyfs\services\runtime\runtime.toml"
 SectionEnd
 
-; Section "create_runtime_shortcuts" 6
-;   ${RefreshShellIcons}
-;   SetOutPath "$APPDATA\cyfs\services\runtime"
-;   CreateShortCut "$SMPROGRAMS\${RUNTIME_DESKTOP_NAME}.lnk" "$APPDATA\cyfs\services\runtime\${PRODUCT_RUNTIME_NAME}.exe" "" "$APPDATA\cyfs\services\runtime\runtime.ico"
-;   CreateShortCut "$DESKTOP\${RUNTIME_DESKTOP_NAME}.lnk" "$APPDATA\cyfs\services\runtime\${PRODUCT_RUNTIME_NAME}.exe" "" "$APPDATA\cyfs\services\runtime\runtime.ico"
-;   CreateShortCut "$DESKTOP\${START_RUNTIME_BAT}.lnk" "$APPDATA\cyfs\services\runtime\RestartRuntime.bat" "" "$APPDATA\cyfs\services\runtime\restart_runtime.ico"
-;   ; Call LaunchCyfsRuntime
-; SectionEnd
-
-Section "regedit_nft_tool_info" 7
-  WriteRegStr ${NFT_TOOL_ROOT_KEY} "*\shell\Create NFT by cyfs link" "Icon" "$APPDATA\\CYFS_Browser\\CYFS_Browser\\nft-creator.exe,0"
-  WriteRegStr ${NFT_TOOL_ROOT_KEY} "*\shell\Create NFT by cyfs link\command" "" '"$APPDATA\\CYFS_Browser\\CYFS_Browser\\nft-creator.exe" "%1"'
-
-  WriteRegStr ${NFT_TOOL_ROOT_KEY} "Directory\shell\Create NFT by cyfs link" "Icon" "$APPDATA\\CYFS_Browser\\CYFS_Browser\\nft-creator.exe,0"
-  WriteRegStr ${NFT_TOOL_ROOT_KEY} "Directory\shell\Create NFT by cyfs link\command" "" '"$APPDATA\\CYFS_Browser\\CYFS_Browser\\nft-creator.exe" "%1"'
+Section "browser_regedit" 4
+  WriteRegStr ${CYFS_SCHEME_ROOT_KEY} "${CYFS_SCHEME_REGKEY}" "" "URL:cyfs Protocol"
+  WriteRegStr ${CYFS_SCHEME_ROOT_KEY} "${CYFS_SCHEME_REGKEY}" "URL Protocol" ""
+  WriteRegStr ${CYFS_SCHEME_ROOT_KEY} "${CYFS_SCHEME_REGKEY}\shell\open\command" "" '"$LOCALAPPDATA\${PRODUCT_NAME}\Application\${PRODUCT_NAME}.exe" "%1"'
 SectionEnd
 
-Function .onInstSuccess
-  ;ExecShell "open" "$INSTDIR\${BROWSER_NAME_ALIAS}\${BROWSER_EXE_NAME}"
-FunctionEnd
+Section "copy_extensions" 5
+  SetOutPath "$LOCALAPPDATA\${PRODUCT_NAME}\Application"
+  RMDir /r "$LOCALAPPDATA\${PRODUCT_NAME}\Application\Extensions"
+  File /r "Extensions"
+SectionEnd
 
-Function un.onInit
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Are you sure to remove $(^Name) and its all components completely?" IDYES +2
-  Abort
-  Exec '"taskkill" /F /IM ${BROWSER_EXE_NAME} /T'
-FunctionEnd
+Section "end" 6
+  SetOutPath "$LOCALAPPDATA\${PRODUCT_NAME}"
+  Delete "$LOCALAPPDATA\${PRODUCT_NAME}\mini_installer.exe"
 
+  SetOutPath "$LOCALAPPDATA\${PRODUCT_NAME}"
+  RMDir /r "$LOCALAPPDATA\${PRODUCT_NAME}\User Data\Default\cyfs_extensions"
+
+  ReadRegStr $R0 "HKCU" "Software\Kalama" "UninstallString"
+  LogText "current application uninstall bin = $R0"
+
+SectionEnd
+
+
+
+####### uninstall #######
 Function un.onUninstSuccess
   HideWindow
   MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) Has been successfully removed from your computer"
+  Delete "$LOCALAPPDATA\${PRODUCT_NAME}\mini_installer.exe"
 FunctionEnd
 
-Function un.deleteUserData
-  MessageBox MB_OKCANCEL "Do you want to delete user data" /SD IDOK IDOK label_ok IDCANCEL label_cancel
-label_ok:
-  SetOutPath $APPDATA
-  LogText "delete runtime data $APPDATA\cyfs"
-  DetailPrint "delete runtime data $APPDATA\cyfs"
-  RMDir /r  "$APPDATA\cyfs"
-  LogText "delete browser user data"
-  RMDir /r "$LOCALAPPDATA\${BROWSER_USER_DATA_DIR}"
-  RMDir /r "$LOCALAPPDATA\${OLD_BROWSER_USER_DATA_DIR}"
-  Goto end
-label_cancel:
-  LogText "cancel delete user data"
-  Goto end
-end:
+Function un.check_related_browser_running
+  nsProcess::_FindProcess ${RELATED_BROWSER_BIN}
+  Pop $R0
+  ${If} $R0 == 0
+    LogText "$1 is exits, need kill this process"
+    MessageBox MB_ICONSTOP "${RELATED_BROWSER_BIN} is Running, Please exit ${RELATED_BROWSER_BIN} Application"
+    Quit
+  ${EndIf}
 FunctionEnd
+
 
 Function un.killRuntimeProcess
-  DetailPrint "kill runtime process"
+  LogText "kill runtime process"
   MessageBox MB_OKCANCEL "Do you want to uninstall ${RUNTIME_EXE_NAME} component , MAY cause other applications unavailable" /SD IDOK IDOK label_ok IDCANCEL label_cancel
 label_ok:
-  LogText "start kill runtime process"
-  Exec '"taskkill" /F /IM ${RUNTIME_EXE_NAME} /T'
-  Sleep 1000
-  RMDir /r "$APPDATA\cyfs\services\runtime"
+  LogText "kill ${CYFS_UPLOAD_BIN_NAME} process"
+  Exec '"taskkill" /F /IM ${CYFS_UPLOAD_BIN_NAME} /T'
+  Sleep 2000
+  goto end
 label_cancel:
-  Goto end
+  Quit
 end:
 FunctionEnd
 
-Section Uninstall
-  SetOutPath $APPDATA
-
-  RMDir /r "$INSTDIR"
-  RMDir /r "$APPDATA\${PRODUCT_NAME}"
-
-  Call un.killRuntimeProcess
-  Call un.deleteUserData
-
+Function un.delete_old_reg_and_shortcut
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey ${PRODUCT_INST_ROOT_KEY} "${PRODUCT_DIR_REGKEY}"
   DeleteRegKey ${CYFS_SCHEME_ROOT_KEY} "${CYFS_SCHEME_REGKEY}"
@@ -383,7 +374,97 @@ Section Uninstall
   RMDir /r "$SMPROGRAMS\${PRODUCT_NAME}"
   RMDir /r "$SMPROGRAMS\${PRODUCT_RUNTIME_NAME}"
   DeleteRegValue ${AUTORUN_ROOT_KEY} "${AUTORUN_KEYPATH}" "${PRODUCT_NAME}"
+FunctionEnd
+
+Function un.deleteCyfsData
+  LogText "delete cyfs user data"
+  MessageBox MB_OKCANCEL "Do you want to delete cyfs user data , MAY cause other browser unavailable" /SD IDOK IDOK label_ok IDCANCEL label_cancel
+label_ok:
+  LogText "delete $APPDATA\cyfs"
+  RMDir /r "$APPDATA\cyfs"
+label_cancel:
+  Goto end
+end:
+FunctionEnd
+
+Function un.killIpfsProcess
+  Pop $1 ; exe name
+  LogText "check $1 is or not running, if yes need kill this process"
+	nsProcess::_FindProcess $1
+	Pop $R0
+
+	${If} $R0 == 0
+		LogText "$1 is exits, need kill this process"
+    DetailPrint "$1 is exits, need kill this process"
+		nsProcess::_KillProcess  $1
+   		${For} $R1 0 10
+      	Sleep 1000
+			  nsProcess::_FindProcess $1
+			  Pop $R0
+			  ${If} $R0 != 0
+          LogText "kill $1 process success"
+          DetailPrint "kill $1 process success"
+				  goto KillProcEnd
+			  ${EndIf}
+			  LogText "kill $1 failed, so retry to kill process $1"
+        DetailPrint "kill $1 failed, so retry to kill process $1"
+		  ${Next}
+	KillProcEnd:
+    LogText "after nsProcess::_KillProcess,  $1 is not running"
+    DetailPrint "after nsProcess::_KillProcess,  $1 is not running"
+  ${Else}
+    LogText "$1 is not running"
+    DetailPrint "$1 is not running"
+  ${EndIf}
+FunctionEnd
+
+Section Uninstall
+  SetOutPath $LOCALAPPDATA
+
+  Call un.check_related_browser_running
+
+  Call un.killRuntimeProcess
+
+  Exec '"taskkill" /F /IM ${BROWSER_EXE_NAME} /T'
+
+  Sleep 2000
+
+  ReadRegStr $R0 "HKCU" "Software\Kalama" "UninstallString"
+  LogText "current application uninstall bin = $R0"
+
+  ExecWait '"$R0" --uninstall'
+
+  Sleep 2000
+
+  DetailPrint "kill ${IPFS_PROXY_BIN_NAME}"
+  Push ${IPFS_PROXY_BIN_NAME}
+  Call un.killIpfsProcess
+  LogText "kill ${IPFS_PROXY_BIN_NAME}"
+
+
+  DetailPrint "kill ${IPFS_RUNTIME_BIN_NAME}"
+  Push ${IPFS_RUNTIME_BIN_NAME}
+  Call un.killIpfsProcess
+  LogText "kill ${IPFS_RUNTIME_BIN_NAME}"
+
+  DetailPrint "kill ${IPFS_PROXY_BIN_NAME}"
+  Push ${IPFS_PROXY_BIN_NAME}
+  Call un.killIpfsProcess
+  LogText "kill ${IPFS_PROXY_BIN_NAME}"
+
+
   ${RefreshShellIcons}
+
+  Call un.deleteCyfsData
+
+  SetOutPath "$LOCALAPPDATA\${PRODUCT_NAME}"
+  RMDir /r "$LOCALAPPDATA\${PRODUCT_NAME}\Application"
+  Delete "$LOCALAPPDATA\${PRODUCT_NAME}\install.log"
+  Delete "$LOCALAPPDATA\${PRODUCT_NAME}\${PRODUCT_NAME}_uninstaller.exe"
+  Delete "$LOCALAPPDATA\${PRODUCT_NAME}\mini_installer.exe"
+
+
+  Sleep 4000
   SetAutoClose true
 SectionEnd
 

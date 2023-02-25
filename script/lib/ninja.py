@@ -4,7 +4,7 @@ import os
 import sys, platform
 import subprocess
 sys.path.append(os.path.dirname(__file__))
-from common import MAC_CPUS, build_target, last_args_file, toolchain_ninja_file
+from common import MAC_CPUS, build_target, last_args_file, toolchain_ninja_file, get_default_args_array
 from util import make_dir_exist
 import argparse
 import datetime
@@ -44,61 +44,6 @@ def check_map_equals(a, b):
     finally:
         return is_equal
 
-def get_deafult_macos_gn_args_array(target_cpu):
-    assert target_cpu in MAC_CPUS
-    args_array = [
-        'is_debug=false',
-        'dcheck_always_on=false',
-        'is_component_build=false',
-        'enable_nacl=false',
-        'target_os="mac"',
-        'chrome_pgo_phase=0',
-        'clang_use_chrome_plugins=false',
-        'enable_hangout_services_extension=false',
-        'enable_js_type_check=false',
-        'enable_mdns=false',
-        'enable_nacl_nonsfi=false',
-        'enable_reading_list=false',
-        'enable_remoting=false',
-        'enable_service_discovery=false',
-        'enable_widevine=true',
-        'exclude_unwind_tables=true',
-        'fieldtrial_testing_like_official_build=true',
-        'google_api_key=""',
-        'google_default_client_id=""',
-        'google_default_client_secret=""',
-        'treat_warnings_as_errors=false',
-        'use_official_google_api_keys=false',
-        'use_unofficial_version_number=false',
-        'blink_symbol_level=0',
-        'enable_iterator_debugging=false',
-        'enable_swiftshader=true',
-        'fatal_linker_warnings=false',
-        'ffmpeg_branding="Chrome"',
-        'is_clang=true',
-        'is_official_build=true',
-        'proprietary_codecs=true',
-        'symbol_level=0',
-    ]
-    if target_cpu == 'X86':
-        args_array.append('target_cpu="x64"')
-    elif target_cpu == 'ARM':
-        args_array.append('target_cpu="arm64"')
-    return args_array
-
-def get_deafult_windows_gn_args_array():
-    args_array = [
-        'is_debug=false',
-        'dcheck_always_on=false',
-        'is_component_build=false',
-        'symbol_level=0',
-        'blink_symbol_level=0',
-        'ffmpeg_branding="Chrome"',
-        'proprietary_codecs=true',
-        'target_cpu="x64"',
-    ]
-    return args_array
-
 class LogRecord:
     def __init__(self, root, build_target, build_type):
         self._build_target = build_target
@@ -123,6 +68,14 @@ class BuildHelper():
         self._target_cpu = target_cpu
         self._build_target = build_target(target_cpu, project_name)
 
+        self._target = ['chrome']
+        if IS_WIN:
+            self._target = ['chrome', 'setup', 'mini_installer']
+
+    @property
+    def deafult_gn_args_array(self):
+        return get_default_args_array(self._target_cpu)
+
     def is_ninja_file_exists(self):
         return os.path.exists(toolchain_ninja_file(
             self._src_root, self._build_target))
@@ -142,14 +95,6 @@ class BuildHelper():
                     return dict()
         return last_args_map
 
-    def get_deafult_gn_args_array(self):
-        if IS_WIN:
-            return get_deafult_windows_gn_args_array()
-        elif IS_MAC:
-            return get_deafult_macos_gn_args_array(self._target_cpu)
-        else:
-            raise Exception('Unsupported platform')
-
     def clean_build_environment(self):
         os.chdir(self._src_root)
         if not self.is_ninja_file_exists(): return
@@ -157,16 +102,14 @@ class BuildHelper():
         self.clean_build_dir()
 
     def get_deafult_gn_args_string(self):
-        default_args_array = self.get_deafult_gn_args_array()
         args_str = ''
-        for arg in default_args_array:
+        for arg in self.deafult_gn_args_array:
             args_str += ' %s' % (arg)
         return args_str
 
     def get_default_args_map(self):
-        default_args_array = self.get_deafult_gn_args_array()
         current_args_map = dict()
-        for line in default_args_array:
+        for line in self.deafult_gn_args_array:
             values = list(map(lambda x: x.strip(), line.split('=')))
             assert len(values) == 2 and values[0].strip() and values[1].strip()
             current_args_map[values[0]] = values[1]
@@ -182,8 +125,8 @@ class BuildHelper():
     def run_ninja(self):
         try:
             print('Begin run ninja')
-            cmd = ['autoninja', '-C', 'out/%s' %
-                        (self._build_target), self._target]
+            cmd = ['autoninja', '-C', 'out/%s' % (self._build_target) ]
+            cmd.extend(self._target)
             with LogRecord(self._src_root, self._build_target, 'NINJA') as log_fd:
                 execute_cmd(cmd, log_fd=log_fd, cwd=self._src_root)
         except Exception as e:
@@ -223,10 +166,9 @@ class BuildHelper():
 
     def run_build_target(self):
         print('Begin build browser!')
-        gn_args = self.get_deafult_gn_args_array()
         if self.should_run_gn_gen():
             self.clean_build_environment()
-            self.run_gn_gen(gn_args)
+            self.run_gn_gen(self.deafult_gn_args_array)
 
         self.run_ninja()
 
