@@ -102,7 +102,7 @@ class CheckForCIBuild:
 
     def download_default_extensions(self):
         make_file_not_exist(self.local_extension_path)
-        download_file(remote_extensions_path(self.remote_base_path), self.local_extension_path, True)
+        download_file(remote_extensions_path(self.remote_base_path, self._channel), self.local_extension_path, True)
 
     def update_default_extensions(self):
         pass
