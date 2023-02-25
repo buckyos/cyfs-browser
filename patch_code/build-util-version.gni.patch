@@ -1,0 +1,34 @@
+diff --git a/build/util/version.gni b/build/util/version.gni
+index 998ce077d2b36009845eb53a2a06f06f8ee9f40b..f491d2afcac342cf9c3764cc293015b1bad0e008 100644
+--- a/build/util/version.gni
++++ b/build/util/version.gni
+@@ -23,6 +23,7 @@ _version_dictionary_template = "full = \"@MAJOR@.@MINOR@.@BUILD@.@PATCH@\" " +
+ 
+ # The file containing the Chrome version number.
+ chrome_version_file = "//chrome/VERSION"
++cyfs_version_file = "//chrome/CYFS_VERSION"
+ 
+ _script_arguments = []
+ 
+@@ -81,6 +82,21 @@ _result = exec_script("version.py",
+ # Full version. For example "45.0.12321.0"
+ chrome_version_full = _result.full
+ 
++cyfs_version_full =
++    exec_script(
++          "version.py",
++          [
++            "-f",
++            rebase_path(chrome_version_file, root_build_dir),
++            "-f",
++            rebase_path(cyfs_version_file, root_build_dir),
++            "-t",
++            "@CYFS_MAJOR@.@CYFS_MINOR@.@CYFS_NIGHTLY@.@CYFS_BUILD@",
++          ],
++          "trim string",
++          [chrome_version_file, cyfs_version_file]
++        )
++
+ # The consituent parts of the full version.
+ chrome_version_major = _result.major
+ chrome_version_minor = _result.minor

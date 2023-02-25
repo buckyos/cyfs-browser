@@ -1,0 +1,12 @@
+diff --git a/chrome/process_version_rc_template.gni b/chrome/process_version_rc_template.gni
+index 3a0c4df5525ea027d9126234e2653d22e68e71e2..7f93804fb037178cbb9c425d695ad60be3fad9d7 100644
+--- a/chrome/process_version_rc_template.gni
++++ b/chrome/process_version_rc_template.gni
+@@ -43,6 +43,7 @@ template("process_version_rc_template") {
+   }
+   _sources = [
+     "//chrome/VERSION",
++    "//chrome/CYFS_VERSION",
+     branding_file_path,
+     lastchange_file,
+   ]

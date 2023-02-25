@@ -1,8 +1,16 @@
 diff --git a/chrome/common/chrome_constants.h b/chrome/common/chrome_constants.h
-index 0dc3a0a9a86751077ec09593c26e88e6db3bb098..d04ba15fdbf86cfd708736eb25a70f66784b4c4a 100644
+index 0dc3a0a9a86751077ec09593c26e88e6db3bb098..1a705e1a43f22a866e811c77b877512707c611ba 100644
 --- a/chrome/common/chrome_constants.h
 +++ b/chrome/common/chrome_constants.h
-@@ -52,6 +52,7 @@ extern const base::FilePath::CharType kExtensionActivityLogFilename[];
+@@ -16,6 +16,7 @@
+ namespace chrome {
+ 
+ extern const char kChromeVersion[];
++extern const char kProductVersion[];
+ extern const base::FilePath::CharType kBrowserProcessExecutableName[];
+ extern const base::FilePath::CharType kHelperProcessExecutableName[];
+ extern const base::FilePath::CharType kBrowserProcessExecutablePath[];
+@@ -52,6 +53,7 @@ extern const base::FilePath::CharType kExtensionActivityLogFilename[];
  extern const base::FilePath::CharType kExtensionsCookieFilename[];
  extern const base::FilePath::CharType kFeatureEngagementTrackerStorageDirname[];
  extern const base::FilePath::CharType kFirstRunSentinel[];

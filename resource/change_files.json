@@ -1,7 +1,8 @@
 {
     "Add": {
-        "update_time": "2022-11-29 19:07:15.645195",
+        "update_time": "2023-02-25 13:14:30.766595",
         "files": [
+            "chrome/CYFS_VERSION",
             "chrome/app/Extensions/cyfs_extension.gni",
             "chrome/app/Extensions/readme.md",
             "chrome/browser/cyfs_init/DIR_METADATA",
@@ -26,7 +27,7 @@
         ]
     },
     "Update": {
-        "update_time": "2022-11-29 19:07:15.645195",
+        "update_time": "2023-02-25 13:14:30.766595",
         "files": [
             "chrome/app/chromium_strings.grd",
             "chrome/app/generated_resources.grd",

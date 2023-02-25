@@ -1,0 +1,16 @@
+diff --git a/chrome/app/version_assembly/chrome_exe_manifest.template b/chrome/app/version_assembly/chrome_exe_manifest.template
+index 7c66328e20688f2156b04246d1f16ad2244be116..4ff19f4ebf10afe3b440cf63754b68a4eaf1f545 100644
+--- a/chrome/app/version_assembly/chrome_exe_manifest.template
++++ b/chrome/app/version_assembly/chrome_exe_manifest.template
+@@ -3,8 +3,8 @@
+   <dependency>
+   <dependentAssembly>
+     <assemblyIdentity type='win32'
+-      name='@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
+-      version='@MAJOR@.@MINOR@.@BUILD@.@PATCH@' language='*'/>
++      name='@CYFS_MAJOR@.@CYFS_MINOR@.@CYFS_NIGHTLY@.@CYFS_BUILD@'
++      version='@CYFS_MAJOR@.@CYFS_MINOR@.@CYFS_NIGHTLY@.@CYFS_BUILD@' language='*'/>
+   </dependentAssembly>
+   </dependency>
+ </assembly>
+\ No newline at end of file

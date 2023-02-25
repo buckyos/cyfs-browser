@@ -1,0 +1,13 @@
+diff --git a/chrome/installer/util/util_constants.h b/chrome/installer/util/util_constants.h
+index ca8bbe4ad9f1e3b4d9e3b0cbd3db70219df531ba..e35f103f95381e952d16586842b15a2117b9d986 100644
+--- a/chrome/installer/util/util_constants.h
++++ b/chrome/installer/util/util_constants.h
+@@ -258,6 +258,8 @@ extern const wchar_t kChromeChannelBeta[];
+ extern const wchar_t kChromeChannelStable[];
+ extern const wchar_t kChromeChannelStableExplicit[];
+ 
++extern const wchar_t kCyfsUninstallBin[];
++
+ extern const size_t kMaxAppModelIdLength;
+ enum : size_t { kMaxDMTokenLength = 4096 };
+ 

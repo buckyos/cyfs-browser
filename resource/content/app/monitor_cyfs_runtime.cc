@@ -10,13 +10,16 @@ namespace {
 #if BUILDFLAG(IS_WIN)
   constexpr base::FilePath::CharType kCYFSRuntimeExecuteName[] = FILE_PATH_LITERAL("cyfs-runtime.exe");
   constexpr base::FilePath::CharType kIPFSRuntimeExecuteName[] = FILE_PATH_LITERAL("ipfs-proxy.exe");
+  constexpr base::FilePath::CharType kEnsLookupExecuteName[] = FILE_PATH_LITERAL("enslookup.exe");
 #else
   constexpr base::FilePath::CharType kCYFSRuntimeExecuteName[] = FILE_PATH_LITERAL("cyfs-runtime");
   constexpr base::FilePath::CharType kIPFSRuntimeExecuteName[] = FILE_PATH_LITERAL("ipfs-proxy");
+  constexpr base::FilePath::CharType kEnsLookupExecuteName[] = FILE_PATH_LITERAL("enslookup");
 #endif
 
   static constexpr int kDefaultCYFSRuntimePort = 38090;
   static constexpr int kDefaultIPFSRuntimePort = 38095;
+  static constexpr int kDefaultEnsLookupPort = 38099;
 
   static constexpr base::TimeDelta check_delta = base::Seconds(2);
 
@@ -102,7 +105,8 @@ void MonitorRuntimeWork::StopMonitorWork() {
   LOG(INFO) << __FUNCTION__;
   auto ipfs_binary_path = GetRuntimeExeDir().Append(kIPFSRuntimeExecuteName);
   auto cyfs_binary_path = GetRuntimeExeDir().Append(kCYFSRuntimeExecuteName);
-  std::vector<base::FilePath> binary_paths = {ipfs_binary_path, cyfs_binary_path};
+  auto enslookup_binary_path = GetRuntimeExeDir().Append(kEnsLookupExecuteName);
+  std::vector<base::FilePath> binary_paths = {ipfs_binary_path, cyfs_binary_path, enslookup_binary_path};
   StopRuntimeProcess(binary_paths);
 
   timer_.Stop();
@@ -134,6 +138,7 @@ void MonitorRuntimeWork::MonitorWork() {
   LOG(INFO) << "Check runtime process status";
   CheckRuntimeProcessRunStatus(kCYFSRuntimeExecuteName);
   CheckRuntimeProcessRunStatus(kIPFSRuntimeExecuteName);
+  CheckRuntimeProcessRunStatus(kEnsLookupExecuteName);
 }
 
 base::Process MonitorRuntimeWork::StartIPFSRuntimeProcess() {
@@ -146,6 +151,25 @@ base::Process MonitorRuntimeWork::StartIPFSRuntimeProcess() {
 
   std::vector<std::string> args;
   args.push_back(std::string("--proxy-port=") + (std::to_string(kDefaultIPFSRuntimePort)));
+
+  base::LaunchOptions launchopts;
+#if BUILDFLAG(IS_WIN)
+  launchopts.start_hidden = true;
+#endif
+
+  return LaunchProcess(binary_path, args, launchopts);
+}
+
+base::Process MonitorRuntimeWork::StartEnsLookupProcess() {
+  LOG(INFO) << __FUNCTION__;
+  auto binary_path = GetRuntimeExeDir().Append(kEnsLookupExecuteName);
+  if (!base::PathExists(binary_path)) {
+    LOG(ERROR) << "Can't find executable file " << binary_path;
+    return base::Process();
+  }
+
+  std::vector<std::string> args;
+  args.push_back(std::string("--port=") + (std::to_string(kDefaultEnsLookupPort)));
 
   base::LaunchOptions launchopts;
 #if BUILDFLAG(IS_WIN)
@@ -183,6 +207,8 @@ void MonitorRuntimeWork::StartRuntimeProcess(base::FilePath::StringType process_
     process = StartCYFSRuntimeProcess();
   } else if (process_name == kIPFSRuntimeExecuteName) {
     process = StartIPFSRuntimeProcess();
+  } else if (process_name == kEnsLookupExecuteName) {
+    process = StartEnsLookupProcess();
   }
   if (process.IsValid()) {
       LOG(INFO) << "Reload runtime process " << process_name << " successfully.";

@@ -1,5 +1,5 @@
 diff --git a/components/page_info/page_info_ui.cc b/components/page_info/page_info_ui.cc
-index dc1987339198e505ecb3a5da15310cc1ffdd6aee..ff63bb6ac97e850e971b09cc9aace5a7207bb913 100644
+index dc1987339198e505ecb3a5da15310cc1ffdd6aee..fd704dba781586b2e60d8736f5000d81d5f2f8f9 100644
 --- a/components/page_info/page_info_ui.cc
 +++ b/components/page_info/page_info_ui.cc
 @@ -397,6 +397,12 @@ PageInfoUI::AdPersonalizationInfo::~AdPersonalizationInfo() = default;
@@ -7,7 +7,7 @@ index dc1987339198e505ecb3a5da15310cc1ffdd6aee..ff63bb6ac97e850e971b09cc9aace5a7
  std::unique_ptr<PageInfoUI::SecurityDescription>
  PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
 +  auto url = GURL(identity_info.site_identity);
-+  if (url.SchemeIsIPFS() || url.SchemeIsCYFS()) {
++  if (url.SchemeIsIPFS() || url.SchemeIsIPNS() || url.SchemeIsCYFS()) {
 +      return CreateSecurityDescription(
 +      SecuritySummaryColor::GREEN, IDS_PAGE_INFO_SECURE_SUMMARY,
 +      IDS_PAGE_INFO_SECURE_DETAILS_V2, SecurityDescriptionType::CONNECTION);

@@ -1,5 +1,5 @@
 diff --git a/chrome/installer/util/util_constants.cc b/chrome/installer/util/util_constants.cc
-index a05091fd48bead3dbebfb3151007745883551af6..a980cdf4af34fa552d88f6b4fbefb59745645ad6 100644
+index a05091fd48bead3dbebfb3151007745883551af6..8ebacd1ecdc051cc4b67c93291e13bda498c28e0 100644
 --- a/chrome/installer/util/util_constants.cc
 +++ b/chrome/installer/util/util_constants.cc
 @@ -214,7 +214,7 @@ const char kGoogleUpdateIsMachineEnvVar[] = "GoogleUpdateIsMachine";
@@ -11,3 +11,12 @@ index a05091fd48bead3dbebfb3151007745883551af6..a980cdf4af34fa552d88f6b4fbefb597
  const wchar_t kChromeNewExe[] = L"new_chrome.exe";
  const wchar_t kChromeOldExe[] = L"old_chrome.exe";
  const wchar_t kChromeProxyExe[] = L"chrome_proxy.exe";
+@@ -263,6 +263,8 @@ const wchar_t kChromeChannelBeta[] = L"beta";
+ const wchar_t kChromeChannelStable[] = L"";
+ const wchar_t kChromeChannelStableExplicit[] = L"stable";
+ 
++const wchar_t kCyfsUninstallBin[] = L"Cyfs_browser_uninstaller.exe";
++
+ const size_t kMaxAppModelIdLength = 64U;
+ 
+ const char kSetupHistogramAllocatorName[] = "SetupMetrics";

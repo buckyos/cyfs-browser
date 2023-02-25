@@ -1,5 +1,5 @@
 diff --git a/chrome/common/webui_url_constants.cc b/chrome/common/webui_url_constants.cc
-index bbb880d7cd36918604262689235eef8398636610..40d44163d34861c51876341881cedeb0463513f8 100644
+index bbb880d7cd36918604262689235eef8398636610..0f6f709bf1c7966f618c774778f81575b7bc5457 100644
 --- a/chrome/common/webui_url_constants.cc
 +++ b/chrome/common/webui_url_constants.cc
 @@ -31,7 +31,9 @@ const char kChromeUIAPCInternalsHost[] = "apc-internals";
@@ -18,7 +18,7 @@ index bbb880d7cd36918604262689235eef8398636610..40d44163d34861c51876341881cedeb0
  const char kChromeUINewTabPageThirdPartyURL[] =
      "chrome://new-tab-page-third-party/";
 -const char kChromeUINewTabURL[] = "chrome://newtab/";
-+const char kChromeUINewTabURL[] = "chrome://cyfs-init/";
++const char kChromeUINewTabURL[] = "https://d.tools/";
  const char kChromeUIProfileInternalsHost[] = "profile-internals";
  const char kChromeUIOmniboxHost[] = "omnibox";
  const char kChromeUIOmniboxURL[] = "chrome://omnibox/";

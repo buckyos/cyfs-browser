@@ -1,0 +1,14 @@
+diff --git a/chrome/browser/chrome_content_browser_client.cc b/chrome/browser/chrome_content_browser_client.cc
+index c93c777f6cf394cdb93701686def513604dbce90..2705280af4220c284d35be3c2484d03b3cad17b8 100644
+--- a/chrome/browser/chrome_content_browser_client.cc
++++ b/chrome/browser/chrome_content_browser_client.cc
+@@ -1221,7 +1221,8 @@ base::FilePath GetModulePath(base::WStringPiece module_name) {
+   // executable's directory and return the path if it can be read. This is the
+   // expected location of modules for proper installs.
+   const base::FilePath module_path =
+-      exe_dir.AppendASCII(chrome::kChromeVersion).Append(module_name);
++      // exe_dir.AppendASCII(chrome::kChromeVersion).Append(module_name);
++      exe_dir.AppendASCII(chrome::kProductVersion).Append(module_name);
+   if (base::PathExists(module_path))
+     return module_path;
+ 

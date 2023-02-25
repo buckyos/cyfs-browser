@@ -1,0 +1,14 @@
+diff --git a/chrome/common/chrome_version.h.in b/chrome/common/chrome_version.h.in
+index 0b2944f3a8ec0c2d569ab77d44ebde1d4f349d11..88ca9433e804bacadb4aa88104eb972ec5cae313 100644
+--- a/chrome/common/chrome_version.h.in
++++ b/chrome/common/chrome_version.h.in
+@@ -14,6 +14,9 @@
+ #define CHROME_VERSION_BUILD @BUILD@
+ #define CHROME_VERSION_PATCH @PATCH@
+ 
++#define CYFS_VERSION @CYFS_MAJOR@,@CYFS_MINOR@,@CYFS_NIGHTLY@,@CYFS_BUILD@
++#define CYFS_VERSION_STRING "@CYFS_MAJOR@.@CYFS_MINOR@.@CYFS_NIGHTLY@.@CYFS_BUILD@"
++
+ // Branding Information
+ 
+ #define COMPANY_FULLNAME_STRING "@COMPANY_FULLNAME@"

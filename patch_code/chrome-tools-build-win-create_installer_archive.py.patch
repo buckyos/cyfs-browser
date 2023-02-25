@@ -1,0 +1,40 @@
+diff --git a/chrome/tools/build/win/create_installer_archive.py b/chrome/tools/build/win/create_installer_archive.py
+index 732479bbf5975289bd251ab6d41c8dda7e808a50..0c2d5d641f74c6d49a6e6d419a0a87b3157707ef 100755
+--- a/chrome/tools/build/win/create_installer_archive.py
++++ b/chrome/tools/build/win/create_installer_archive.py
+@@ -41,6 +41,7 @@ SETUP_EXEC = "setup.exe"
+ SETUP_PATCH_FILE_PREFIX = "setup_patch"
+ TEMP_ARCHIVE_DIR = "temp_installer_archive"
+ VERSION_FILE = "VERSION"
++CYFS_VERSION_FILE = "CYFS_VERSION"
+ 
+ 
+ g_archive_inputs = []
+@@ -54,16 +55,18 @@ def BuildVersion(build_dir):
+   minor = 0
+   build = 0
+   patch = 0
+-  for line in open(os.path.join(build_dir, '../../chrome', VERSION_FILE), 'r'):
++  # for line in open(os.path.join(build_dir, '../../chrome', VERSION_FILE), 'r'):
++  for line in open(os.path.join(build_dir, '../../chrome', CYFS_VERSION_FILE), 'r'):
++
+     line = line.rstrip()
+-    if line.startswith('MAJOR='):
+-      major = line[6:]
+-    elif line.startswith('MINOR='):
+-      minor = line[6:]
+-    elif line.startswith('BUILD='):
+-      build = line[6:]
+-    elif line.startswith('PATCH='):
+-      patch = line[6:]
++    if line.startswith('CYFS_MAJOR='):
++       major = line[11:]
++    elif line.startswith('CYFS_MINOR='):
++      minor = line[11:]
++    elif line.startswith('CYFS_NIGHTLY='):
++      build = line[13:]
++    elif line.startswith('CYFS_BUILD='):
++      patch = line[11:]
+   return '%s.%s.%s.%s' % (major, minor, build, patch)
+ 
+ 

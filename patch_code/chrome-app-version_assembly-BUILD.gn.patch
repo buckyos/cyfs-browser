@@ -1,0 +1,20 @@
+diff --git a/chrome/app/version_assembly/BUILD.gn b/chrome/app/version_assembly/BUILD.gn
+index f4025492b035475b98068c457f49896f332185b7..e12968b23b5180fccf77248648a83c88067829de 100644
+--- a/chrome/app/version_assembly/BUILD.gn
++++ b/chrome/app/version_assembly/BUILD.gn
+@@ -14,6 +14,7 @@ process_version("chrome_exe_version_manifest") {
+   visibility = [ ":*" ]
+   template_file = "chrome_exe_manifest.template"
+   sources = [ "//chrome/VERSION" ]
++  sources += [ "//chrome/CYFS_VERSION" ]
+   output = version_assembly_output_file
+ }
+ 
+@@ -41,5 +42,7 @@ process_version("version_assembly_manifest") {
+   template_file = "version_assembly_manifest.template"
+   sources = [ "//chrome/VERSION" ]
+   output = "$root_build_dir/$chrome_version_full.manifest"
++  sources += [ "//chrome/CYFS_VERSION" ]
++  output = "$root_build_dir/$cyfs_version_full.manifest"
+   process_only = true
+ }

@@ -1,0 +1,14 @@
+diff --git a/components/version_info/version_info_values.h.version b/components/version_info/version_info_values.h.version
+index 6232e359ef20f93fc9ba574bdf6e57c858044be6..0663404da567eb40a8f6f4330ebdda6a6cfb0772 100644
+--- a/components/version_info/version_info_values.h.version
++++ b/components/version_info/version_info_values.h.version
+@@ -6,7 +6,9 @@
+ #define COMPONENTS_VERSION_INFO_VERSION_INFO_VALUES_H_
+ 
+ #define PRODUCT_NAME "@PRODUCT_FULLNAME@"
++#define CHROME_VERSION "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
+ #define PRODUCT_VERSION "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
++#define CYFS_VERSION "@CYFS_MAJOR@.@CYFS_MINOR@.@CYFS_NIGHTLY@.@CYFS_BUILD@"
+ #define LAST_CHANGE "@LASTCHANGE@"
+ #define IS_OFFICIAL_BUILD @OFFICIAL_BUILD@
+ 

@@ -1,0 +1,12 @@
+diff --git a/components/version_info/BUILD.gn b/components/version_info/BUILD.gn
+index 931da8429699964ffe18dc37bf257edd577cf830..05e0a19c13027d6a6ab2aa24cea84e9c6ec59e55 100644
+--- a/components/version_info/BUILD.gn
++++ b/components/version_info/BUILD.gn
+@@ -55,6 +55,7 @@ process_version("generate_version_info") {
+   template_file = "version_info_values.h.version"
+   sources = [
+     "//chrome/VERSION",
++    "//chrome/CYFS_VERSION",
+     branding_file_path,
+     lastchange_file,
+   ]

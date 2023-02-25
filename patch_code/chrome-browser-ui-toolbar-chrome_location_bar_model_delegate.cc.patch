@@ -1,8 +1,16 @@
 diff --git a/chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc b/chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc
-index 2e69ca1574584d6fbd0dcc36805ace1f12e3b3f1..ffe2098f06210a122db86417de3b016b5eb05e40 100644
+index 2e69ca1574584d6fbd0dcc36805ace1f12e3b3f1..eaded41705c854539496b3c9d8170ca798d51d64 100644
 --- a/chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc
 +++ b/chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc
-@@ -138,6 +138,11 @@ bool ChromeLocationBarModelDelegate::
+@@ -30,6 +30,7 @@
+ #include "components/search/ntp_features.h"
+ #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+ #include "components/security_state/core/security_state.h"
++#include "components/vector_icons/vector_icons.h"
+ #include "content/public/browser/navigation_controller.h"
+ #include "content/public/browser/navigation_entry.h"
+ #include "content/public/browser/ssl_status.h"
+@@ -138,6 +139,11 @@ bool ChromeLocationBarModelDelegate::
  
  security_state::SecurityLevel ChromeLocationBarModelDelegate::GetSecurityLevel()
      const {
@@ -14,15 +22,15 @@ index 2e69ca1574584d6fbd0dcc36805ace1f12e3b3f1..ffe2098f06210a122db86417de3b016b
    content::WebContents* web_contents = GetActiveWebContents();
    // If there is no active WebContents (which can happen during toolbar
    // initialization), assume no security style.
-@@ -190,6 +195,12 @@ const gfx::VectorIcon* ChromeLocationBarModelDelegate::GetVectorIconOverride()
+@@ -190,6 +196,12 @@ const gfx::VectorIcon* ChromeLocationBarModelDelegate::GetVectorIconOverride()
  
    if (url.SchemeIs(extensions::kExtensionScheme))
      return &omnibox::kExtensionAppIcon;
 +  if (url.SchemeIsCYFS()) {
-+    return &omnibox::kHttpsValidInChipIcon;
++    return &vector_icons::kHttpsValidIcon;
 +  }
-+  if (url.SchemeIsIPFS()) {
-+    return &omnibox::kHttpsValidInChipIcon;
++  if (url.SchemeIsIPFS() || url.SchemeIsIPNS()) {
++    return &vector_icons::kHttpsValidIcon;
 +  }
  #endif
  

@@ -1,0 +1,12 @@
+diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
+index c4462d008e052288af734961c6106fd23717e159..2b67ca6c94a47123f6a064e3797dac9a1484da18 100644
+--- a/chrome/common/BUILD.gn
++++ b/chrome/common/BUILD.gn
+@@ -491,6 +491,7 @@ process_version("version_header") {
+ 
+   sources = [
+     "//chrome/VERSION",
++    "//chrome/CYFS_VERSION",
+     branding_file_path,
+   ]
+ 

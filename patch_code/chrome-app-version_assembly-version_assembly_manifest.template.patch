@@ -1,0 +1,15 @@
+diff --git a/chrome/app/version_assembly/version_assembly_manifest.template b/chrome/app/version_assembly/version_assembly_manifest.template
+index 9bd1fc58f9fb1dbc8a7e2b75778eaec17c633e1d..3a0b6a1d2353acfa6f1078eeb1159ebf715af6f9 100644
+--- a/chrome/app/version_assembly/version_assembly_manifest.template
++++ b/chrome/app/version_assembly/version_assembly_manifest.template
+@@ -1,8 +1,8 @@
+ <assembly
+   xmlns='urn:schemas-microsoft-com:asm.v1' manifestVersion='1.0'>
+   <assemblyIdentity
+-      name='@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
+-      version='@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
++      name='@CYFS_MAJOR@.@CYFS_MINOR@.@CYFS_NIGHTLY@.@CYFS_BUILD@'
++      version='@CYFS_MAJOR@.@CYFS_MINOR@.@CYFS_NIGHTLY@.@CYFS_BUILD@'
+       type='win32'/>
+   <file name='chrome_elf.dll'/>
+ </assembly>

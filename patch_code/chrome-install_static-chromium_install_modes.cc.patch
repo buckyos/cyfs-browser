@@ -1,8 +1,8 @@
 diff --git a/chrome/install_static/chromium_install_modes.cc b/chrome/install_static/chromium_install_modes.cc
-index 80bbb30c7e3683b3216ba2f9c50494c111e375a1..1e918e0de1ab62143ad0fa4d68091b0e491726a9 100644
+index 80bbb30c7e3683b3216ba2f9c50494c111e375a1..90c5dc4b9410dabe2750123d4b19b0dc67c98dc8 100644
 --- a/chrome/install_static/chromium_install_modes.cc
 +++ b/chrome/install_static/chromium_install_modes.cc
-@@ -16,7 +16,7 @@ namespace install_static {
+@@ -16,11 +16,11 @@ namespace install_static {
  
  const wchar_t kCompanyPathName[] = L"";
  
@@ -11,3 +11,23 @@ index 80bbb30c7e3683b3216ba2f9c50494c111e375a1..1e918e0de1ab62143ad0fa4d68091b0e
  
  const size_t kProductPathNameLength = _countof(kProductPathName) - 1;
  
+-const char kSafeBrowsingName[] = "chromium";
++const char kSafeBrowsingName[] = "CYFS_Browser";
+ 
+ const char kDeviceManagementServerHostName[] = "";
+ 
+@@ -33,10 +33,10 @@ const InstallConstants kInstallModes[] = {
+         L"",             // Empty install_suffix for the primary install mode.
+         L"",             // No logo suffix for the primary install mode.
+         L"",          // Empty app_guid since no integraion with Google Update.
+-        L"Chromium",  // A distinct base_app_name.
+-        L"Chromium",  // A distinct base_app_id.
+-        L"ChromiumHTM",                             // ProgID prefix.
+-        L"Chromium HTML Document",                  // ProgID description.
++        L"CYFS_Browser",  // A distinct base_app_name.
++        L"CYFS_Browser",  // A distinct base_app_id.
++        L"CYFS_BrowserHTM",                             // ProgID prefix.
++        L"CYFS_Browser HTML Document",                  // ProgID description.
+         L"{7D2B3E1D-D096-4594-9D8F-A6667F12E0AC}",  // Active Setup GUID.
+         L"{A2DF06F9-A21A-44A8-8A99-8B9C84F29160}",  // CommandExecuteImpl CLSID.
+         {0x635EFA6F,

@@ -49,6 +49,8 @@ private:
 
   void StartRuntimeProcess(base::FilePath::StringType process_name);
 
+  base::Process StartEnsLookupProcess();
+
   base::Process StartCYFSRuntimeProcess();
 
   base::Process StartIPFSRuntimeProcess();

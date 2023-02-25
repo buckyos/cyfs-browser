@@ -1,5 +1,5 @@
 diff --git a/content/browser/loader/navigation_url_loader_impl.cc b/content/browser/loader/navigation_url_loader_impl.cc
-index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..a65503a26abd2aebdef22a5ccb80ac7865bc03d1 100644
+index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..fba1e5381a62d689640e2755dfa21649d93e7344 100644
 --- a/content/browser/loader/navigation_url_loader_impl.cc
 +++ b/content/browser/loader/navigation_url_loader_impl.cc
 @@ -529,6 +529,7 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
@@ -10,14 +10,16 @@ index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..a65503a26abd2aebdef22a5ccb80ac78
    if (single_request_factory) {
      // `interceptor` wants to handle the request with
      // `single_request_handler`.
-@@ -622,6 +623,43 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
+@@ -622,6 +623,57 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
        GetUIThreadTaskRunner({BrowserTaskType::kNavigationNetworkResponse}));
  }
  
 +void NavigationURLLoaderImpl::ReplaceRequestUrl() {
 +  constexpr char kLocalhost[] = "127.0.0.1";
-+  static constexpr int default_ipfs_port = 38095;
++  constexpr char kEthDomain[] = ".eth";
 +  static constexpr int default_cyfs_port = 38090;
++  static constexpr int default_ipfs_port = 38095;
++  static constexpr int default_eth_lookup_port = 38099;
 +  GURL orignal_request_url = resource_request_->url;
 +  if (orignal_request_url.SchemeIsCYFS()) {
 +    // translate cyfs url to local http url
@@ -31,7 +33,7 @@ index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..a65503a26abd2aebdef22a5ccb80ac78
 +    replacements.SetPortStr(std::to_string(default_cyfs_port).c_str());
 +    replacements.SetPathStr(new_url_path_str);
 +    GURL new_url = orignal_request_url.ReplaceComponents(replacements);
-+    LOG(INFO) << "After ReplaceRequestUrl URL = " << new_url.spec();
++    LOG(INFO) << "Update request url " << orignal_request_url.spec() << " to " << new_url.spec();
 +    resource_request_->url = new_url;
 +
 +  } else if (orignal_request_url.SchemeIsIPFS() || orignal_request_url.SchemeIsIPNS()) {
@@ -46,7 +48,19 @@ index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..a65503a26abd2aebdef22a5ccb80ac78
 +    replacements.SetPortStr(std::to_string(default_ipfs_port).c_str());
 +    replacements.SetPathStr(new_url_path_str);
 +    GURL new_url = orignal_request_url.ReplaceComponents(replacements);
-+    LOG(INFO) << "After ReplaceRequestUrl URL = " << new_url.spec();
++    LOG(INFO) << "Update request url " << orignal_request_url.spec() << " to " << new_url.spec();
++    resource_request_->url = new_url;
++  } else if (base::EndsWith(orignal_request_url.host_piece(), kEthDomain)) {
++    auto old_path_str = orignal_request_url.path();
++    auto new_url_path_str = std::string("/forward/") + std::string(orignal_request_url.host_piece()) + old_path_str;
++
++    GURL::Replacements replacements;
++    replacements.SetSchemeStr(url::kHttpScheme);
++    replacements.SetHostStr(kLocalhost);
++    replacements.SetPortStr(std::to_string(default_eth_lookup_port).c_str());
++    replacements.SetPathStr(new_url_path_str);
++    GURL new_url = orignal_request_url.ReplaceComponents(replacements);
++    LOG(INFO) << "Update request url " << orignal_request_url.spec() << " to " << new_url.spec();
 +    resource_request_->url = new_url;
 +  }
 +}
@@ -54,12 +68,3 @@ index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..a65503a26abd2aebdef22a5ccb80ac78
  void NavigationURLLoaderImpl::FallbackToNonInterceptedRequest(
      bool reset_subresource_loader_params) {
    if (reset_subresource_loader_params)
-@@ -656,6 +694,8 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
-   // further refactor the factory getters to avoid this.
-   scoped_refptr<network::SharedURLLoaderFactory> factory;
- 
-+  ReplaceRequestUrl();
-+
-   const bool should_be_handled_by_network_service =
-       network::IsURLHandledByNetworkService(resource_request_->url) ||
-       resource_request_->web_bundle_token_params.has_value();

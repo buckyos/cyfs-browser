@@ -1,5 +1,5 @@
 diff --git a/chrome/common/chrome_constants.cc b/chrome/common/chrome_constants.cc
-index 6fec2c15bfc7cc73af63ae6d8844cbd414c79362..4ff4c0224f92017cba5b9fc78fe8c16c885afce5 100644
+index 6fec2c15bfc7cc73af63ae6d8844cbd414c79362..2cbcabb1427ac0e463b4aee1913946aa25e24f60 100644
 --- a/chrome/common/chrome_constants.cc
 +++ b/chrome/common/chrome_constants.cc
 @@ -15,7 +15,7 @@
@@ -11,7 +11,39 @@ index 6fec2c15bfc7cc73af63ae6d8844cbd414c79362..4ff4c0224f92017cba5b9fc78fe8c16c
  #else
  #error Unknown branding
  #endif
-@@ -118,6 +118,7 @@ const base::FilePath::CharType kExtensionsCookieFilename[] =
+@@ -24,6 +24,7 @@
+ namespace chrome {
+ 
+ const char kChromeVersion[] = CHROME_VERSION_STRING;
++const char kProductVersion[] = CYFS_VERSION_STRING;
+ 
+ // The following should not be used for UI strings; they are meant
+ // for system strings only. UI changes should be made in the GRD.
+@@ -44,9 +45,9 @@ const char kChromeVersion[] = CHROME_VERSION_STRING;
+ 
+ #if BUILDFLAG(IS_WIN)
+ const base::FilePath::CharType kBrowserProcessExecutableName[] =
+-    FPL("chrome.exe");
++    FPL("CYFS_Browser.exe");
+ const base::FilePath::CharType kHelperProcessExecutableName[] =
+-    FPL("chrome.exe");
++    FPL("CYFS_Browser.exe");
+ #elif BUILDFLAG(IS_MAC)
+ const base::FilePath::CharType kBrowserProcessExecutableName[] =
+     FPL(PRODUCT_STRING);
+@@ -66,9 +67,9 @@ const base::FilePath::CharType kHelperProcessExecutableName[] = FPL("exe");
+ 
+ #if BUILDFLAG(IS_WIN)
+ const base::FilePath::CharType kBrowserProcessExecutablePath[] =
+-    FPL("chrome.exe");
++    FPL("CYFS_Browser.exe");
+ const base::FilePath::CharType kHelperProcessExecutablePath[] =
+-    FPL("chrome.exe");
++    FPL("CYFS_Browser.exe");
+ #elif BUILDFLAG(IS_MAC)
+ const base::FilePath::CharType kBrowserProcessExecutablePath[] =
+     FPL(PRODUCT_STRING ".app/Contents/MacOS/" PRODUCT_STRING);
+@@ -118,6 +119,7 @@ const base::FilePath::CharType kExtensionsCookieFilename[] =
  const base::FilePath::CharType kFeatureEngagementTrackerStorageDirname[] =
      FPL("Feature Engagement Tracker");
  const base::FilePath::CharType kFirstRunSentinel[] = FPL("First Run");
