@@ -68,7 +68,7 @@ def main(args):
     current_os = platform.system()
     assert current_os in ['Windows', 'Darwin']
     set_env_variables()
-    check = CheckFactory(current_os, root, opt.target_cpu, opt.project_name)
+    check = CheckFactory(current_os, root, opt.target_cpu, opt.project_name, opt.channel)
     is_match_cache = check.get_match_build_cache()
     check.check_requirements()
     ## In Macos environment, externsion must be execute compile
