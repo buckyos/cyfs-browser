@@ -55,7 +55,7 @@ class PackForWindows(Pack):
     @property
     def nsis_script(self):
         return os.path.join(
-                    self.pack_base_path, 'browser_runtime_setup.nsi')
+                    self.pack_base_path, 'browser_setup.nsi')
 
     def pack(self):
         self.check_requirements()

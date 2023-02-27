@@ -11,8 +11,9 @@ from common import static_page_path, nsis_bin_path, pkg_prefix
 
 
 class Pack:
-    def __init__(self, root, target_cpu, project_name, version, channel):
+    def __init__(self, root, target_cpu, project_name, version, channel, reuse_last_build):
         self._root = root
+        self._reuse_last_build = reuse_last_build
         self._target_cpu = target_cpu
         self._project_name = project_name
         self._channel = channel
@@ -55,12 +56,17 @@ class PackForWindows(Pack):
     @property
     def nsis_script(self):
         return os.path.join(
-                    self.pack_base_path, "browser_runtime_setup.nsi")
+                    self.pack_base_path, "browser_setup.nsi")
 
     def pack(self):
         self.check_requirements()
         self.copy_files_for_pack()
         self.make_nsis_installer()
+        self.clean()
+
+    def clean(self):
+        local_installer_bin = os.path.join(self.pack_base_path, "mini_installer.exe")
+        os.remove(local_installer_bin)
 
     def check_requirements(self):
         pass
@@ -72,6 +78,7 @@ class PackForWindows(Pack):
             make_file_not_exist(dst_path)
             shutil.copyfile(src_path, dst_path)
             assert os.path.exists(dst_path), ' Copy %s to %s failed' % (src_path, dst_path)
+            os.remove(src_path)
         except Exception as e:
             print("Copy browser installer failed: %s" % e)
 
@@ -90,7 +97,8 @@ class PackForWindows(Pack):
             raise
 
     def copy_files_for_pack(self):
-        self.copy_browser_installer()
+        if not self._reuse_last_build:
+            self.copy_browser_installer()
         self.copy_extensions()
 
     def make_nsis_installer(self):
@@ -230,18 +238,18 @@ PACK_TYPE_MAP = {
 }
 
 
-def PackFactory(type_name, root, target_cpu, project_name, version, channel):
+def PackFactory(type_name, root, target_cpu, project_name, version, channel, reuse_last_build):
     """Factory to build Pack class instances."""
     class_ = PACK_TYPE_MAP.get(type_name)
     if not class_:
         raise KeyError('unrecognized pack type: %s' % type_name)
-    return class_(root, target_cpu, project_name, version, channel)
+    return class_(root, target_cpu, project_name, version, channel, reuse_last_build)
 
 
-def make_installer(root, target_cpu, project_name, version, channel):
+def make_installer(root, target_cpu, project_name, version, channel, reuse_last_build):
     assert platform.system() in ["Windows", "Darwin"]
     try:
-        pack = PackFactory(platform.system(), root, target_cpu, project_name, version, channel)
+        pack = PackFactory(platform.system(), root, target_cpu, project_name, version, channel, reuse_last_build)
         pack.pack()
     except Exception:
         print("Make Installer failed, error: %s" % Exception)
