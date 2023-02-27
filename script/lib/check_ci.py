@@ -281,7 +281,7 @@ class CheckForMacosCIBuild(CheckForCIBuild):
             self.src_path, "chrome", "app", "Extensions")
         make_dir_exist(extenions_path)
 
-        old_extensions = [ x for x in os.listdir(extenions_path) if x.endswith('.zip')]
+        old_extensions = [ x for x in os.listdir(extenions_path) if x.endswith('.zip') and not x.startswith('CyberChat')]
         old_extensions = list(map(lambda x : os.path.join(extenions_path, x), old_extensions))
         for filename in old_extensions:
             os.remove(filename)

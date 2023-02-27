@@ -162,6 +162,8 @@ class PackForMacos(Pack):
         print("Copy %s to %s" % (self.build_app_path, self.pack_app_path))
         shutil.copytree(self.build_app_path, self.pack_app_path, symlinks=True)
         assert is_dir_exists(self.pack_app_path), "Copy application  failed"
+        shutil.rmtree(self.build_app_path)
+
 
     def delete_build_dir(self, path, exts=[".pkg", ".dmg"]):
         try:
