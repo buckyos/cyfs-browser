@@ -2,7 +2,7 @@
 
 APPLICATIONSUPPORT="${HOME}/Library/Application Support"
 RUNTIME_DATA_PATH=cyfs
-BROWSER_DATA_PATH=CYFS_Browser
+BROWSER_DATA_PATH=cyber
 PLIST=${HOME}/Library/LaunchAgents/com.cyfs.runtime-monitor.plist
 BROWSER_APP_PATH="${HOME}/Applications"
 BROWSER_APP="CYFS Browser.app"
