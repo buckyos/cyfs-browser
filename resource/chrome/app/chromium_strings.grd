@@ -437,13 +437,13 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       <!-- Uninstall messages -->
       <if expr="is_win">
         <message name="IDS_UNINSTALL_CLOSE_APP" desc="Message to user when uninstall detects other app instance running">
-          Please close all Chromium windows and try again.
+          Please close all CYFS Browser windows and try again.
         </message>
         <message name="IDS_UNINSTALL_VERIFY" desc="Message to confirm user wants to uninstall">
-          Are you sure you want to uninstall Chromium?
+          Are you sure you want to uninstall CYFS Browser?
         </message>
         <message name="IDS_UNINSTALL_CHROME" desc="The title of the Chromium uninstall dialog.">
-          Uninstall Chromium
+          Uninstall CYFS Browser
         </message>
       </if>
       <message name="IDS_FR_CUSTOMIZE_DEFAULT_BROWSER" desc="Default browser checkbox label">

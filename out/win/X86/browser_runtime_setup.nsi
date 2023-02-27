@@ -319,7 +319,7 @@ Section "end" 6
   SetOutPath "$LOCALAPPDATA\${PRODUCT_NAME}"
   RMDir /r "$LOCALAPPDATA\${PRODUCT_NAME}\User Data\Default\cyfs_extensions"
 
-  ReadRegStr $R0 "HKCU" "Software\Kalama" "UninstallString"
+  ReadRegStr $R0 "HKCU" "Software\${PRODUCT_NAME}" "UninstallString"
   LogText "current application uninstall bin = $R0"
 
 SectionEnd
@@ -429,7 +429,7 @@ Section Uninstall
 
   Sleep 2000
 
-  ReadRegStr $R0 "HKCU" "Software\Kalama" "UninstallString"
+  ReadRegStr $R0 "HKCU" "Software\${PRODUCT_NAME}" "UninstallString"
   LogText "current application uninstall bin = $R0"
 
   ExecWait '"$R0" --uninstall'

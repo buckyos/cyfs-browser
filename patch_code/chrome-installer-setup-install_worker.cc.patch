@@ -1,8 +1,24 @@
 diff --git a/chrome/installer/setup/install_worker.cc b/chrome/installer/setup/install_worker.cc
-index eeaa98e95378134e3a9439ace102b110d1846169..05f8f7ae2fd0331bb8e0738288cc99ee5d0944b3 100644
+index eeaa98e95378134e3a9439ace102b110d1846169..efaf826a61264db133588550fbe2af3602a7808a 100644
 --- a/chrome/installer/setup/install_worker.cc
 +++ b/chrome/installer/setup/install_worker.cc
-@@ -453,10 +453,12 @@ void AddUninstallShortcutWorkItems(const InstallParams& install_params,
+@@ -169,6 +169,7 @@ void RemoveFirewallRulesCallback(const base::FilePath& chrome_path,
+ void AddFirewallRulesWorkItems(const InstallerState& installer_state,
+                                bool is_new_install,
+                                WorkItemList* list) {
++  VLOG(1) << __FUNCTION__;
+   base::FilePath chrome_path = installer_state.target_path().Append(kChromeExe);
+   WorkItem* item = list->AddCallbackWorkItem(
+       base::BindOnce(&AddFirewallRulesCallback, chrome_path),
+@@ -429,6 +430,7 @@ void AddUninstallShortcutWorkItems(const InstallParams& install_params,
+   AppendUninstallCommandLineFlags(installer_state, &uninstall_arguments);
+ 
+   std::wstring update_state_key(install_static::GetClientStateKeyPath());
++  VLOG(1) << __FUNCTION__ << " update_state_key " << update_state_key;
+   install_list->AddCreateRegKeyWorkItem(reg_root, update_state_key,
+                                         KEY_WOW64_32KEY);
+   install_list->AddSetRegValueWorkItem(
+@@ -453,10 +455,12 @@ void AddUninstallShortcutWorkItems(const InstallParams& install_params,
                                           KEY_WOW64_32KEY,
                                           installer::kUninstallDisplayNameField,
                                           InstallUtil::GetDisplayName(), true);
@@ -16,3 +32,22 @@ index eeaa98e95378134e3a9439ace102b110d1846169..05f8f7ae2fd0331bb8e0738288cc99ee
      install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                           KEY_WOW64_32KEY, L"InstallLocation",
                                           install_path.value(), true);
+@@ -721,6 +725,7 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
+ 
+ void AddInstallWorkItems(const InstallParams& install_params,
+                          WorkItemList* install_list) {
++  VLOG(1) << __FUNCTION__ << ": " << install_params.installer_state.root_key();
+   DCHECK(install_list);
+ 
+   const InstallerState& installer_state = install_params.installer_state;
+@@ -731,6 +736,10 @@ void AddInstallWorkItems(const InstallParams& install_params,
+ 
+   const base::FilePath& target_path = installer_state.target_path();
+ 
++  VLOG(1) << "Cureent version " << current_version.GetString()
++        << "new version : " << new_version.GetString()
++        << "target path: " << target_path.AsUTF16Unsafe();
++
+   // A temp directory that work items need and the actual install directory.
+   install_list->AddCreateDirWorkItem(temp_path);
+   install_list->AddCreateDirWorkItem(target_path);

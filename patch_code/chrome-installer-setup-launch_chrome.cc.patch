@@ -1,0 +1,13 @@
+diff --git a/chrome/installer/setup/launch_chrome.cc b/chrome/installer/setup/launch_chrome.cc
+index a95da7ea2686a2e2603862154f8a8e38fb46f8c7..f8ca9f90d62eebeb13243b40e4651bb30435ba4d 100644
+--- a/chrome/installer/setup/launch_chrome.cc
++++ b/chrome/installer/setup/launch_chrome.cc
+@@ -39,6 +39,8 @@ bool LaunchChromeAndWait(const base::FilePath& application_path,
+   base::CommandLine cmd(application_path.Append(kChromeExe));
+   cmd.AppendArguments(options, false);
+ 
++  VLOG(1) << __FUNCTION__ << " command = " << cmd.GetArgumentsString();
++
+   base::Process chrome_handle = base::LaunchProcess(cmd, base::LaunchOptions());
+   if (!chrome_handle.IsValid()) {
+     PLOG(ERROR) << "Failed to launch: " << cmd.GetCommandLineString();

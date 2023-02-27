@@ -101,7 +101,7 @@
 <translation id="347328004046849135">当您使用已泄露的密码登录时，Chromium 会通知您</translation>
 <translation id="3474745554856756813">这会从这台设备上删除 <ph name="ITEMS_COUNT" /> 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="3497319089134299931"><ph name="SHORTCUT" /> 可用于切换 Chromium 个人资料</translation>
-<translation id="3509308970982693815">请关闭所有 Chromium 窗口并重试。</translation>
+<translation id="6752193580783221369">请关闭所有 CYFS Browser 窗口并重试。</translation>
 <translation id="3533435340678213462">为了保护您的隐私，如果您的兴趣保留时间超过 4 周，系统便会自动将其删除。随着您继续浏览，某项兴趣可能会再次出现在列表中。您也可以移除不希望纳入 Chromium 考虑范围的兴趣。</translation>
 <translation id="3567254597502212821">您的浏览记录，即您在此设备上使用 Chromium 访问过的网站的记录。</translation>
 <translation id="3575459661164320785">您的计算机上存在有害软件。Chromium 可以移除该软件、恢复您的设置并停用扩展程序，以确保您的浏览器能够重新正常运行。</translation>
@@ -223,14 +223,14 @@
 <translation id="6327105987658262776">没有可用的更新。</translation>
 <translation id="6333502561965082103">Chromium 正在执行另一项操作，请稍后重试。</translation>
 <translation id="6334986366598267305">现在，无论是通过Google帐号还是在共用的计算机上，您都可以更轻松地使用Chromium。</translation>
-<translation id="6373523479360886564">确定要卸载 Chromium 吗？</translation>
+<translation id="2253920245818565044">确定要卸载 CYFS Browser 吗？</translation>
 <translation id="6384011394608460044"><ph name="BEGIN_BOLD" />我们会如何使用这些数据<ph name="END_BOLD" />：Chromium 可以推测出您的兴趣。之后，您访问的网站可向 Chromium 请求查看您的兴趣，以便向您展示个性化广告。</translation>
 <translation id="6403826409255603130">Chromium 是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Chromium 内置的防护恶意软件和网上诱骗的功能可让您更安全地浏览网页。</translation>
 <translation id="6442900851116057561">重启 Chromium 操作系统</translation>
 <translation id="6455857529632101747">欢迎使用 Chromium 个人资料</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 将在 1 秒后重新启动}other{Chromium 将在 # 秒后重新启动}}</translation>
 <translation id="6475912303565314141">它还能够控制Chromium启动后显示的页面。</translation>
-<translation id="6510925080656968729">卸载 Chromium</translation>
+<translation id="2522809975127185004">卸载 CYFS Browser</translation>
 <translation id="6542839706527980775">每份个人资料均包含自己的 Chromium 信息，例如书签、历史记录、密码等等</translation>
 <translation id="6570579332384693436">为了修正拼写错误，Chromium 会将您在文本字段中输入的文字发送给 Google</translation>
 <translation id="6598877126913850652">转到 Chromium 通知设置部分</translation>

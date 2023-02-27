@@ -1,0 +1,78 @@
+diff --git a/chrome/installer/setup/setup_main.cc b/chrome/installer/setup/setup_main.cc
+index ed41241978292b01b216b24854997eca7717ddde..bbbdc973aacc49de19a49225686a6436493dc153 100644
+--- a/chrome/installer/setup/setup_main.cc
++++ b/chrome/installer/setup/setup_main.cc
+@@ -724,6 +724,7 @@ installer::InstallStatus UninstallProducts(InstallationState& original_state,
+       current_version,
+   };
+ 
++  VLOG(1) << __FUNCTION__ << " cmd " << cmd_line.GetCommandLineString();
+   install_status = UninstallProduct(modify_params, remove_all, force, cmd_line);
+ 
+   installer::CleanUpInstallationDirectoryAfterUninstall(
+@@ -761,6 +762,7 @@ installer::InstallStatus InstallProducts(InstallationState& original_state,
+                                          const InitialPreferences& prefs,
+                                          InstallerState* installer_state,
+                                          base::FilePath* installer_directory) {
++  VLOG(1) << __FUNCTION__ << " cmd " << cmd_line.GetArgumentsString();
+   DCHECK(installer_state);
+   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
+   installer::ArchiveType archive_type = installer::UNKNOWN_ARCHIVE_TYPE;
+@@ -927,6 +929,7 @@ bool HandleNonInstallCmdLineOptions(installer::ModifyParams& modify_params,
+                                     const base::CommandLine& cmd_line,
+                                     const InitialPreferences& prefs,
+                                     int* exit_code) {
++  VLOG(1) << __FUNCTION__ << " cmd: " << cmd_line.GetArgumentsString();
+   installer::InstallerState* installer_state = &(modify_params.installer_state);
+   installer::InstallationState* original_state =
+       &(modify_params.installation_state);
+@@ -1248,6 +1251,7 @@ InstallStatus InstallProductsHelper(InstallationState& original_state,
+                                     InstallerState& installer_state,
+                                     base::FilePath* installer_directory,
+                                     ArchiveType* archive_type) {
++  VLOG(1) << __FUNCTION__;
+   DCHECK(archive_type);
+   const bool system_install = installer_state.system_install();
+   InstallStatus install_status = UNKNOWN_STATUS;
+@@ -1374,6 +1378,8 @@ InstallStatus InstallProductsHelper(InstallationState& original_state,
+ 
+       const base::Version current_version(
+           installer_state.GetCurrentVersion(original_state));
++      VLOG(1) << "Current version: " << current_version.GetString()
++              << "Installer version " << current_version.GetString();
+       InstallParams install_params = {
+           installer_state,  original_state,       setup_exe,
+           current_version,  uncompressed_archive, src_path,
+@@ -1419,7 +1425,7 @@ InstallStatus InstallProductsHelper(InstallationState& original_state,
+       if (install_status == FIRST_INSTALL_SUCCESS) {
+         VLOG(1) << "First install successful.";
+         // We never want to launch Chrome in system level install mode.
+-        bool do_not_launch_chrome = false;
++        bool do_not_launch_chrome = true;
+         prefs.GetBool(initial_preferences::kDoNotLaunchChrome,
+                       &do_not_launch_chrome);
+         if (!system_install && !do_not_launch_chrome)
+@@ -1615,9 +1621,11 @@ int WINAPI wWinMain(HINSTANCE instance,
+   // true path to the program at position 0.
+   base::FilePath setup_exe;
+   base::PathService::Get(base::FILE_EXE, &setup_exe);
++  VLOG(1) << "Using setup exe " << setup_exe.AsUTF8Unsafe();
+ 
+   const base::Version current_version(
+       installer_state.GetCurrentVersion(original_state));
++  VLOG(1) << "Current version: " << current_version.GetString();
+   installer::ModifyParams modify_params = {
+       installer_state,
+       original_state,
+@@ -1670,9 +1678,11 @@ int WINAPI wWinMain(HINSTANCE instance,
+   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
+   // If --uninstall option is given, uninstall the identified product(s)
+   if (is_uninstall) {
++      VLOG(1) << __FUNCTION__ << " UninstallProducts";
+     install_status =
+         UninstallProducts(original_state, installer_state, setup_exe, cmd_line);
+   } else {
++    VLOG(1) << __FUNCTION__ << " InstallProducts";
+     // If --uninstall option is not specified, we assume it is install case.
+     install_status = InstallProducts(original_state, setup_exe, cmd_line, prefs,
+                                      &installer_state, &installer_directory);
