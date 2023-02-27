@@ -34,9 +34,6 @@ cyfs-runtime
 /out/win/X86/runtime/www
 /out/win/X86/runtime/tools
 /out/win/X86/runtime/*exe
-/out/win/X86/CYFS_Browser
+/out/win/X86/CYFS_Browser*
 
-
-/browser_install/cyfs-runtime-pack/www/
-/browser_install/cyfs-runtime-pack/tools
-/browser_install/cyfs-runtime-pack/*.exe
+/build_log/
