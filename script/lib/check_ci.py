@@ -262,10 +262,21 @@ class CheckForMacosCIBuild(CheckForCIBuild):
             self.src_path, "chrome", "app", "Extensions")
         make_dir_exist(extenions_path)
 
-        old_extensions = [ x for x in os.listdir(extenions_path) if x.endswith('.zip') ]
-        old_extensions = list(map(lambda x : os.path.join(extenions_path, x), old_extensions))
+        old_extensions = [ os.path.join(extenions_path, x) 
+                for x in os.listdir(extenions_path) if x.endswith('.zip')]
         for filename in old_extensions:
             os.remove(filename)
+
+        maybe_need_delete_extension_prefixs = [ 'CyberChat']
+        for extension_prefix in maybe_need_delete_extension_prefixs:
+            local_ci_extensions = [ os.path.join(self.local_extension_path, x) for 
+                    x in os.listdir(self.local_extension_path) if x.startswith(extension_prefix)]
+            if len(local_ci_extensions) > 1:
+                print('Find more than one extension with prefix [%s], need delete previous version extension' % extension_prefix)
+                local_ci_extensions.sort(key=lambda x:os.path.getmtime(x))
+                for extension in local_ci_extensions[:-1]:
+                    print("Delete old extension %s which modify time is %s" %(extension, os.path.getmtime(extension)))
+                    os.remove(extension)
 
         copys = list(filter(lambda x: x.endswith(".zip"),
                      os.listdir(self.local_extension_path)))
@@ -284,7 +295,6 @@ class CheckForMacosCIBuild(CheckForCIBuild):
                 f.write(file_name)
                 f.write("\",\n")
             f.write("]\n\n")
-        shutil.rmtree(self.local_extension_path)
 
     def check_requirements(self):
         assert is_dir_exists(self.static_page_path)
