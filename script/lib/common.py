@@ -20,12 +20,6 @@ def src_path(root):
 def local_extension_path(root):
     return os.path.join(root, "Extensions")
 
-def local_nft_bin_path(root):
-    return os.path.join(root, "nft")
-
-def local_nft_web_path(root):
-    return os.path.join(root, "nft_web")
-
 def cyfs_runtime_path(root, target_cpu):
     return os.path.join(pack_base_path(root, target_cpu), "runtime")
 
@@ -41,9 +35,6 @@ def ts_sdk_path(root, target_cpu):
 def application_name():
     return "CYFS Browser.app"
 
-def product_name():
-    return "CYFS_Browser"
-
 def pkg_prefix():
     return 'cyfs'
 
@@ -52,7 +43,7 @@ def code_zip_name():
         return "chromium_code_pc.zip"
     elif IS_MAC:
         return "chromium_mac_code.tar.gz"
-    return None
+    raise Exception("Unsupported platform")
 
 def nsis_bin_path():
     default_nsis_bin_path = 'C:\\Program Files (x86)\\NSIS\\Bin\\makensis.exe'
@@ -65,8 +56,7 @@ def pack_base_path(root, target_cpu):
         return os.path.join(root, "out", "win", target_cpu)
     elif IS_MAC:
         return os.path.join(root, "out", "mac", target_cpu)
-    else:
-        raise Exception("Unsupported platform")
+    raise Exception("Unsupported platform")
 
 def pkg_base_path(root, target_cpu):
     assert IS_MAC, 'Current function just for Macos'
@@ -97,27 +87,19 @@ def remote_extensions_path(remote_base_path, channel):
     path = os.path.join(remote_base_path, "chromium_extensions", "Extensions", channel)
     return os.path.normpath(path)
 
-def remote_nft_web_path(remote_base_path):
-    path = os.path.join(remote_base_path, "cyfs-nft", "nft-web", "pub")
-    return os.path.normpath(path)
-
-def remote_nft_bin_path(remote_base_path):
-    path = os.path.join(remote_base_path, "cyfs-nft", "nft-creator", "pub")
-    return os.path.normpath(path)
-
 def remote_code_path(remote_base_path):
     if IS_MAC:
         return os.path.normpath(os.path.join(remote_base_path, "chromium_code_mac"))
     if IS_WIN:
         return os.path.normpath(os.path.join(remote_base_path, "chromium_code_pc"))
-    return None
+    raise Exception("Unsupported platform")
 
 def remote_cache_path(remote_base_path):
     if IS_MAC:
         return os.path.normpath(os.path.join(remote_base_path, "browser_build_cache", "mac"))
     if IS_WIN:
         return os.path.normpath(os.path.join(remote_base_path, "browser_build_cache", "windows"))
-    return None
+    raise Exception("Unsupported platform")
 
 def get_deafult_macos_gn_args_array(target_cpu):
     assert target_cpu in MAC_CPUS

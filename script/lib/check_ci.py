@@ -5,9 +5,9 @@ sys.path.append(os.path.dirname(__file__))
 import subprocess
 import shutil
 import zipfile
-from common import local_extension_path, static_page_path, ts_sdk_path, product_name, application_name, code_zip_name
-from common import src_path, build_target, pack_app_path, build_app_path, local_nft_web_path, local_nft_bin_path, pack_base_path
-from common import remote_extensions_path, remote_nft_web_path, remote_nft_bin_path, remote_cache_path, remote_code_path
+from common import local_extension_path, static_page_path, ts_sdk_path, application_name, code_zip_name
+from common import src_path, build_target, pack_app_path, build_app_path, pack_base_path
+from common import remote_extensions_path, remote_cache_path, remote_code_path
 from util import make_dir_exist, is_dir_exists, make_file_not_exist
 
 def download_file(remote_path, local_path, is_dir=False):
@@ -68,14 +68,6 @@ class CheckForCIBuild:
         return self._remote_base_path
 
     @property
-    def local_nft_web_path(self):
-        return local_nft_web_path(self._root)
-
-    @property
-    def local_nft_bin_path(self):
-        return local_nft_bin_path(self._root)
-
-    @property
     def local_extension_path(self):
         return local_extension_path(self._root)
 
@@ -90,15 +82,6 @@ class CheckForCIBuild:
     @property
     def cache_mark_file(self):
         return "%s_commit_id.txt" % (self._target_cpu)
-
-    def download_nft_web_files(self):
-        make_file_not_exist(self.local_nft_web_path)
-        download_file(remote_nft_web_path(self.remote_base_path), self.local_nft_web_path, True)
-
-
-    def download_nft_files(self):
-        make_file_not_exist(self.local_nft_bin_path)
-        download_file(remote_nft_bin_path(self.remote_base_path), self.local_nft_bin_path, True)
 
     def download_default_extensions(self):
         # make_file_not_exist(self.local_extension_path)
@@ -183,8 +166,6 @@ class CheckForWindowsCIBuild(CheckForCIBuild):
         assert is_dir_exists(self.ts_sdk_path)
 
         self.download_default_extensions()
-        self.download_nft_web_files()
-        self.download_nft_files()
 
     def check_browser_src_files(self):
         self.copy_chromium_source_code()
@@ -281,7 +262,7 @@ class CheckForMacosCIBuild(CheckForCIBuild):
             self.src_path, "chrome", "app", "Extensions")
         make_dir_exist(extenions_path)
 
-        old_extensions = [ x for x in os.listdir(extenions_path) if x.endswith('.zip') and not x.startswith('CyberChat')]
+        old_extensions = [ x for x in os.listdir(extenions_path) if x.endswith('.zip') ]
         old_extensions = list(map(lambda x : os.path.join(extenions_path, x), old_extensions))
         for filename in old_extensions:
             os.remove(filename)
@@ -303,13 +284,13 @@ class CheckForMacosCIBuild(CheckForCIBuild):
                 f.write(file_name)
                 f.write("\",\n")
             f.write("]\n\n")
+        shutil.rmtree(self.local_extension_path)
 
     def check_requirements(self):
         assert is_dir_exists(self.static_page_path)
         assert is_dir_exists(self.ts_sdk_path)
 
         self.download_default_extensions()
-        self.download_nft_web_files()
 
     def check_browser_src_files(self):
         self.copy_chromium_source_code()
