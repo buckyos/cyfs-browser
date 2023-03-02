@@ -1,5 +1,5 @@
 diff --git a/chrome/tools/build/win/create_installer_archive.py b/chrome/tools/build/win/create_installer_archive.py
-index 732479bbf5975289bd251ab6d41c8dda7e808a50..0c2d5d641f74c6d49a6e6d419a0a87b3157707ef 100755
+index 732479bbf5975289bd251ab6d41c8dda7e808a50..cf43743cedaf3eebb4cbabb18ef96829a0241212 100755
 --- a/chrome/tools/build/win/create_installer_archive.py
 +++ b/chrome/tools/build/win/create_installer_archive.py
 @@ -41,6 +41,7 @@ SETUP_EXEC = "setup.exe"
@@ -38,3 +38,77 @@ index 732479bbf5975289bd251ab6d41c8dda7e808a50..0c2d5d641f74c6d49a6e6d419a0a87b3
    return '%s.%s.%s.%s' % (major, minor, build, patch)
  
  
+@@ -350,6 +353,8 @@ def PrepareSetupExec(options, current_version, prev_version):
+     CompressUsingLZMA(options.build_dir, setup_file_path, patch_file,
+                       options.verbose)
+   else:
++    setup_bin_path = os.path.join(options.build_dir, SETUP_EXEC)
++    DoSignForAllFiles(setup_bin_path)
+     # Use makecab.py instead of makecab.exe so that this works when building
+     # on non-Windows hosts too.
+     makecab_py = os.path.join(os.path.dirname(__file__), 'makecab.py')
+@@ -524,6 +529,55 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch,
+                          '\n'.join(version_assembly_dll_additions),
+                          '</assembly>')
+ 
++def _get_vcvars_path(name='64'):
++    """
++    Returns the path to the corresponding vcvars*.bat path
++
++    As of VS 2019, name can be one of: 32, 64, all, amd64_x86, x86_amd64
++    """
++    vswhere_exe = '%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe'
++    result = subprocess.run(
++        '"{}" -prerelease -latest -property installationPath'.format(vswhere_exe),
++        shell=True,
++        check=True,
++        stdout=subprocess.PIPE,
++        universal_newlines=True)
++    vcvars_path = os.path.join(result.stdout.strip(), 'VC/Auxiliary/Build/vcvars{}.bat'.format(name))
++    if not os.path.exists(vcvars_path):
++        raise RuntimeError(
++            'Could not find vcvars batch script in expected location: {}'.format(vcvars_path))
++    return vcvars_path
++
++def DoSignForAllFiles(signed_path):
++  sign_pfx_path = os.environ.get('SIGN_PFX_PATH', '')
++  sign_pfx_password = os.environ.get('SIGN_PFX_PASSWORD', '')
++  if not sign_pfx_password.strip() or not sign_pfx_path.strip():
++    print('no need sign for browser file')
++    return
++
++  need_signed_files = []
++  if os.path.isdir(signed_path):
++    for root_, _, files_ in os.walk(signed_path):
++      for file_ in files_:
++          if file_.endswith('.exe') or file_.endswith('.dll'):
++              need_signed_files.append(os.path.join(root_, file_))
++  else:
++    need_signed_files = [signed_path]
++  print('need signed file num = %s\n' % len(need_signed_files))
++
++  # set_vcvars_cmd = 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat'
++  # set_vcvars_cmd = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat"
++  set_vcvars_cmd = _get_vcvars_path()
++  print('set vcvars cmd %s ' %set_vcvars_cmd)
++  signed_cmd_template = 'signtool.exe sign /f %s /fd sha256 /p %s /tr http://sha256timestamp.ws.symantec.com/sha256/timestamp /td SHA256 ' %(sign_pfx_path, sign_pfx_password)
++  for signed_file in need_signed_files:
++    cmd_input = ['call "%s" >nul' % set_vcvars_cmd]
++    signed_cmd = signed_cmd_template + signed_file
++    print('signed cmd = %s ' % signed_cmd)
++    cmd_input.append(signed_cmd)
++    cmd_input.append('exit\n')
++    subprocess.run(('cmd.exe', '/k'), input='\n'.join(cmd_input), check=True, encoding='UTF-8')
++  print('End sign browser files')
+ 
+ def main(options):
+   """Main method that reads input file, creates archive file and writes
+@@ -548,6 +602,8 @@ def main(options):
+                            options.component_ffmpeg_build,
+                            options.verbose)
+ 
++  DoSignForAllFiles(staging_dir)
++
+   if options.component_build == '1':
+     DoComponentBuildTasks(staging_dir, options.build_dir,
+                           options.target_arch, options.setup_runtime_deps,

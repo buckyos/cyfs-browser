@@ -3,6 +3,7 @@
 
 import os
 import platform
+import subprocess
 
 MAC_CPUS = ["X86", "ARM"]
 
@@ -33,7 +34,11 @@ def ts_sdk_path(root, target_cpu):
     return os.path.join(static_page_path(root, target_cpu), "cyfs_sdk")
 
 def application_name():
-    return "CYFS Browser.app"
+    if IS_WIN:
+        return "CYFS_Browser.exe"
+    elif IS_MAC:
+        return "CYFS Browser.app"
+    raise Exception("Unsupported platform")
 
 def pkg_prefix():
     return 'cyfs'
@@ -50,6 +55,25 @@ def nsis_bin_path():
     path = os.environ.get('NSIS_BIN_PATH', default=default_nsis_bin_path)
     assert os.path.exists(path), 'Must to set CYFS_BROWSER_SRC_PATH'
     return path
+
+def get_vcvars_path(name='64'):
+    """
+    Returns the path to the corresponding vcvars*.bat path
+
+    As of VS 2019, name can be one of: 32, 64, all, amd64_x86, x86_amd64
+    """
+    vswhere_exe = '%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe'
+    result = subprocess.run(
+        '"{}" -prerelease -latest -property installationPath'.format(vswhere_exe),
+        shell=True,
+        check=True,
+        stdout=subprocess.PIPE,
+        universal_newlines=True)
+    vcvars_path = os.path.join(result.stdout.strip(), 'VC/Auxiliary/Build/vcvars{}.bat'.format(name))
+    if not os.path.exists(vcvars_path):
+        raise RuntimeError(
+            'Could not find vcvars batch script in expected location: {}'.format(vcvars_path))
+    return vcvars_path
 
 def pack_base_path(root, target_cpu):
     if IS_WIN:
