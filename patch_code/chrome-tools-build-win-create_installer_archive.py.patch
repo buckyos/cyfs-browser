@@ -1,8 +1,16 @@
 diff --git a/chrome/tools/build/win/create_installer_archive.py b/chrome/tools/build/win/create_installer_archive.py
-index 732479bbf5975289bd251ab6d41c8dda7e808a50..cf43743cedaf3eebb4cbabb18ef96829a0241212 100755
+index 732479bbf5975289bd251ab6d41c8dda7e808a50..870c48aa1b87a344a5c23e73deaafe7742540b75 100755
 --- a/chrome/tools/build/win/create_installer_archive.py
 +++ b/chrome/tools/build/win/create_installer_archive.py
-@@ -41,6 +41,7 @@ SETUP_EXEC = "setup.exe"
+@@ -20,6 +20,7 @@ import os
+ import shutil
+ import subprocess
+ import sys
++import functools
+ 
+ 
+ ARCHIVE_DIR = "installer_archive"
+@@ -41,6 +42,7 @@ SETUP_EXEC = "setup.exe"
  SETUP_PATCH_FILE_PREFIX = "setup_patch"
  TEMP_ARCHIVE_DIR = "temp_installer_archive"
  VERSION_FILE = "VERSION"
@@ -10,7 +18,7 @@ index 732479bbf5975289bd251ab6d41c8dda7e808a50..cf43743cedaf3eebb4cbabb18ef96829
  
  
  g_archive_inputs = []
-@@ -54,16 +55,18 @@ def BuildVersion(build_dir):
+@@ -54,16 +56,18 @@ def BuildVersion(build_dir):
    minor = 0
    build = 0
    patch = 0
@@ -38,7 +46,37 @@ index 732479bbf5975289bd251ab6d41c8dda7e808a50..cf43743cedaf3eebb4cbabb18ef96829
    return '%s.%s.%s.%s' % (major, minor, build, patch)
  
  
-@@ -350,6 +353,8 @@ def PrepareSetupExec(options, current_version, prev_version):
+@@ -330,6 +334,29 @@ def CreateArchiveFile(options, staging_dir, current_version, prev_version):
+ 
+   return compressed_archive_file
+ 
++def task_retry(max_retry_count: int = 5):
++
++  def _task_retry(task_func):
++
++    @functools.wraps(task_func)
++    def sync_wrapper(*args, **kwargs):
++      for retry_count in range(max_retry_count):
++        try:
++          print('execute count %s ' % retry_count)
++          task_ret = task_func(*args, **kwargs)
++          return task_ret
++        except Exception as e:
++          print('failed with error %s ' %e)
++          continue
++      else:
++        raise Exception('The number of retries exceeds the maximum limit %s' % max_retry_count)
++    return sync_wrapper
++  return _task_retry
++
++@task_retry(max_retry_count=5)
++def exec_signed_cmd(cmd_input):
++  subprocess.run(('cmd.exe', '/k'), input='\n'.join(cmd_input), check=True, encoding='UTF-8')
++  
+ 
+ def PrepareSetupExec(options, current_version, prev_version):
+   """Prepares setup.exe for bundling in mini_installer based on options."""
+@@ -350,6 +377,8 @@ def PrepareSetupExec(options, current_version, prev_version):
      CompressUsingLZMA(options.build_dir, setup_file_path, patch_file,
                        options.verbose)
    else:
@@ -47,7 +85,7 @@ index 732479bbf5975289bd251ab6d41c8dda7e808a50..cf43743cedaf3eebb4cbabb18ef96829
      # Use makecab.py instead of makecab.exe so that this works when building
      # on non-Windows hosts too.
      makecab_py = os.path.join(os.path.dirname(__file__), 'makecab.py')
-@@ -524,6 +529,55 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch,
+@@ -524,6 +553,56 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch,
                           '\n'.join(version_assembly_dll_additions),
                           '</assembly>')
  
@@ -98,12 +136,13 @@ index 732479bbf5975289bd251ab6d41c8dda7e808a50..cf43743cedaf3eebb4cbabb18ef96829
 +    print('signed cmd = %s ' % signed_cmd)
 +    cmd_input.append(signed_cmd)
 +    cmd_input.append('exit\n')
-+    subprocess.run(('cmd.exe', '/k'), input='\n'.join(cmd_input), check=True, encoding='UTF-8')
++    # subprocess.run(('cmd.exe', '/k'), input='\n'.join(cmd_input), check=True, encoding='UTF-8')
++    exec_signed_cmd(cmd_input)
 +  print('End sign browser files')
  
  def main(options):
    """Main method that reads input file, creates archive file and writes
-@@ -548,6 +602,8 @@ def main(options):
+@@ -548,6 +627,8 @@ def main(options):
                             options.component_ffmpeg_build,
                             options.verbose)
  
