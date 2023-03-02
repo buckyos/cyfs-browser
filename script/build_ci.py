@@ -7,7 +7,7 @@ import platform
 
 
 from lib.check_ci import CheckFactory
-from lib.ninja import build_browser
+from lib.ninja_ci import build_browser
 from lib.pack_ci import make_installer
 from lib.common import src_path, MAC_CPUS
 from lib.git_patch import GitPatcher
