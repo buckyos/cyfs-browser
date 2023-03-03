@@ -13,6 +13,10 @@
 #include "base/containers/flat_map.h"
 #include "base/sequence_checker.h"
 
+#include "base/files/file_util.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
+
 #include "base/memory/raw_ptr.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
