@@ -59,20 +59,33 @@ net::NetworkTrafficAnnotationTag kAnnotationTag =
             "Not implemented."
     })");
 
-bool IsRuntimeDescFileExist() {
-  base::FilePath user_data_dir;
-  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
-    return false;
-  base::FilePath file_path =
-      user_data_dir.AppendASCII("cyfs").AppendASCII("etc").AppendASCII("desc");
-  base::FilePath desc1 = file_path.AppendASCII("device.desc");
-  base::FilePath desc2 = file_path.AppendASCII("device.sec");
-  if (base::PathExists(desc1) && base::PathExists(desc2)) {
-    LOG(INFO) << "all user desc file is exists";
-    return true;
+base::FilePath GetLocalAppData() {
+  base::FilePath app_data_dir;
+#if BUILDFLAG(IS_WIN)
+  int key = base::DIR_ROAMING_APP_DATA;
+  if (!base::PathService::Get(key, &app_data_dir)) {
+    VLOG(1) << "Can't get app data dir";
   }
-  return false;
+#else
+  int key = base::DIR_APP_DATA;
+  if (!base::PathService::Get(key, &app_data_dir)) {
+    VLOG(1) << "Can't get app data dir";
+  }
+#endif
+  return app_data_dir;
 }
+
+bool IsRuntimeBinding() {
+  auto file_path = GetLocalAppData().AppendASCII("cyfs").AppendASCII("etc").AppendASCII("desc");
+  auto desc_file = file_path.AppendASCII("device.desc");
+  auto sec_file = file_path.AppendASCII("device.sec");
+  auto desc_files = { desc_file, desc_file };
+  auto pred = [](const base::FilePath& path) { return base::PathExists(path); };
+  bool is_bind = std::all_of(desc_files.begin(), desc_files.end(), pred);
+  VLOG(1) << "Current user is " << (is_bind ? "bind" : "not bind");
+  return is_bind;
+}
+
 }  // namespace
 
 // CyfsRuntimeInitService
@@ -98,7 +111,7 @@ void CyfsRuntimeInitService::Shutdown() {}
 
 void CyfsRuntimeInitService::RequestRuntimeBindStatus(OnGetStatus callback) {
   file_task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE, base::BindOnce(&IsRuntimeDescFileExist),
+      FROM_HERE, base::BindOnce(&IsRuntimeBinding),
       base::BindOnce(&CyfsRuntimeInitService::OnGetRuntimeBindStatus,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

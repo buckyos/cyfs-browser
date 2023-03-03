@@ -8,6 +8,7 @@ import {
 var UpdateProcessStatusIntervalID;
 var UpdateProxyStatusIntervalID;
 let isFirstRun = undefined;
+let isBind = false
 let proxyServerReady = false;
 
 
@@ -27,7 +28,7 @@ function returnRuntimePorcessStatus(status) {
     if (status == true && proxyServerReady == true) {
         console.log(`runtime process status is running }`);
         let target_url = loadTimeData.getStringF('browser_url');
-        if (isFirstRun) {
+        if (isFirstRun && !isBind) {
             target_url = loadTimeData.getStringF('guide_url');
         }
         window.location.href = target_url;
@@ -46,6 +47,14 @@ function startUpdateRequests() {
         });
     };
     getFirstRunStatus();
+
+    const getRuntimeBindStatus = function() {
+        sendWithPromise('getRuntimeBindStatus').then(status => {
+            console.log(`runtime bind status: ${status}`);
+            isBind = status;
+        });
+    }
+    getRuntimeBindStatus()
 
     const getRuntimeProxystatus = function() {
         sendWithPromise('getRuntimeProxystatus').then(status => {
