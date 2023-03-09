@@ -1,0 +1,13 @@
+diff --git a/components/omnibox/browser/BUILD.gn b/components/omnibox/browser/BUILD.gn
+index 4fc0ee7cfcbc41aef90987ec06688fc21c2fbc4b..b9e4729c09a70f6ea54689ffb4d7ecc017cae631 100644
+--- a/components/omnibox/browser/BUILD.gn
++++ b/components/omnibox/browser/BUILD.gn
+@@ -232,6 +232,8 @@ static_library("browser") {
+     "zero_suggest_provider.h",
+     "zero_suggest_verbatim_match_provider.cc",
+     "zero_suggest_verbatim_match_provider.h",
++    "ens_lookup_provider.h",
++    "ens_lookup_provider.cc",
+   ]
+ 
+   public_deps = [

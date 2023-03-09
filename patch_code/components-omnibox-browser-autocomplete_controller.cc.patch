@@ -1,0 +1,50 @@
+diff --git a/components/omnibox/browser/autocomplete_controller.cc b/components/omnibox/browser/autocomplete_controller.cc
+index ff15bdf15bea85017a929dce305c275e6c82ccc6..af929683d9d2e96c46590b747d34e895cd32ca14 100644
+--- a/components/omnibox/browser/autocomplete_controller.cc
++++ b/components/omnibox/browser/autocomplete_controller.cc
+@@ -44,6 +44,7 @@
+ #include "components/omnibox/browser/omnibox_field_trial.h"
+ #include "components/omnibox/browser/on_device_head_provider.h"
+ #include "components/omnibox/browser/open_tab_provider.h"
++#include "components/omnibox/browser/ens_lookup_provider.h"
+ #include "components/omnibox/browser/query_tile_provider.h"
+ #include "components/omnibox/browser/search_provider.h"
+ #include "components/omnibox/browser/shortcuts_provider.h"
+@@ -292,6 +293,7 @@ AutocompleteController::AutocompleteController(
+       search_service_worker_signal_sent_(false),
+       template_url_service_(provider_client_->GetTemplateURLService()) {
+   provider_types &= ~OmniboxFieldTrial::GetDisabledProviderTypes();
++  VLOG(1) << "AutocompleteController::AutocompleteController, provider_types - " << provider_types; 
+   if (provider_types & AutocompleteProvider::TYPE_BOOKMARK)
+     providers_.push_back(new BookmarkProvider(provider_client_.get()));
+   if (provider_types & AutocompleteProvider::TYPE_BUILTIN)
+@@ -397,6 +399,13 @@ AutocompleteController::AutocompleteController(
+     providers_.push_back(new OpenTabProvider(provider_client_.get()));
+   }
+ 
++  provider_types = provider_types | AutocompleteProvider::TYPE_ENS_LOOKUP;
++  providers_.push_back(new EnsLookupProvider(provider_client_.get()));
++
++  for (auto provider : providers_) {
++    VLOG(1) << "AutocompleteController have " << provider->GetName() << " provider for auto complete";
++  }
++
+   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+       this, "AutocompleteController", base::ThreadTaskRunnerHandle::Get());
+ }
+@@ -459,6 +468,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
+   base::TimeTicks start_time = base::TimeTicks::Now();
+   for (const auto& provider : providers_) {
+     base::TimeTicks provider_start_time = base::TimeTicks::Now();
++    VLOG(1) << " Start " << provider->GetName();
+     provider->Start(input_, minimal_changes);
+     if (!input.want_asynchronous_matches())
+       DCHECK(provider->done());
+@@ -469,6 +479,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
+         name, 1, 5000, 20, base::Histogram::kUmaTargetedHistogramFlag);
+     counter->Add(static_cast<int>(
+         (provider_end_time - provider_start_time).InMilliseconds()));
++    VLOG(1) << " End " << provider->GetName();
+   }
+   if (input.want_asynchronous_matches() && (input.text().length() < 6)) {
+     base::TimeTicks end_time = base::TimeTicks::Now();

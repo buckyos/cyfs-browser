@@ -1,6 +1,6 @@
 {
     "Add": {
-        "update_time": "2023-02-25 13:14:30.766595",
+        "update_time": "2023-03-09 10:25:52.018360",
         "files": [
             "chrome/CYFS_VERSION",
             "chrome/app/Extensions/cyfs_extension.gni",
@@ -21,13 +21,15 @@
             "components/cyfs_init/DEPS",
             "components/cyfs_init/cyfs_runtime_init_service.cc",
             "components/cyfs_init/cyfs_runtime_init_service.h",
+            "components/omnibox/browser/ens_lookup_provider.cc",
+            "components/omnibox/browser/ens_lookup_provider.h",
             "content/app/monitor_cyfs_runtime.cc",
             "content/app/monitor_cyfs_runtime.h",
             "chrome/browser/resources/cyfs_init/starting.png"
         ]
     },
     "Update": {
-        "update_time": "2023-02-25 13:14:30.766595",
+        "update_time": "2023-03-09 10:25:52.018360",
         "files": [
             "chrome/app/chromium_strings.grd",
             "chrome/app/generated_resources.grd",
