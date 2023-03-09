@@ -1,0 +1,13 @@
+diff --git a/components/omnibox/browser/autocomplete_provider.cc b/components/omnibox/browser/autocomplete_provider.cc
+index 44fb680404d20f9d26992dc2a4466314f4cac90b..1741dc7e20f9583bccc59ff240a363518073790d 100644
+--- a/components/omnibox/browser/autocomplete_provider.cc
++++ b/components/omnibox/browser/autocomplete_provider.cc
+@@ -71,6 +71,8 @@ const char* AutocompleteProvider::TypeToString(Type type) {
+       return "HistoryFuzzy";
+     case TYPE_OPEN_TAB:
+       return "OpenTab";
++    case TYPE_ENS_LOOKUP:
++      return "EnsLookup";
+     default:
+       NOTREACHED() << "Unhandled AutocompleteProvider::Type " << type;
+       return "Unknown";

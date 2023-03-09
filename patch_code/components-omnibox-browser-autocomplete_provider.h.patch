@@ -1,0 +1,12 @@
+diff --git a/components/omnibox/browser/autocomplete_provider.h b/components/omnibox/browser/autocomplete_provider.h
+index efdfbe944374e6310e97119a35812d66bf4c8b21..599325286c609dd7f30cb6fdde9ac4ee3bc41316 100644
+--- a/components/omnibox/browser/autocomplete_provider.h
++++ b/components/omnibox/browser/autocomplete_provider.h
+@@ -170,6 +170,7 @@ class AutocompleteProvider
+     TYPE_VOICE_SUGGEST = 1 << 15,
+     TYPE_HISTORY_FUZZY = 1 << 16,
+     TYPE_OPEN_TAB = 1 << 17,
++    TYPE_ENS_LOOKUP = 1 << 18,
+   };
+ 
+   explicit AutocompleteProvider(Type type);
