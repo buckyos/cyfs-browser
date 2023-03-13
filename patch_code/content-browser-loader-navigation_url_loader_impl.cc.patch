@@ -1,8 +1,25 @@
 diff --git a/content/browser/loader/navigation_url_loader_impl.cc b/content/browser/loader/navigation_url_loader_impl.cc
-index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..fba1e5381a62d689640e2755dfa21649d93e7344 100644
+index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..1178e7c941012e4e05c15efee39f0e60aa5a302f 100644
 --- a/content/browser/loader/navigation_url_loader_impl.cc
 +++ b/content/browser/loader/navigation_url_loader_impl.cc
-@@ -529,6 +529,7 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
+@@ -8,6 +8,7 @@
+ #include <memory>
+ #include <set>
+ #include <utility>
++#include <locale>
+ 
+ #include "base/bind.h"
+ #include "base/callback_helpers.h"
+@@ -100,6 +101,8 @@
+ #include "third_party/blink/public/common/storage_key/storage_key.h"
+ #include "url/origin.h"
+ 
++#include "base/strings/string_tokenizer.h"
++
+ #if BUILDFLAG(IS_ANDROID)
+ #include "content/browser/android/content_url_loader_factory.h"
+ #endif
+@@ -529,6 +532,7 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
    DCHECK_CURRENTLY_ON(BrowserThread::UI);
    DCHECK(started_);
  
@@ -10,21 +27,35 @@ index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..fba1e5381a62d689640e2755dfa21649
    if (single_request_factory) {
      // `interceptor` wants to handle the request with
      // `single_request_handler`.
-@@ -622,6 +623,57 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
+@@ -622,6 +626,120 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
        GetUIThreadTaskRunner({BrowserTaskType::kNavigationNetworkResponse}));
  }
  
++bool IsValidCID(const std::string& cid) {
++  const char kCIDv1Codes[] = "079fFvVtTbBcChkKzZmMuU";
++  const char kCIDv0Prefix[] = "Qm";
++  if (!cid.size())
++    return false;
++  if (!std::all_of(cid.begin(), cid.end(), [loc = std::locale{}](char c) {
++        return std::isalnum(c, loc);
++      }))
++    return false;
++  if (std::string(kCIDv1Codes).find(cid.at(0)) != std::string::npos)
++    return true;
++  return base::StartsWith(cid, kCIDv0Prefix);
++}
++
 +void NavigationURLLoaderImpl::ReplaceRequestUrl() {
 +  constexpr char kLocalhost[] = "127.0.0.1";
 +  constexpr char kEthDomain[] = ".eth";
 +  static constexpr int default_cyfs_port = 38090;
 +  static constexpr int default_ipfs_port = 38095;
 +  static constexpr int default_eth_lookup_port = 38099;
-+  GURL orignal_request_url = resource_request_->url;
-+  if (orignal_request_url.SchemeIsCYFS()) {
++  GURL request_url = resource_request_->url;
++  if (request_url.SchemeIsCYFS()) {
 +    // translate cyfs url to local http url
-+    auto host_str = orignal_request_url.host();
-+    auto old_path_str = orignal_request_url.path();
++    auto host_str = request_url.host();
++    auto old_path_str = request_url.path();
 +    auto new_url_path_str = "/" + host_str + old_path_str;
 +
 +    GURL::Replacements replacements;
@@ -32,37 +63,86 @@ index dbecaf0a549233e22acd91d231e7d3e11ad6e4d7..fba1e5381a62d689640e2755dfa21649
 +    replacements.SetHostStr(kLocalhost);
 +    replacements.SetPortStr(std::to_string(default_cyfs_port).c_str());
 +    replacements.SetPathStr(new_url_path_str);
-+    GURL new_url = orignal_request_url.ReplaceComponents(replacements);
-+    LOG(INFO) << "Update request url " << orignal_request_url.spec() << " to " << new_url.spec();
++    GURL new_url = request_url.ReplaceComponents(replacements);
++    LOG(INFO) << "Update request url " << request_url.spec() << " to " << new_url.spec();
 +    resource_request_->url = new_url;
 +
-+  } else if (orignal_request_url.SchemeIsIPFS() || orignal_request_url.SchemeIsIPNS()) {
++  } else if (request_url.SchemeIsIPFS() || request_url.SchemeIsIPNS()) {
 +    // translate ipfs/ipns url to local http url
-+    auto host_str = orignal_request_url.host();
-+    auto old_path_str = orignal_request_url.path();
-+    auto new_url_path_str = (orignal_request_url.SchemeIsIPFS() ? "/ipfs/" : "/ipns/") +  host_str + old_path_str;
++    std::string host_str = request_url.host();
++    std::string old_path_str = request_url.path();
++    VLOG(1) << "old path str - " << old_path_str;
++
++    // special handle for ipfs resource which upload with Folder
++    if (!request_url.has_query()) {
++      // ipfs://QmY6BfdrJpxTvxpLrFhZ6dHsCoWPvgP4evzACBSrPbDnrV/ipfs/QmY6BfdrJpxTvxpLrFhZ6dHsCoWPvgP4evzACBSrPbDnrV/css/main.css
++      // ==>
++      // ipfs://127.0.0.1:${port}/ipfs/QmY6BfdrJpxTvxpLrFhZ6dHsCoWPvgP4evzACBSrPbDnrV/css/main.css
++      std::string find_str = std::string("/ipfs/");
++      std::string::size_type pos = old_path_str.find(find_str);
++      if (pos != std::string::npos) {
++        std::string::size_type begin_pos_1 = pos + find_str.length();
++        std::string::size_type end_pos_1 = old_path_str.find("/", begin_pos_1);
++        if (end_pos_1 != std::string::npos) {
++          std::string maybe_cid = old_path_str.substr(begin_pos_1, (end_pos_1 - begin_pos_1));
++          VLOG(1) << "maybe cid - " << maybe_cid;
++          if (IsValidCID(maybe_cid)) {
++            old_path_str = old_path_str.substr(end_pos_1);
++          }
++        } else {
++          std::string other_str = old_path_str.substr(begin_pos_1);
++          if (IsValidCID(other_str)) {
++            old_path_str.erase(pos);
++          }
++        }
++      }
++    } else {
++      // ipfs://QmY6BfdrJpxTvxpLrFhZ6dHsCoWPvgP4evzACBSrPbDnrV/ipfs/QmejPJHc81xHYgpc47GqdDLL7JVnMtiufQ7m3jT4HA1rLo?filename=css
++      // ==>
++      // ipfs://127.0.0.1:${port}/ipfs/QmejPJHc81xHYgpc47GqdDLL7JVnMtiufQ7m3jT4HA1rLo?filename=css
++      std::string find_str = std::string("/ipfs/");
++      std::string::size_type pos = old_path_str.find(find_str);
++      if (pos != std::string::npos) {
++        std::string::size_type begin_pos = pos + find_str.length();
++        std::string::size_type end_pos = old_path_str.find_first_of(std::string("/"), begin_pos);
++        if (end_pos != std::string::npos) {
++          host_str = old_path_str.substr(begin_pos, (end_pos - begin_pos));
++          old_path_str = old_path_str.substr(end_pos);
++        } else {
++          host_str = old_path_str.substr(begin_pos);
++          old_path_str = std::string();
++        }
++      }      
++    }
++    VLOG(1) << "after strip some feature str, old path str - " << old_path_str
++            << " host - " << host_str;
++
++    std::string ipfs_schme_name = (request_url.SchemeIsIPFS() ? "/ipfs/" : "/ipns/");
++    auto new_url_path_str = ipfs_schme_name +  host_str + old_path_str;
++    VLOG(1) << " new_url_path_str - " << new_url_path_str;
 +
 +    GURL::Replacements replacements;
 +    replacements.SetSchemeStr(url::kHttpScheme);
 +    replacements.SetHostStr(kLocalhost);
 +    replacements.SetPortStr(std::to_string(default_ipfs_port).c_str());
 +    replacements.SetPathStr(new_url_path_str);
-+    GURL new_url = orignal_request_url.ReplaceComponents(replacements);
-+    LOG(INFO) << "Update request url " << orignal_request_url.spec() << " to " << new_url.spec();
++    GURL new_url = request_url.ReplaceComponents(replacements);
++    LOG(INFO) << "Update request url " << request_url.spec() << " to " << new_url.spec();
 +    resource_request_->url = new_url;
-+  } else if (base::EndsWith(orignal_request_url.host_piece(), kEthDomain)) {
-+    auto old_path_str = orignal_request_url.path();
-+    auto new_url_path_str = std::string("/forward/") + std::string(orignal_request_url.host_piece()) + old_path_str;
++  } else if (base::EndsWith(request_url.host_piece(), kEthDomain)) {
++    auto old_path_str = request_url.path();
++    auto new_url_path_str = std::string("/forward/") + std::string(request_url.host_piece()) + old_path_str;
 +
 +    GURL::Replacements replacements;
 +    replacements.SetSchemeStr(url::kHttpScheme);
 +    replacements.SetHostStr(kLocalhost);
 +    replacements.SetPortStr(std::to_string(default_eth_lookup_port).c_str());
 +    replacements.SetPathStr(new_url_path_str);
-+    GURL new_url = orignal_request_url.ReplaceComponents(replacements);
-+    LOG(INFO) << "Update request url " << orignal_request_url.spec() << " to " << new_url.spec();
++    GURL new_url = request_url.ReplaceComponents(replacements);
++    LOG(INFO) << "Update request url " << request_url.spec() << " to " << new_url.spec();
 +    resource_request_->url = new_url;
 +  }
++
 +}
 +
  void NavigationURLLoaderImpl::FallbackToNonInterceptedRequest(
