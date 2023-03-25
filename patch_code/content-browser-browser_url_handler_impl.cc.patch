@@ -1,0 +1,249 @@
+diff --git a/content/browser/browser_url_handler_impl.cc b/content/browser/browser_url_handler_impl.cc
+index b5517a45e5d7b31e2b920374cfa5680657a21c7b..29ac778829e8e5ed158ffbec5f263208985e64d1 100644
+--- a/content/browser/browser_url_handler_impl.cc
++++ b/content/browser/browser_url_handler_impl.cc
+@@ -5,9 +5,11 @@
+ #include "content/browser/browser_url_handler_impl.h"
+ 
+ #include <stddef.h>
++#include <locale>
+ 
+ #include "base/ranges/algorithm.h"
+ #include "base/strings/string_util.h"
++#include "base/strings/string_split.h"
+ #include "content/browser/renderer_host/debug_urls.h"
+ #include "content/browser/webui/web_ui_impl.h"
+ #include "content/public/browser/content_browser_client.h"
+@@ -19,6 +21,206 @@
+ 
+ namespace content {
+ 
++namespace ipfs {
++
++const char kCIDv1Codes[] = "079fFvVtTbBcChkKzZmMuU";
++const char kCIDv0Prefix[] = "Qm";
++
++bool IsValidCID(const std::string& cid) {
++  if (!cid.size())
++    return false;
++  if (!std::all_of(cid.begin(), cid.end(), [loc = std::locale{}](char c) {
++        return std::isalnum(c, loc);
++      }))
++    return false;
++  if (std::string(kCIDv1Codes).find(cid.at(0)) != std::string::npos)
++    return true;
++  return base::StartsWith(cid, kCIDv0Prefix);
++}
++
++bool ParseCIDAndPathFromIPFSUrl(const GURL& url,
++                                std::string* cid,
++                                std::string* path) {
++  *path = url.path();
++  std::string host = url.host();
++  if (IsValidCID(host)) {
++    *cid = host;
++  } else {
++    return false;
++  }
++  VLOG(1) << " parse cid - " << *cid << " path - " << path;
++  return true;
++}
++
++bool TranslateIPFSURI(const GURL& url,
++                      GURL* new_url,
++                      const GURL& gateway_url,
++                      bool use_subdomain) {
++  VLOG(1) << "TranslateIPFSURI ";
++  std::string cid, path;
++  if (!ParseCIDAndPathFromIPFSUrl(url, &cid, &path))
++    return false;
++  bool ipfs_scheme = url.scheme() == url::kIpfsScheme;
++  bool ipns_scheme = url.scheme() == url::kIpnsScheme;
++  VLOG(1) << "0";
++  if ((ipfs_scheme && std::all_of(cid.begin(), cid.end(),
++                                  [loc = std::locale{}](char c) {
++                                    return std::isalnum(c, loc);
++                                  })) ||
++      ipns_scheme) {
++    // new_url would be:
++    // https://dweb.link/ipfs/[cid]//wiki/Vincent_van_Gogh.html
++    if (new_url) {
++      GURL::Replacements replacements;
++      replacements.SetSchemeStr(gateway_url.scheme_piece());
++      replacements.SetPortStr(gateway_url.port_piece());
++      std::string new_host = gateway_url.host();
++      std::string new_path = path;
++      if (use_subdomain) {
++        new_host = base::StringPrintf("%s.%s.%s", cid.c_str(),
++                                      ipfs_scheme ? "ipfs" : "ipns",
++                                      gateway_url.host().c_str());
++      } else {
++        new_path = (ipfs_scheme ? "ipfs/" : "ipns/") + cid + path;
++      }
++      VLOG(1) << "new_path - " << new_path << " new_host - " << new_host;
++
++      replacements.SetHostStr(new_host);
++      replacements.SetPathStr(new_path);
++      *new_url = url.ReplaceComponents(replacements);
++      VLOG(1) << "[IPFS] " << __func__ << " new URL: " << *new_url;
++    }
++
++    return true;
++  }
++  return false;
++}
++
++bool HandleIPFSURLRewrite(GURL* url, content::BrowserContext* browser_context) {
++  // This is needed for triggering ReverseRewrite later.
++  if (url->SchemeIs("http") && url->port() == "38095" ){
++    return true;
++  }
++
++  if (url->SchemeIs(url::kIpfsScheme) || url->SchemeIs(url::kIpfsScheme)) {
++    VLOG(1) << "HandleIPFSURLRewrite for ipfs/ipns url - " << url->spec();
++    GURL gateway_url("http://127.0.0.1:38095");
++    VLOG(1) << " gateway_url info, scheme " << gateway_url.scheme() << " host - " << gateway_url.host()
++            << " port - " << gateway_url.port();
++    VLOG(1) << " handle url info, scheme " << url->scheme() << " host - " << url->host()
++            << " port - " << url->port();
++    return TranslateIPFSURI(*url, url, gateway_url, false);
++  }
++  return false;
++}
++
++bool HandleIPFSURLRewrite_1(GURL* url, content::BrowserContext* browser_context) {
++  // This is needed for triggering ReverseRewrite later.
++  if (url->SchemeIs("http") && url->port() == "38095" ){
++    return true;
++  }
++
++  if (url->SchemeIs(url::kIpfsScheme) || url->SchemeIs(url::kIpfsScheme)) {
++    return true;
++  }
++  return false;
++}
++
++bool HandleIPFSURLReverseRewrite(GURL* url,
++                                 content::BrowserContext* browser_context) {
++  VLOG(1) << "HandleIPFSURLReverseRewrite, url - " << url->spec();
++  {
++    GURL gateway_url("http://127.0.0.1:38095");
++    std::string url_spec_str = url->spec();
++    if (!base::StartsWith(url_spec_str, gateway_url.spec(), base::CompareCase::SENSITIVE)) {
++      return false;
++    }
++
++    GURL::Replacements scheme_replacements;
++    GURL::Replacements host_replacements;
++    std::string url_path_str = url->path();
++
++    auto path_segments = base::SplitString(url->path(), "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
++    for (auto segment : path_segments) {
++      VLOG(1) << "segment - " << segment;
++    }
++    path_segments.erase(path_segments.begin());
++    // path_segments.erase(path_segments.end() - 1);
++    if (path_segments.size() <= 1) {
++      return false;
++    }
++    if (path_segments[0] == "ipfs") {
++      scheme_replacements.SetSchemeStr(url::kIpfsScheme);
++    }
++    if (path_segments[0] == "ipns") {
++      scheme_replacements.SetSchemeStr(url::kIpnsScheme);
++    }
++    std::string maybe_cid = path_segments.at(1);
++    if (!ipfs::IsValidCID(maybe_cid))
++      return false;
++    host_replacements.SetHostStr(maybe_cid);
++    host_replacements.ClearPort();
++    path_segments.erase(path_segments.begin(), path_segments.begin() + 2);
++
++    GURL::Replacements path_replacements;
++    std::string new_path_str;
++    for (auto segment : path_segments) {
++      VLOG(1) << "segment - " << segment;
++      new_path_str.append("/");
++      new_path_str.append(segment);
++    }
++    VLOG(1) << "new path str - " << new_path_str;
++    path_replacements.SetPathStr(new_path_str);
++
++    *url = url->ReplaceComponents(host_replacements);
++    *url = url->ReplaceComponents(scheme_replacements);
++    *url = url->ReplaceComponents(path_replacements);
++  }
++  return true;
++}
++
++bool HandleENSURLRewrite(GURL* url, content::BrowserContext* browser_context) {
++  GURL ens_gateway_url("http://127.0.0.1:38099");
++  constexpr char kEthDomain[] = ".eth";
++  // This is needed for triggering ReverseRewrite later.
++  if (url->SchemeIs("http") && base::EndsWith(url->host_piece(), kEthDomain) ){
++    auto old_path_str = url->path();
++    auto new_url_path_str = std::string("/forward/") + std::string(url->host_piece()) + old_path_str;
++
++    GURL::Replacements replacements;
++    replacements.SetSchemeStr(ens_gateway_url.scheme_piece());
++    replacements.SetHostStr(ens_gateway_url.host_piece());
++    replacements.SetPortStr(ens_gateway_url.port_piece());
++    replacements.SetPathStr(new_url_path_str);
++    GURL new_url = url->ReplaceComponents(replacements);
++    VLOG(1) << "HandleENSURLRewrite, translate " << url->spec() << " to " << new_url.spec();
++    *url = new_url;
++    return true;
++  }
++  return false;
++}
++
++bool HandleENSURLReverseRewrite(GURL* url, content::BrowserContext* browser_context) {
++  VLOG(1) << "HandleENSURLReverseRewrite";
++  // This is needed for triggering ReverseRewrite later.
++  if (url->SchemeIs("http") && url->port() == "38099" ){
++    VLOG(1) << "1";
++    return true;
++  }
++
++  if (url->SchemeIs(url::kIpfsScheme) || url->SchemeIs(url::kIpfsScheme)) {
++    VLOG(1) << "HandleIPFSURLRewrite for ipfs/ipns url - " << url->spec();
++    GURL gateway_url("http://127.0.0.1:38095");
++    VLOG(1) << " gateway_url info, scheme " << gateway_url.scheme() << " host - " << gateway_url.host()
++            << " port - " << gateway_url.port();
++    VLOG(1) << " handle url info, scheme " << url->scheme() << " host - " << url->host()
++            << " port - " << url->port();
++    return TranslateIPFSURI(*url, url, gateway_url, false);
++  }
++  return false;
++}
++}
++
+ // Handles rewriting view-source URLs for what we'll actually load.
+ static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
+   if (url->SchemeIs(kViewSourceScheme)) {
+@@ -99,6 +301,17 @@ BrowserURLHandlerImpl::BrowserURLHandlerImpl() {
+   // important to add it before calling up to the content client.
+   AddHandlerPair(&HandleViewSource, &ReverseViewSource);
+ 
++  // special handle for ipfs scheme url
++  AddHandlerPair(&ipfs::HandleIPFSURLRewrite, &ipfs::HandleIPFSURLReverseRewrite);
++
++  AddHandlerPair(BrowserURLHandlerImpl::null_handler(), &ipfs::HandleIPFSURLRewrite_1);
++
++  // handle for .eth domain url 
++  AddHandlerPair(&ipfs::HandleENSURLRewrite, &ipfs::HandleENSURLReverseRewrite);
++
++  // AddHandlerPair(&ipfs::HandleENSURLRewrite, BrowserURLHandlerImpl::null_handler());
++
++  
+   GetContentClient()->browser()->BrowserURLHandlerCreated(this);
+ }
+ 
+@@ -152,6 +365,7 @@ void BrowserURLHandlerImpl::RewriteURLIfNecessary(
+   for (const auto& it : url_handlers_) {
+     const URLHandler& handler = it.first;
+     bool has_reverse_rewriter = it.second;
++    VLOG(1) << "RewriteURLIfNecessary, URL - " << url->spec();
+     if (handler && handler(url, browser_context)) {
+       *reverse_on_redirect = has_reverse_rewriter;
+       return;

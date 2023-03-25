@@ -83,6 +83,7 @@
         "content-app-BUILD.gn.patch",
         "content-app-content_main_runner_impl.cc.patch",
         "content-app-content_main_runner_impl.h.patch",
+        "content-browser-browser_url_handler_impl.cc.patch",
         "content-browser-child_process_security_policy_impl.cc.patch",
         "content-browser-loader-file_url_loader_factory.cc.patch",
         "content-browser-loader-navigation_url_loader_impl.cc.patch",
