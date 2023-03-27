@@ -1,8 +1,8 @@
 diff --git a/content/browser/browser_url_handler_impl.cc b/content/browser/browser_url_handler_impl.cc
-index b5517a45e5d7b31e2b920374cfa5680657a21c7b..29ac778829e8e5ed158ffbec5f263208985e64d1 100644
+index b5517a45e5d7b31e2b920374cfa5680657a21c7b..3fec30142c97770e59e4a687ac66a9d86f70a0ed 100644
 --- a/content/browser/browser_url_handler_impl.cc
 +++ b/content/browser/browser_url_handler_impl.cc
-@@ -5,9 +5,11 @@
+@@ -5,9 +5,12 @@
  #include "content/browser/browser_url_handler_impl.h"
  
  #include <stddef.h>
@@ -11,10 +11,11 @@ index b5517a45e5d7b31e2b920374cfa5680657a21c7b..29ac778829e8e5ed158ffbec5f263208
  #include "base/ranges/algorithm.h"
  #include "base/strings/string_util.h"
 +#include "base/strings/string_split.h"
++#include "base/strings/stringprintf.h"
  #include "content/browser/renderer_host/debug_urls.h"
  #include "content/browser/webui/web_ui_impl.h"
  #include "content/public/browser/content_browser_client.h"
-@@ -19,6 +21,206 @@
+@@ -19,6 +22,206 @@
  
  namespace content {
  
@@ -221,7 +222,7 @@ index b5517a45e5d7b31e2b920374cfa5680657a21c7b..29ac778829e8e5ed158ffbec5f263208
  // Handles rewriting view-source URLs for what we'll actually load.
  static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
    if (url->SchemeIs(kViewSourceScheme)) {
-@@ -99,6 +301,17 @@ BrowserURLHandlerImpl::BrowserURLHandlerImpl() {
+@@ -99,6 +302,17 @@ BrowserURLHandlerImpl::BrowserURLHandlerImpl() {
    // important to add it before calling up to the content client.
    AddHandlerPair(&HandleViewSource, &ReverseViewSource);
  
@@ -239,7 +240,7 @@ index b5517a45e5d7b31e2b920374cfa5680657a21c7b..29ac778829e8e5ed158ffbec5f263208
    GetContentClient()->browser()->BrowserURLHandlerCreated(this);
  }
  
-@@ -152,6 +365,7 @@ void BrowserURLHandlerImpl::RewriteURLIfNecessary(
+@@ -152,6 +366,7 @@ void BrowserURLHandlerImpl::RewriteURLIfNecessary(
    for (const auto& it : url_handlers_) {
      const URLHandler& handler = it.first;
      bool has_reverse_rewriter = it.second;
