@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/browser.cc b/chrome/browser/ui/browser.cc
-index 1837aac53e6e13aebb0eee00249b305e0c7192c9..eefeb66bf7c0817583b76bc54ac8cb7fb63b6468 100644
+index 1837aac53e6e13aebb0eee00249b305e0c7192c9..902bb5c62e15045ea762a22ef6fe2e1cb8b38d0b 100644
 --- a/chrome/browser/ui/browser.cc
 +++ b/chrome/browser/ui/browser.cc
 @@ -687,7 +687,7 @@ bool Browser::HasFindBarController() const {
@@ -7,7 +7,7 @@ index 1837aac53e6e13aebb0eee00249b305e0c7192c9..eefeb66bf7c0817583b76bc54ac8cb7f
    if (app_controller_)
      return app_controller_->GetAppStartUrl();
 -  return GURL(chrome::kChromeUINewTabURL);
-+  return GURL(chrome::kCyfsBrowserURL);
++  return GURL(chrome::kCyfsBrowserUINewTabURL);
  }
  
  gfx::Image Browser::GetCurrentPageIcon() const {
