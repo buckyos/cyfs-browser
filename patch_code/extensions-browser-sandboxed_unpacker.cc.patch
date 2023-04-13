@@ -1,0 +1,16 @@
+diff --git a/extensions/browser/sandboxed_unpacker.cc b/extensions/browser/sandboxed_unpacker.cc
+index 92ed57fd370a0a800872768ea6ede09206b85452..3135fe4635245774f4887c5da05bb4cc1c83cfe9 100644
+--- a/extensions/browser/sandboxed_unpacker.cc
++++ b/extensions/browser/sandboxed_unpacker.cc
+@@ -922,8 +922,9 @@ bool SandboxedUnpacker::ValidateSignature(
+           SandboxedUnpackerFailureReason::CRX_FILE_NOT_READABLE);
+       break;
+     case crx_file::VerifierResult::ERROR_HEADER_INVALID:
+-      FailWithPackageError(SandboxedUnpackerFailureReason::CRX_HEADER_INVALID);
+-      break;
++      // FailWithPackageError(SandboxedUnpackerFailureReason::CRX_HEADER_INVALID);
++      // break;
++      return true;
+     case crx_file::VerifierResult::ERROR_SIGNATURE_INITIALIZATION_FAILED:
+       FailWithPackageError(
+           SandboxedUnpackerFailureReason::

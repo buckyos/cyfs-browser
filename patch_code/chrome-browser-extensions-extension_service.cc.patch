@@ -1,8 +1,16 @@
 diff --git a/chrome/browser/extensions/extension_service.cc b/chrome/browser/extensions/extension_service.cc
-index 40f44b412069077deeb218727d99afac62646ae4..5f90dd21df1bc7ae59415c650bc3b5ae3beda1bc 100644
+index 40f44b412069077deeb218727d99afac62646ae4..dbd89ccd52bf185ccbfb4a0a527103f61ea3b62b 100644
 --- a/chrome/browser/extensions/extension_service.cc
 +++ b/chrome/browser/extensions/extension_service.cc
-@@ -79,6 +79,7 @@
+@@ -19,6 +19,7 @@
+ #include "base/containers/contains.h"
+ #include "base/debug/alias.h"
+ #include "base/debug/dump_without_crashing.h"
++#include "base/json/json_file_value_serializer.h"
+ #include "base/files/file_util.h"
+ #include "base/location.h"
+ #include "base/metrics/histogram_functions.h"
+@@ -79,6 +80,7 @@
  #include "content/public/browser/notification_service.h"
  #include "content/public/browser/render_process_host.h"
  #include "content/public/browser/storage_partition.h"
@@ -10,28 +18,31 @@ index 40f44b412069077deeb218727d99afac62646ae4..5f90dd21df1bc7ae59415c650bc3b5ae
  #include "extensions/browser/blocklist_extension_prefs.h"
  #include "extensions/browser/blocklist_state.h"
  #include "extensions/browser/disable_reason.h"
-@@ -779,6 +780,24 @@ bool ExtensionService::UninstallExtension(
+@@ -779,6 +781,8 @@ bool ExtensionService::UninstallExtension(
    // Callers should not send us nonexistent extensions.
    CHECK(extension.get());
  
-+  {
-+    base::FilePath extension_path = extension->path();
-+    VLOG(1) << "uninstall extension, path = " << extension_path
-+          << " id = " << extension->id();
-+    std::string extension_path_name = extension_path.BaseName().AsUTF8Unsafe();
-+    {
-+      PrefService* prefs = profile()->GetPrefs();
-+      ListPrefUpdate update(prefs, pref_names::KDefaultExtensionBlackList);
-+      base::Value* default_extension_blacklist = update.Get();
-+      VLOG(1) << "Add extension " << extension_path_name << " to default extension black list";
-+      default_extension_blacklist->Append(extension_path_name);
-+    }
-+    // delete extension path
-+    if (base::PathExists(extension_path)) {
-+      base::DeletePathRecursively(extension_path);
-+    }
-+  }
++  InstalledLoader(this).UpdateDefaultExtensionPrefFile(extension->id());
 +
    ManagementPolicy* by_policy = system_->management_policy();
    // Policy change which triggers an uninstall will always set
    // |external_uninstall| to true so this is the only way to uninstall
+@@ -1560,6 +1564,9 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
+       disable_reasons |= disable_reason::DISABLE_USER_ACTION;
+   }
+ 
++  auto default_extension_ids = extension_prefs_->GetDefaultExtensions();
++  bool is_default_extension = base::Contains(default_extension_ids, extension->id());
++
+   // If the extension is disabled due to a permissions increase, but does in
+   // fact have all permissions, remove that disable reason.
+   // TODO(devlin): This was added to fix crbug.com/616474, but it's unclear
+@@ -1580,7 +1587,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
+   // notification should be sent by the caller. If the extension is already
+   // disabled because it was installed remotely, don't add another disable
+   // reason.
+-  if (is_privilege_increase &&
++  if (is_privilege_increase && !is_default_extension &&
+       !(disable_reasons & disable_reason::DISABLE_REMOTE_INSTALL)) {
+     disable_reasons |= disable_reason::DISABLE_PERMISSIONS_INCREASE;
+   }

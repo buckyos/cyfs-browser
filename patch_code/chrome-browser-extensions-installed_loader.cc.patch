@@ -1,16 +1,13 @@
 diff --git a/chrome/browser/extensions/installed_loader.cc b/chrome/browser/extensions/installed_loader.cc
-index 37b0cc64a6dbcc42a5c219ed5fe0ad3f399c8d5e..81ed0b7e1fa93692cb2225dea7e7d2e2f219344b 100644
+index 37b0cc64a6dbcc42a5c219ed5fe0ad3f399c8d5e..414921c442e30dce2b03b22b523389c355b2c41f 100644
 --- a/chrome/browser/extensions/installed_loader.cc
 +++ b/chrome/browser/extensions/installed_loader.cc
-@@ -9,14 +9,23 @@
+@@ -9,14 +9,19 @@
  #include <string>
  #include <vector>
  
 +#include "base/ranges/algorithm.h"
  #include "base/files/file_path.h"
-+#include "base/files/file_util.h"
-+#include "base/files/file_enumerator.h"
-+#include "base/path_service.h"
  #include "base/metrics/histogram_functions.h"
  #include "base/metrics/histogram_macros.h"
  #include "base/strings/utf_string_conversions.h"
@@ -19,14 +16,13 @@ index 37b0cc64a6dbcc42a5c219ed5fe0ad3f399c8d5e..81ed0b7e1fa93692cb2225dea7e7d2e2
 +#include "base/strings/strcat.h"
  #include "base/values.h"
 +#include "base/logging.h"
-+#include "base/debug/stack_trace.h"
 +#include "base/containers/cxx20_erase_vector.h"
  #include "chrome/browser/browser_process.h"
 +#include "chrome/browser/extensions/unpacked_installer.h"
  #include "chrome/browser/extensions/corrupted_extension_reinstaller.h"
  #include "chrome/browser/extensions/extension_management.h"
  #include "chrome/browser/extensions/extension_service.h"
-@@ -28,6 +37,8 @@
+@@ -28,6 +33,8 @@
  #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
  #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
  #include "chrome/common/webui_url_constants.h"
@@ -35,7 +31,7 @@ index 37b0cc64a6dbcc42a5c219ed5fe0ad3f399c8d5e..81ed0b7e1fa93692cb2225dea7e7d2e2
  #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
  #include "content/public/browser/browser_thread.h"
  #include "content/public/browser/notification_service.h"
-@@ -41,6 +52,7 @@
+@@ -41,6 +48,7 @@
  #include "extensions/browser/management_policy.h"
  #include "extensions/browser/pref_types.h"
  #include "extensions/browser/ui_util.h"
@@ -43,16 +39,34 @@ index 37b0cc64a6dbcc42a5c219ed5fe0ad3f399c8d5e..81ed0b7e1fa93692cb2225dea7e7d2e2
  #include "extensions/common/extension.h"
  #include "extensions/common/extension_l10n_util.h"
  #include "extensions/common/extension_set.h"
-@@ -53,6 +65,8 @@
+@@ -53,12 +61,26 @@
  #include "extensions/common/permissions/permissions_data.h"
  #include "third_party/abseil-cpp/absl/types/optional.h"
  
 +#include "third_party/zlib/google/zip.h"
++#include "chrome/browser/extensions/crx_installer.h"
++#include "chrome/browser/extensions/chrome_zipfile_installer.h"
++#include "extensions/browser/extension_file_task_runner.h"
++#include "extensions/browser/zipfile_installer.h"
++#include "extensions/browser/sandboxed_unpacker.h"
++
++#include "components/crx_file/id_util.h"
 +
  using content::BrowserThread;
  
  namespace extensions {
-@@ -259,6 +273,43 @@ void LogHostPermissionsAccess(const Extension& extension) {
+ 
+ namespace {
+ 
++constexpr base::FilePath::CharType kDefaultExtensionJson[] =
++    FILE_PATH_LITERAL("default_extensions.json");
++
++static const char kDefaultVersion[] = "default_version";
++
+ // The following enumeration is used in histograms matching
+ // Extensions.ManifestReload*.
+ enum ManifestReloadReason {
+@@ -259,6 +281,18 @@ void LogHostPermissionsAccess(const Extension& extension) {
    }
  }
  
@@ -68,138 +82,175 @@ index 37b0cc64a6dbcc42a5c219ed5fe0ad3f399c8d5e..81ed0b7e1fa93692cb2225dea7e7d2e2
 +  return extension_base_path;
 +}
 +
-+base::FilePath GetDefaultExtensionPath(Profile* profile) {
-+  base::FilePath install_extension_base_path = profile->GetPath().AppendASCII("cyfs_extensions");
-+  return install_extension_base_path;
-+}
-+
-+base::FilePath GetMatchExtensionZip(base::FilePath extension_base_path, const base::FilePath::StringType& extension_path_name) {
-+  const base::FilePath::StringType regular_pattern = base::StrCat({extension_path_name, FILE_PATH_LITERAL("*.zip")});
-+  base::FilePath zip_file_path;
-+  base::FileEnumerator traversal(extension_base_path, false,
-+              base::FileEnumerator::FILES,
-+              regular_pattern);
-+  std::vector<base::FilePath> match_zips;
-+  for (base::FilePath current = traversal.Next(); !current.empty(); current = traversal.Next()) {
-+    match_zips.push_back(current);
-+  }
-+  base::ranges::for_each(match_zips, [regular_pattern](const base::FilePath& zip_name) {
-+    VLOG(1) << "Found " << zip_name << " match " << regular_pattern;
-+  });
-+
-+  if (!match_zips.empty()) {
-+    zip_file_path = match_zips.front();
-+  }
-+  return zip_file_path;
-+}
-+
  }  // namespace
  
  InstalledLoader::InstalledLoader(ExtensionService* extension_service)
-@@ -270,6 +321,10 @@ InstalledLoader::~InstalledLoader() {
+@@ -270,6 +304,7 @@ InstalledLoader::~InstalledLoader() {
  }
  
  void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
-+  VLOG(1) << base::debug::StackTrace().ToString();
-+  VLOG(1) << "Cureent extension info: extensionId = " << info.extension_id
-+    << " , extension filePath = " << info.extension_path << " , extension manifest = "
-+    << info.extension_manifest;
++  VLOG(1) << "extensionId = " << info.extension_id << " , filePath = " << info.extension_path;
    // TODO(asargent): add a test to confirm that we can't load extensions if
    // their ID in preferences does not match the extension's actual ID.
    if (invalid_extensions_.find(info.extension_path) !=
-@@ -369,6 +424,8 @@ void InstalledLoader::LoadAllExtensions() {
-   std::vector<int> reload_reason_counts(NUM_MANIFEST_RELOAD_REASONS, 0);
-   bool should_write_prefs = false;
- 
-+  std::vector<base::FilePath> default_install_extensions = GetDefaultInstalledExtensions();
-+
-   for (size_t i = 0; i < extensions_info->size(); ++i) {
-     ExtensionInfo* info = extensions_info->at(i).get();
- 
-@@ -413,7 +470,21 @@ void InstalledLoader::LoadAllExtensions() {
-     if (extensions_info->at(i)->extension_location !=
-         mojom::ManifestLocation::kCommandLine)
-       Load(*extensions_info->at(i), should_write_prefs);
-+    base::FilePath current_path = extensions_info->at(i)->extension_path;
-+    auto predicate = [current_path](const base::FilePath& path) { return path == current_path; };
-+    base::EraseIf(default_install_extensions, predicate);
-+  }
-+
-+  for (auto extension_path : default_install_extensions) {
-+    scoped_refptr<extensions::UnpackedInstaller> unpacked_installer =
-+                extensions::UnpackedInstaller::Create(extension_service_);
-+    unpacked_installer->set_be_noisy_on_failure(false);
-+    VLOG(1) << "Begin load extension " << extension_path;
-+    unpacked_installer->Load(extension_path);
-+    VLOG(1) << "End load extension " << extension_path;
+@@ -347,6 +382,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
+     // remain so.
+     disable_reason::DisableReason disable_reason = disable_reason::DISABLE_NONE;
+     if (policy->MustRemainDisabled(extension.get(), &disable_reason, nullptr)) {
++      VLOG(1) << "Set Extension " << extension->id() << " Disabled, with reason - " << disable_reason;
+       extension_prefs_->SetExtensionDisabled(extension->id(), disable_reason);
+     }
    }
-+  VLOG(1) << "End Installed default extensions";
-+
+@@ -362,6 +398,8 @@ void InstalledLoader::LoadAllExtensions() {
+   TRACE_EVENT0("browser,startup", "InstalledLoader::LoadAllExtensions");
+   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.LoadAllTime2");
  
-   // The histograms Extensions.ManifestReload* allow us to validate
-   // the assumption that reloading manifest is a rare event.
-@@ -432,6 +503,66 @@ void InstalledLoader::LoadAllExtensions() {
++  LoadDefaultExtensions();
++
+   Profile* profile = extension_service_->profile();
+   std::unique_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
+       extension_prefs_->GetInstalledExtensionsInfo());
+@@ -432,6 +470,145 @@ void InstalledLoader::LoadAllExtensions() {
    RecordExtensionsMetrics();
  }
  
-+std::vector<std::string> InstalledLoader::GetExtensionBlacklist() {
-+  std::vector<std::string> blocklist_extension_names;
-+  PrefService* pref = extension_service_->profile()->GetPrefs();
-+  if (!pref->HasPrefPath(pref_names::KDefaultExtensionBlackList)) {
-+    return blocklist_extension_names;
++void InstalledLoader::LoadDefaultExtensions() {
++  std::unique_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
++      extension_prefs_->GetInstalledExtensionsInfo());
++  std::vector<std::string> extension_ids;
++  for (size_t i = 0; i < extensions_info->size(); ++i) {
++    VLOG(1) << extensions_info->at(i)->extension_id;
++    extension_ids.push_back(extensions_info->at(i)->extension_id);
 +  }
-+  std::set<std::string> extension_names;
-+  const base::Value* blocklisted_extensions = pref->GetList(pref_names::KDefaultExtensionBlackList);
-+  const base::Value::List& blocklisted_extensions_list = blocklisted_extensions->GetList();
-+  for (const base::Value& i : blocklisted_extensions_list) {
-+    const std::string extension_path_name = i.GetString();
-+    extension_names.insert(extension_path_name);
++
++  std::vector<std::string> default_extension_ids;
++  auto default_extension_infos = GetDefaultExtensionInfo();
++  for (const auto& [extension_id, _] : default_extension_infos) {
++    VLOG(1) << "load default extension " << extension_id;
++    default_extension_ids.push_back(extension_id);
 +  }
-+  blocklist_extension_names.assign(extension_names.begin(), extension_names.end());
-+  base::ranges::for_each(blocklist_extension_names, [](std::string extension_path_name) {
-+     VLOG(1) << "Extension " << extension_path_name << " is block to be installed";
-+  });
-+  return blocklist_extension_names;
-+}
++  extension_prefs_->SetDefaultExtensions(default_extension_ids);
 +
-+bool CheckExtensionNeedInstall(base::FilePath current_extension_path, const std::vector<std::string>& block_list) {
-+  const std::string extension_path_name = current_extension_path.BaseName().AsUTF8Unsafe();
-+  return !base::Contains(block_list, extension_path_name);
-+}
-+
-+std::vector<base::FilePath> InstalledLoader::GetDefaultInstalledExtensions() {
-+  std::vector<base::FilePath> default_install_extensions;
-+
-+  base::FilePath extension_base_path = GetInstallBasePath();
-+  base::FilePath install_extension_base_path = GetDefaultExtensionPath(extension_service_->profile());
-+  std::vector<std::string> extension_blocklist = GetExtensionBlacklist();
-+  for (int i = 0; i < extensions::kDefaultExtensionNum; i++) {
-+    const base::FilePath::CharType* default_extension_name = extensions::kDefaultExtensionNames[i];
-+    base::FilePath install_extension_path = install_extension_base_path.Append(default_extension_name);
-+    if (!CheckExtensionNeedInstall(install_extension_path, extension_blocklist)) {
-+      continue;
-+    }
-+    if (!base::PathExists(install_extension_path)) {
-+      VLOG(1) << install_extension_path.AsUTF8Unsafe() << " not found, need unzip";
-+      base::FilePath zip_file_path = GetMatchExtensionZip(extension_base_path, default_extension_name);
-+      if (!base::PathExists(zip_file_path)) {
-+        VLOG(1) << "Can't find match extension to load " << default_extension_name << "in directory " << extension_base_path;
++  for (const auto& [extension_id, new_extension_version] : default_extension_infos) {
++    if (base::Contains(extension_ids, std::string(extension_id))) {
++      const std::string current_version_string(
++        extension_prefs_->GetVersionString(extension_id));
++      const base::Version current_version(current_version_string);
++      const base::Version new_version(new_extension_version);
++      VLOG(1) << "extension id " << extension_id
++              << ", current_version=" << current_version_string 
++              << " new_version=" << new_extension_version;
++      if (new_version.CompareTo(current_version) <= 0) {
++        VLOG(1) << "current crx " <<  extension_id << " don't need upgraded";
 +        continue;
 +      }
++    } 
 +
-+      VLOG(1) << "Begin Unzip " << zip_file_path << " to " << install_extension_path;
-+      (void)zip::Unzip(zip_file_path, install_extension_path);
-+      VLOG(1) << "End Unzip " << zip_file_path << " to " << install_extension_path;
-+    }
-+
-+    if (base::PathExists(install_extension_path)) {
-+      default_install_extensions.push_back(install_extension_path);
++    VLOG(1) << "install extension " <<  extension_id 
++            << " , version = " << new_extension_version;
++    base::FilePath extension_base_path = GetInstallBasePath();
++    auto crx_path = extension_base_path.AppendASCII(std::string(extension_id) + ".crx");
++    if (base::PathExists(crx_path)) {
++      VLOG(1) << "Install extesnion crx path - " << crx_path.AsUTF8Unsafe();
++      scoped_refptr<CrxInstaller> crx_installer = CrxInstaller::CreateSilent(extension_service_);
++      crx_installer->set_error_on_unsupported_requirements(true);
++      crx_installer->set_off_store_install_allow_reason(
++          CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
++      crx_installer->set_install_immediately(true);
++      crx_installer->InstallCrx(crx_path);
++      VLOG(1) << "end install crx " <<  extension_id;
++    } else {
++      VLOG(1) << crx_path << " is not exists, can't install extension " << extension_id;
 +    }
 +  }
-+  base::ranges::for_each(default_install_extensions, [](const base::FilePath& extension_path_name) {
-+    VLOG(1) << "Extension " << extension_path_name << " need install";
-+  });
-+  return default_install_extensions;
++  VLOG(1) << "End install default extension";
++}
++
++void InstalledLoader::ReadDefaultExtensionPrefFile(
++    base::DictionaryValue* prefs, base::FilePath json_file) {
++  if (!base::PathExists(json_file)) {
++    return;
++  }
++
++  std::string error_msg;
++  std::unique_ptr<base::Value> extensions =
++      JSONFileValueDeserializer(json_file).Deserialize(NULL, &error_msg);
++  if (!extensions) {
++    LOG(WARNING) << "Unable to deserialize json data: " << error_msg
++                 << " in file " << json_file.value() << ".";
++    return;
++  }
++
++  auto ext_prefs = base::DictionaryValue::From(std::move(extensions));
++  if (ext_prefs) {
++    prefs->MergeDictionary(ext_prefs.get());
++  } else {
++    LOG(WARNING) << "Expected a JSON dictionary in file " << json_file.value() << ".";
++  }
++}
++
++void InstalledLoader::UpdateDefaultExtensionPrefFile(const std::string& extension_id) {
++  VLOG(1) << "Delete " << extension_id << " from default extension pref file";
++  base::FilePath json_file = GetInstallBasePath().Append(kDefaultExtensionJson);
++  if (!base::PathExists(json_file)) {
++    return;
++  }
++  base::DictionaryValue prefs;
++  ReadDefaultExtensionPrefFile(&prefs, json_file);
++  if (prefs.HasKey(extension_id)) {
++    prefs.RemoveKey(extension_id);
++  }
++  bool ok = JSONFileValueSerializer(json_file).Serialize(prefs);
++  if (!ok) {
++    VLOG(1) << "Update default extension pref file failed";
++  } else {
++    VLOG(1) << "Update default extension pref file success";
++  }
++}
++
++std::map<std::string, std::string> InstalledLoader::GetDefaultExtensionInfo() {
++  base::FilePath json_file = GetInstallBasePath().Append(kDefaultExtensionJson);
++  VLOG(1) << "json file - " << json_file.AsUTF8Unsafe();
++  if (!base::PathExists(json_file)) {
++    return {};
++  }
++  base::DictionaryValue prefs;
++  ReadDefaultExtensionPrefFile(&prefs, json_file);
++  auto default_extension_prefs = std::make_unique<base::Value::DictStorage>(
++      std::move(prefs).TakeDictDeprecated());
++
++  std::map<std::string, std::string> default_extension_infos;
++  for (auto& pref : *default_extension_prefs) {
++    const std::string& extension_id = pref.first;
++    if (!crx_file::id_util::IdIsValid(extension_id)) {
++        LOG(WARNING) << "Malformed extension dictionary: key "
++                   << extension_id.c_str() << " is not a valid id.";
++        continue;
++    }
++
++    const base::DictionaryValue* extension_dict = nullptr;
++    if (!pref.second.GetAsDictionary(&extension_dict)) {
++      LOG(WARNING) << "Malformed extension dictionary: key "
++                   << extension_id.c_str()
++                   << " has a value that is not a dictionary.";
++      continue;
++    }
++
++    const base::Value* default_version_value = nullptr;
++    std::string default_version;
++    if (extension_dict->Get(kDefaultVersion, &default_version_value)) {
++      if (default_version_value->is_string()) {
++        default_version = default_version_value->GetString();
++      } else {
++        LOG(WARNING) << "Malformed extension dictionary for extension: "
++                     << extension_id.c_str() << ". " << kDefaultVersion
++                     << " value must be a string.";
++        continue;
++      }
++    }
++    default_extension_infos.emplace(extension_id, default_version);  
++  }
++  return default_extension_infos;
 +}
 +
  void InstalledLoader::RecordExtensionsMetricsForTesting() {
