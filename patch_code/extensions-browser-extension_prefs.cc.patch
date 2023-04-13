@@ -1,12 +1,31 @@
 diff --git a/extensions/browser/extension_prefs.cc b/extensions/browser/extension_prefs.cc
-index 6daf54e84dfb4c33ffe01ada811fc1f838850398..2e61e3ae26fdc944f59f303d0ba5005dd0b4d874 100644
+index 6daf54e84dfb4c33ffe01ada811fc1f838850398..6600c5bd2e07dbe56a43e0dea9d9f7e337582a44 100644
 --- a/extensions/browser/extension_prefs.cc
 +++ b/extensions/browser/extension_prefs.cc
-@@ -2264,6 +2264,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
+@@ -1366,6 +1366,18 @@ void ExtensionPrefs::SetPinnedExtensions(const ExtensionIdList& extension_ids) {
+   SetExtensionPrefFromContainer(pref_names::kPinnedExtensions, extension_ids);
+ }
+ 
++ExtensionIdList ExtensionPrefs::GetDefaultExtensions() const {
++  ExtensionIdList id_list_out;
++  GetUserExtensionPrefIntoContainer(pref_names::KDefaultExtensionIdList,
++                                    &id_list_out);
++  return id_list_out;
++}
++void ExtensionPrefs::SetDefaultExtensions(
++    const ExtensionIdList& extension_ids) {
++  SetExtensionPrefFromContainer(pref_names::KDefaultExtensionIdList,
++                                extension_ids);
++}
++
+ void ExtensionPrefs::OnExtensionInstalled(
+     const Extension* extension,
+     Extension::State initial_state,
+@@ -2264,6 +2276,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
    registry->RegisterListPref(pref_names::kInstallDenyList);
    registry->RegisterDictionaryPref(pref_names::kInstallForceList);
    registry->RegisterListPref(pref_names::kAllowedTypes);
-+  registry->RegisterListPref(pref_names::KDefaultExtensionBlackList);
++  registry->RegisterListPref(pref_names::KDefaultExtensionIdList);
    registry->RegisterBooleanPref(pref_names::kStorageGarbageCollect, false);
    registry->RegisterListPref(pref_names::kAllowedInstallSites);
    registry->RegisterStringPref(pref_names::kLastChromeVersion, std::string());

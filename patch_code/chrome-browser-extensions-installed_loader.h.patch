@@ -1,24 +1,37 @@
 diff --git a/chrome/browser/extensions/installed_loader.h b/chrome/browser/extensions/installed_loader.h
-index a24eae01fe47df49ae05cf901e7db3d921033f2d..140906883a7d6829b5eb2b3d55fa6095ce696f22 100644
+index a24eae01fe47df49ae05cf901e7db3d921033f2d..c51acf6b1d6e6bdb3572fea25bf4c53fa2b8530b 100644
 --- a/chrome/browser/extensions/installed_loader.h
 +++ b/chrome/browser/extensions/installed_loader.h
-@@ -6,6 +6,8 @@
+@@ -6,9 +6,16 @@
  #define CHROME_BROWSER_EXTENSIONS_INSTALLED_LOADER_H_
  
  #include <set>
-+#include <vector>
-+#include <string>
++#include <map>
  
  #include "base/files/file_path.h"
++#include "base/files/file_util.h"
++#include "base/files/file_enumerator.h"
++#include "base/path_service.h"
++
  #include "base/memory/raw_ptr.h"
-@@ -57,6 +59,10 @@ class InstalledLoader {
-   // Record metrics related to the loaded extensions.
-   void RecordExtensionsMetrics();
++#include "base/json/json_file_value_serializer.h"
++#include "base/json/json_string_value_serializer.h"
  
-+  std::vector<base::FilePath> GetDefaultInstalledExtensions();
-+
-+  std::vector<std::string> GetExtensionBlacklist();
-+
-   raw_ptr<ExtensionService> extension_service_;
-   raw_ptr<ExtensionRegistry> extension_registry_;
+ namespace extensions {
  
+@@ -45,6 +52,15 @@ class InstalledLoader {
+   // Loads all installed extensions (used by startup and testing code).
+   void LoadAllExtensions();
+ 
++  // Loads all default installed extensions.
++  void LoadDefaultExtensions();
++
++  void ReadDefaultExtensionPrefFile(base::DictionaryValue* prefs, base::FilePath json_file);
++
++  void UpdateDefaultExtensionPrefFile(const std::string& extension_id);
++
++  std::map<std::string, std::string> GetDefaultExtensionInfo();
++
+   // Allows tests to verify metrics without needing to go through
+   // LoadAllExtensions().
+   void RecordExtensionsMetricsForTesting();

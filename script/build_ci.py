@@ -82,25 +82,19 @@ def main(args):
     check = CheckFactory(current_os, root, opt.target_cpu, opt.project_name, opt.channel)
     check.check_requirements()
 
-    reuse_last_build = False
-    if current_os == 'Windows':
-        reuse_last_build = check.get_match_build_cache()
-    if not reuse_last_build:
-        check.check_browser_src_files()
-        ### patch
-        GitPatcher.update(root)
-        update_product_version(root, opt.channel, opt.version)
 
-        check.update_default_extensions()
-        # use chromium gn and ninja tool compile source code
-        build_browser(src_path(root), opt.project_name, opt.target_cpu)
-    else:
-        print('Now can use last build object')
+    check.check_browser_src_files()
+    ### patch
+    GitPatcher.update(root)
+    update_product_version(root, opt.channel, opt.version)
+
+    check.update_default_extensions()
+    # use chromium gn and ninja tool compile source code
+    build_browser(src_path(root), opt.project_name, opt.target_cpu)
+
 
     ### pack
-    make_installer(root, opt.target_cpu, opt.project_name, opt.version, opt.channel, reuse_last_build)
-    if not reuse_last_build and current_os == 'Windows':
-        check.update_build_cache_and_version()
+    make_installer(root, opt.target_cpu, opt.project_name, opt.version, opt.channel)
 
     print("Build finished!!")
 
