@@ -132,6 +132,9 @@ class PackForMacos(Pack):
         self.add_custom_icon_for_dmg()
         make_file_not_exist(two_step_pkg)
 
+    def add_custom_icon_for_dmg(self):
+        pass
+
     def check_requirements(self):
         pass
 

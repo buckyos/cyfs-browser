@@ -37,6 +37,53 @@ def upload_file(local_path, remote_path, is_dir=False):
         print("Upload %s failed, error: %s" % (local_path, error))
         raise
 
+
+def download_crx(base_path, type):
+    if not 'BASE_EXTENSION_URL' in os.environ:
+        print('No need download crx from remote server')
+        return;
+
+    base_url = os.environ.get('BASE_EXTENSION_URL')
+    print('Download crx from %s' % base_url)
+    try:
+        internal_crxs = [['hnablejhklepcdoaojlaoecgdchkinei.crx', 'Cyberchat']]
+        for [crx_name, extension_name] in internal_crxs:
+            crx_file = os.path.join(base_path, crx_name)
+            download_url = '%s/getextension/%s/%s' %(base_url, extension_name, type)
+            if os.path.exists(crx_file):
+                os.unlink(crx_file)
+            cmd = ['curl']
+            cmd.append(download_url)
+            cmd.append('-o')
+            cmd.append(crx_file)
+            print('cmd - %s' % cmd)
+            subprocess.call(cmd)
+            if os.path.exists(crx_file):
+                if os.path.getsize(crx_file) < 1024 * 5:
+                    msg = '%s Download file is too small, maybe downlod failed' % download_url
+                    print(msg)
+                    raise(msg)
+                else:
+                    print('Download %s success' %(crx_name))
+            else:
+                raise Exception('Download %s failed' %(crx_name))
+
+        external_crxs = ['jmgipjhlmabpmcikcahmmgleghckefjg.crx', 'nkbihfbeogaeaoehlefnkodbefgpgknn.crx']
+        for crx_name in external_crxs:
+            crx_file = os.path.join(base_path, crx_name)
+            if os.path.exists(crx_file):
+                os.unlink(crx_file)
+            cmd = ['curl']
+            cmd.append('%s/downloadextension/%s' %(base_url, crx_name))
+            cmd.append('-o')
+            cmd.append(crx_file)
+            print('cmd - %s' % cmd)
+            subprocess.call(cmd)
+            if os.path.exists(crx_file):
+                print('Download %s success' %(crx_name))
+    except Exception as e:
+        print('Download crx from remote crx server failed, error %s' %e)
+
 class CheckForCIBuild:
     default_branch = "cyfs_branch"
     def __init__(self, root, target_cpu, project_name, channel):
@@ -84,8 +131,14 @@ class CheckForCIBuild:
         return "%s_commit_id.txt" % (self._target_cpu)
 
     def download_default_extensions(self):
-        # make_file_not_exist(self.local_extension_path)
+        make_file_not_exist(self.local_extension_path)
         download_file(remote_extensions_path(self.remote_base_path, self._channel), self.local_extension_path, True)
+        download_crx(self.local_extension_path, self._channel)
+        old_extensions = [ os.path.join(self.local_extension_path, x) 
+            for x in os.listdir(self.local_extension_path) if x.endswith('.zip') or x.endswith('.crx')]
+        for filename in old_extensions:
+            os.remove(filename)
+
 
     def update_default_extensions(self):
         pass
@@ -267,19 +320,9 @@ class CheckForMacosCIBuild(CheckForCIBuild):
         for filename in old_extensions:
             os.remove(filename)
 
-        maybe_need_delete_extension_prefixs = [ 'CyberChat']
-        for extension_prefix in maybe_need_delete_extension_prefixs:
-            local_ci_extensions = [ os.path.join(self.local_extension_path, x) for 
-                    x in os.listdir(self.local_extension_path) if x.startswith(extension_prefix)]
-            if len(local_ci_extensions) > 1:
-                print('Find more than one extension with prefix [%s], need delete previous version extension' % extension_prefix)
-                local_ci_extensions.sort(key=lambda x:os.path.getmtime(x))
-                for extension in local_ci_extensions[:-1]:
-                    print("Delete old extension %s which modify time is %s" %(extension, os.path.getmtime(extension)))
-                    os.remove(extension)
-
-        copys = list(filter(lambda x: x.endswith(".zip"),
+        copys = list(filter(lambda x: x.endswith(".crx"),
                      os.listdir(self.local_extension_path)))
+        copys.append("default_extensions.json")
         for filename in copys:
             src_path = os.path.join(self.local_extension_path, filename)
             dst_path = os.path.join(extenions_path, filename)
