@@ -1,9 +1,12 @@
 diff --git a/chrome/browser/extensions/installed_loader.h b/chrome/browser/extensions/installed_loader.h
-index a24eae01fe47df49ae05cf901e7db3d921033f2d..6d0f7a74657542f0c2e150c5f64da1421f3778ff 100644
+index a24eae01fe47df49ae05cf901e7db3d921033f2d..c51acf6b1d6e6bdb3572fea25bf4c53fa2b8530b 100644
 --- a/chrome/browser/extensions/installed_loader.h
 +++ b/chrome/browser/extensions/installed_loader.h
-@@ -8,7 +8,13 @@
+@@ -6,9 +6,16 @@
+ #define CHROME_BROWSER_EXTENSIONS_INSTALLED_LOADER_H_
+ 
  #include <set>
++#include <map>
  
  #include "base/files/file_path.h"
 +#include "base/files/file_util.h"
@@ -16,7 +19,7 @@ index a24eae01fe47df49ae05cf901e7db3d921033f2d..6d0f7a74657542f0c2e150c5f64da142
  
  namespace extensions {
  
-@@ -45,6 +51,15 @@ class InstalledLoader {
+@@ -45,6 +52,15 @@ class InstalledLoader {
    // Loads all installed extensions (used by startup and testing code).
    void LoadAllExtensions();
  
