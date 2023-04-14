@@ -16,6 +16,11 @@ def make_file_not_exist(source):
         os.remove(source)
     assert not os.path.exists(source)
 
+def clean_dir(dir):
+    if os.path.exists(dir):
+        shutil.rmtree(dir)
+    os.makedirs(dir)
+
 def make_dir_exist(dir):
     os.makedirs(dir, exist_ok=True)
     assert os.path.exists(dir)
