@@ -1,25 +1,88 @@
 diff --git a/chrome/installer/setup/uninstall.cc b/chrome/installer/setup/uninstall.cc
-index d92390e2d73961c04d1e744818d98317bfb31cf6..fac50e04c5952159f34051ee0ca487a95e412f6b 100644
+index d92390e2d73961c04d1e744818d98317bfb31cf6..e1aa9fe30fae64ce437a327381e8083c710be348 100644
 --- a/chrome/installer/setup/uninstall.cc
 +++ b/chrome/installer/setup/uninstall.cc
-@@ -365,9 +365,9 @@ InstallStatus IsChromeActiveOrUserCancelled(
-   // - HUNG - chrome.exe was killed by HuntForZombieProcesses() (until we can
-   //          give this method some brains and not kill chrome.exe launched
-   //          by us, we will not uninstall if we get this return code).
+@@ -351,37 +351,37 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
+ // This method checks if Chrome is currently running or if the user has
+ // cancelled the uninstall operation by clicking Cancel on the confirmation
+ // box that Chrome pops up.
+-InstallStatus IsChromeActiveOrUserCancelled(
+-    const InstallerState& installer_state) {
+-  int32_t exit_code = content::RESULT_CODE_NORMAL_EXIT;
+-  base::CommandLine options(base::CommandLine::NO_PROGRAM);
+-  options.AppendSwitch(installer::switches::kUninstall);
+-
+-  // Here we want to save user from frustration (in case of Chrome crashes)
+-  // and continue with the uninstallation as long as chrome.exe process exit
+-  // code is NOT one of the following:
+-  // - UNINSTALL_CHROME_ALIVE - chrome.exe is currently running
+-  // - UNINSTALL_USER_CANCEL - User cancelled uninstallation
+-  // - HUNG - chrome.exe was killed by HuntForZombieProcesses() (until we can
+-  //          give this method some brains and not kill chrome.exe launched
+-  //          by us, we will not uninstall if we get this return code).
 -  VLOG(1) << "Launching Chrome to do uninstall tasks.";
-+  VLOG(1) << "Launching CYFS browser to do uninstall tasks.";
-   if (LaunchChromeAndWait(installer_state.target_path(), options, &exit_code)) {
+-  if (LaunchChromeAndWait(installer_state.target_path(), options, &exit_code)) {
 -    VLOG(1) << "chrome.exe launched for uninstall confirmation returned: "
-+    VLOG(1) << "CYFS_browser.exe launched for uninstall confirmation returned: "
-             << exit_code;
-     if ((exit_code == chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE) ||
-         (exit_code == chrome::RESULT_CODE_UNINSTALL_USER_CANCEL) ||
-@@ -377,7 +377,7 @@ InstallStatus IsChromeActiveOrUserCancelled(
-     if (exit_code == chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE)
-       return installer::UNINSTALL_DELETE_PROFILE;
-   } else {
+-            << exit_code;
+-    if ((exit_code == chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE) ||
+-        (exit_code == chrome::RESULT_CODE_UNINSTALL_USER_CANCEL) ||
+-        (exit_code == content::RESULT_CODE_HUNG))
+-      return installer::UNINSTALL_CANCELLED;
+-
+-    if (exit_code == chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE)
+-      return installer::UNINSTALL_DELETE_PROFILE;
+-  } else {
 -    PLOG(ERROR) << "Failed to launch chrome.exe for uninstall confirmation.";
-+    PLOG(ERROR) << "Failed to launch CYFS_browser.exe for uninstall confirmation.";
-   }
+-  }
+-
+-  return installer::UNINSTALL_CONFIRMED;
+-}
++// InstallStatus IsChromeActiveOrUserCancelled(
++//     const InstallerState& installer_state) {
++//   int32_t exit_code = content::RESULT_CODE_NORMAL_EXIT;
++//   base::CommandLine options(base::CommandLine::NO_PROGRAM);
++//   options.AppendSwitch(installer::switches::kUninstall);
++
++//   // Here we want to save user from frustration (in case of Chrome crashes)
++//   // and continue with the uninstallation as long as chrome.exe process exit
++//   // code is NOT one of the following:
++//   // - UNINSTALL_CHROME_ALIVE - chrome.exe is currently running
++//   // - UNINSTALL_USER_CANCEL - User cancelled uninstallation
++//   // - HUNG - chrome.exe was killed by HuntForZombieProcesses() (until we can
++//   //          give this method some brains and not kill chrome.exe launched
++//   //          by us, we will not uninstall if we get this return code).
++//   VLOG(1) << "Launching CYFS browser to do uninstall tasks.";
++//   if (LaunchChromeAndWait(installer_state.target_path(), options, &exit_code)) {
++//     VLOG(1) << "CYFS_browser.exe launched for uninstall confirmation returned: "
++//             << exit_code;
++//     if ((exit_code == chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE) ||
++//         (exit_code == chrome::RESULT_CODE_UNINSTALL_USER_CANCEL) ||
++//         (exit_code == content::RESULT_CODE_HUNG))
++//       return installer::UNINSTALL_CANCELLED;
++
++//     if (exit_code == chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE)
++//       return installer::UNINSTALL_DELETE_PROFILE;
++//   } else {
++//     PLOG(ERROR) << "Failed to launch CYFS_browser.exe for uninstall confirmation.";
++//   }
++
++//   return installer::UNINSTALL_CONFIRMED;
++// }
  
-   return installer::UNINSTALL_CONFIRMED;
+ bool ShouldDeleteProfile(const base::CommandLine& cmd_line,
+                          InstallStatus status) {
+@@ -794,10 +794,10 @@ InstallStatus UninstallProduct(const ModifyParams& modify_params,
+     CloseAllChromeProcesses(installer_state.target_path());
+   } else {
+     // no --force-uninstall so lets show some UI dialog boxes.
+-    status = IsChromeActiveOrUserCancelled(installer_state);
+-    if (status != installer::UNINSTALL_CONFIRMED &&
+-        status != installer::UNINSTALL_DELETE_PROFILE)
+-      return status;
++    // status = IsChromeActiveOrUserCancelled(installer_state);
++    // if (status != installer::UNINSTALL_CONFIRMED &&
++    //     status != installer::UNINSTALL_DELETE_PROFILE)
++    //   return status;
+ 
+     const std::wstring suffix(
+         ShellUtil::GetCurrentInstallationSuffix(chrome_exe));

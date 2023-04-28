@@ -180,25 +180,25 @@ CyfsInitUI::CyfsInitUI(content::WebUI* web_ui)
 
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src chrome://resources 'self' 'unsafe-eval';");
+      "script-src chrome://resources 'self' 'unsafe-eval' 'unsafe-inline';");
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::TrustedTypes,
       "trusted-types jstemplate;");
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ConnectSrc,
+      "connect-src 'self';");
 
-  // Localized strings.
-  // static constexpr webui::LocalizedString kStrings[] = {};
-  // html_source->AddLocalizedStrings(kStrings);
+  html_source->DisableTrustedTypesCSP();
 
-  html_source->AddString("welcomeMessage", "Welcome to this cyfs page");
-  html_source->AddString("browser_url", chrome::kCyfsBrowserURL);
-  html_source->AddString("guide_url", chrome::kCyfsBrowserGuideURL);
+  html_source->OverrideContentSecurityPolicy(
+    network::mojom::CSPDirectiveName::ChildSrc,
+    base::StringPrintf("child-src https: %s;",
+                        "browser.cyfs.com/init/ cyfs://static/"));
+
   html_source->UseStringsJs();
-
   // Add required resources.
-  html_source->AddResourcePath("cyfs_init.css", IDR_CYFS_INIT_UI_CSS);
   html_source->AddResourcePath("cyfs_init.js", IDR_CYFS_INIT_UI_JS);
-  html_source->AddResourcePath("starting.png", IDR_CYFS_STARTING_H);
-
+  html_source->AddResourcePath("bundle.js", IDR_CYFS_INIT_UI_BUNDLE_JS);
   html_source->SetDefaultResource(IDR_CYFS_INIT_UI_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

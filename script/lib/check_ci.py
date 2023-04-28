@@ -1,10 +1,12 @@
 # -*- coding: UTF-8 -*-
 
 import os, sys, json
+import hashlib
 sys.path.append(os.path.dirname(__file__))
 import subprocess
 import shutil
 import zipfile
+import urllib.request
 from common import local_extension_path, static_page_path, ts_sdk_path, application_name, code_zip_name
 from common import src_path, build_target, pack_app_path, build_app_path, pack_base_path
 from common import remote_extensions_path, remote_cache_path, remote_code_path
@@ -38,17 +40,37 @@ def upload_file(local_path, remote_path, is_dir=False):
         raise
 
 def get_crx_info_by_type(base_url, type):
-    import urllib.request
+    try:
+        get_info_url = "%s/getextensioninfobytype/%s" % (base_url, type)
+        print('get_crx_info_by_type %s' %get_info_url)
+        with urllib.request.urlopen(get_info_url) as f:
+            data = f.read().decode('utf-8')
+            json_data = json.loads(data)
+            return json_data['crx_infos']
+    except Exception as e:
+        raise 'get crx info by type failed, error: %s' %e
 
-    get_info_url = "%s/getextensioninfobytype/%s" % (base_url, type)
-    crx_infos = []
-    with urllib.request.urlopen(get_info_url) as f:
-        data = f.read().decode('utf-8')
-        json_data = json.loads(data)
-        print(json_data)
-        crx_infos = json_data['crx_infos']
-    return crx_infos
+def download_crx_file(download_url, crx_file):
+    if os.path.exists(crx_file):
+        os.unlink(crx_file)
+    response = urllib.request.urlopen(download_url)
+    CHUNK = 16 * 1024
+    with open(crx_file, 'wb') as fp:
+        while True:
+            chunk = response.read(CHUNK)
+            if not chunk:
+                break
+            fp.write(chunk)
 
+def check_md5(file_name, md5_hash):
+    with open(file_name, 'rb') as fp:
+        data = fp.read()
+        actual_hash= hashlib.md5(data).hexdigest()
+        if actual_hash != md5_hash:
+            print('Download file %s is not match md5 %s'%(file_name, md5_hash))
+            return False
+    return True
+       
 def download_crx(base_path, type):
     if not 'BASE_EXTENSION_URL' in os.environ:
         print('No need download crx from remote server')
@@ -64,19 +86,14 @@ def download_crx(base_path, type):
             crx_name = item['crx_name']
             crx_file = os.path.join(base_path, crx_name)
             download_url = "%s/downloadextension/%s" %(base_url, crx_name)
+            download_crx_file(download_url, crx_file)
             if os.path.exists(crx_file):
-                os.unlink(crx_file)
-            cmd = ['curl']
-            cmd.append(download_url)
-            cmd.append('-o')
-            cmd.append(crx_file)
-            print('cmd - %s' % cmd)
-            subprocess.call(cmd)
-            if os.path.exists(crx_file):
-                if os.path.getsize(crx_file) < 1024 * 5:
-                    raise Exception('%s Download file is too small, maybe downlod failed' % download_url)
+                if not check_md5(crx_file, item['md5']):
+                    raise Exception('%s Download file failed' % download_url)
                 print('Download %s success' %(crx_name))
                 json_data[crx_name.split('.')[0]] = { "default_version": item["version"]}
+            else:
+                print('Download %s failed' %(crx_name))
     except Exception as e:
         print('Download crx from remote crx server failed, error %s' %e)
         raise e

@@ -43,6 +43,7 @@
 !include "FileFunc.nsh"
 !include "nsDialogs.nsh"
 !include "WinMessages.nsh"
+!include "WordFunc.nsh"
 
 Unicode True
 
@@ -97,12 +98,14 @@ $\nClick finish to close Setup."
 ; Instfiles page
 !insertmacro MUI_PAGE_INSTFILES
 
-!define MUI_FINISHPAGE_NOREBOOTSUPPORT
-!insertmacro MUI_PAGE_FINISH
-
-; Uninstaller pages
-!insertmacro MUI_UNPAGE_CONFIRM
+UninstPage custom un.nsDialogsPage
 !insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
+
+!define MUI_FINISHPAGE_NOREBOOTSUPPORT
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_FUNCTION startApp
+!insertmacro MUI_PAGE_FINISH
 
 ; Language files
 !insertmacro MUI_LANGUAGE "English"
@@ -122,6 +125,19 @@ InstallDir "$LOCALAPPDATA\${PRODUCT_NAME}"
 
 ; install need admin rights
 ; RequestExecutionLevel admin
+
+
+Var /GLOBAL DeleteUserData
+
+Var /GLOBAL Dialog_1
+Var /GLOBAL Label_1
+Var /GLOBAL Label_2
+Var /GLOBAL Label_3
+Var /GLOBAL CheckBox_1
+
+Function startApp
+Exec `"$LOCALAPPDATA\${PRODUCT_NAME}\Application\${PRODUCT_NAME}.exe"`
+FunctionEnd
 
 
 # Install webview2 by launching the bootstrapper
@@ -184,18 +200,31 @@ Function ForceKillProcess
   ${EndIf}
 FunctionEnd
 
+Function checkNeedUpgrade
+  SetOutPath "$INSTDIR"
+  DetailPrint "Check version for upgrade"
+	ReadRegStr $0 HKCU "SOFTWARE\CYFS_Browser" "pv"
+  LogText " old browser version $0 , curent version ${PRODUCT_VERSION}"
 
-Function check_related_browser_running
-  nsProcess::_FindProcess ${RELATED_BROWSER_BIN}
-  Pop $R0
-  ${If} $R0 == 0
-    LogText "${RELATED_BROWSER_BIN} is exits, need kill this process"
-    MessageBox MB_ICONSTOP "${RELATED_BROWSER_BIN} is Running, Please exit ${RELATED_BROWSER_BIN} Application"
+  ${VersionCompare} $0 ${PRODUCT_VERSION} $R0
+  ${if} $R0 == 1
+    LogText " cannot downgrade install browser"
+    MessageBox MB_ICONSTOP " old browser version $0 NEWER than curent version ${PRODUCT_VERSION}, cannot downgrade install browser"
     Quit
   ${EndIf}
 FunctionEnd
 
-Function kill_related_browser_componment_process
+Function checkOtherBrowserRunning
+  nsProcess::_FindProcess ${RELATED_BROWSER_BIN}
+  Pop $R0
+  ${If} $R0 == 0
+    LogText "${RELATED_BROWSER_BIN} is exits, need kill this process"
+    MessageBox MB_ICONSTOP "It seems that you have already installed Kalama, if you want to continue to install CYFS Browser, please uninstall Kalama first, otherwise there may be inconsistent data."
+    Quit
+  ${EndIf}
+FunctionEnd
+
+Function killBrowserComponmentProcess
   Push ${RUNTIME_EXE_NAME}
   Call ForceKillProcess
   Push ${ENS_LOOKUP_BIN_NAME}
@@ -213,24 +242,13 @@ Function kill_related_browser_componment_process
   Call ForceKillProcess
 FunctionEnd
 
-Function force_kill_process
-  Pop $R0
-  nsProcess::_FindProcess $R0
-  Pop $R1
-  ${If} $R1 == 0
-    LogText "$R0 is running, need kill this process"
-    Push $R0
-    Call ForceKillProcess
-  ${EndIf}
-FunctionEnd
-
 
 Section "-LogSetOn"
   LogSet on
 SectionEnd
 
 
-Function delete_old_browser_files
+Function deleteOldBrowserFiles
   RMDir /r "$LOCALAPPDATA\${PRODUCT_NAME}\User Data\Default/cyfs_extensions"
 
   IfFileExists "$APPDATA\${PRODUCT_NAME}\*.*" old_browser_exist old_browser_not_exist
@@ -252,9 +270,9 @@ old_browser_not_exist:
 FunctionEnd
 
 Section "preparation" 1
-  Call check_related_browser_running
-  Call kill_related_browser_componment_process
-  Call delete_old_browser_files
+  Call checkOtherBrowserRunning
+  Call killBrowserComponmentProcess
+  Call deleteOldBrowserFiles
 SectionEnd
 
 Section "main" 2
@@ -265,7 +283,9 @@ Section "main" 2
   File "mini_installer.exe"
   Exec `"$INSTDIR\mini_installer.exe"`
 
-  Call kill_related_browser_componment_process
+  Call checkNeedUpgrade
+
+  Call killBrowserComponmentProcess
 
   Call InstallVC
   Call installWebView2
@@ -333,7 +353,7 @@ Function un.onUninstSuccess
   Delete "$LOCALAPPDATA\${PRODUCT_NAME}\mini_installer.exe"
 FunctionEnd
 
-Function un.check_related_browser_running
+Function un.checkOtherBrowserRunning
   nsProcess::_FindProcess ${RELATED_BROWSER_BIN}
   Pop $R0
   ${If} $R0 == 0
@@ -345,19 +365,12 @@ FunctionEnd
 
 
 Function un.killRuntimeProcess
-  LogText "kill runtime process"
-  MessageBox MB_OKCANCEL "Do you want to uninstall ${RUNTIME_EXE_NAME} component , MAY cause other applications unavailable" /SD IDOK IDOK label_ok IDCANCEL label_cancel
-label_ok:
   LogText "kill ${CYFS_UPLOAD_BIN_NAME} process"
   Exec '"taskkill" /F /IM ${CYFS_UPLOAD_BIN_NAME} /T'
   Sleep 2000
-  goto end
-label_cancel:
-  Quit
-end:
 FunctionEnd
 
-Function un.delete_old_reg_and_shortcut
+Function un.deleteOldRegAndShortcut
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey ${PRODUCT_INST_ROOT_KEY} "${PRODUCT_DIR_REGKEY}"
   DeleteRegKey ${CYFS_SCHEME_ROOT_KEY} "${CYFS_SCHEME_REGKEY}"
@@ -374,17 +387,6 @@ Function un.delete_old_reg_and_shortcut
   RMDir /r "$SMPROGRAMS\${PRODUCT_NAME}"
   RMDir /r "$SMPROGRAMS\${PRODUCT_RUNTIME_NAME}"
   DeleteRegValue ${AUTORUN_ROOT_KEY} "${AUTORUN_KEYPATH}" "${PRODUCT_NAME}"
-FunctionEnd
-
-Function un.deleteCyfsData
-  LogText "delete cyfs user data"
-  MessageBox MB_OKCANCEL "Do you want to delete cyfs user data , MAY cause other browser unavailable" /SD IDOK IDOK label_ok IDCANCEL label_cancel
-label_ok:
-  LogText "delete $APPDATA\cyfs"
-  RMDir /r "$APPDATA\cyfs"
-label_cancel:
-  Goto end
-end:
 FunctionEnd
 
 Function un.killIpfsProcess
@@ -418,10 +420,44 @@ Function un.killIpfsProcess
   ${EndIf}
 FunctionEnd
 
+Function un.nsDialogsPage
+  SetOutPath $LOCALAPPDATA
+
+	nsDialogs::Create 1018
+	Pop $Dialog_1
+	${If} $Dialog_1 == error
+		Abort
+	${EndIf}
+	${NSD_CreateLabel} 0 0 100% 30u "${BROWSER_DESKTOP_NAME} ${BrowserVersion} ${channel} will be uninstalled from the following folder. Click Uninstall to start the uninstallation."
+	Pop $Label_1
+
+  ; ${NSD_CreateGroupBox} 0 30u 100% 25u ""
+  ; Pop $0
+	${NSD_CreateLabel} 0 35u 50u 15u "Uninstall from:"
+	Pop $Label_2
+  ${NSD_CreateText} 50u 35u 180u 15u "$LOCALAPPDATA\${PRODUCT_NAME}"
+	Pop $Label_3
+
+	${NSD_CreateCheckbox} 0 65u 100% 10u "Comfirm Delete User Data?"
+	Pop $CheckBox_1
+  ${NSD_OnClick} $CheckBox_1 un.DeleteUserData
+	nsDialogs::Show
+FunctionEnd
+
+Function un.DeleteUserData
+  Pop $0
+  ${NSD_GetState} $CheckBox_1 $0
+  ${If} $0 = ${BST_CHECKED}
+    StrCpy $DeleteUserData 1
+  ${Else}
+    StrCpy $DeleteUserData 0
+  ${EndIF}
+FunctionEnd
+
 Section Uninstall
   SetOutPath $LOCALAPPDATA
 
-  Call un.check_related_browser_running
+  Call un.checkOtherBrowserRunning
 
   Call un.killRuntimeProcess
 
@@ -432,7 +468,11 @@ Section Uninstall
   ReadRegStr $R0 "HKCU" "Software\${PRODUCT_NAME}" "UninstallString"
   LogText "current application uninstall bin = $R0"
 
-  ExecWait '"$R0" --uninstall'
+  ${if} $DeleteUserData == 1
+    ExecWait '"$R0" --uninstall --delete-profile'
+  ${Else}
+    ExecWait '"$R0" --uninstall'
+  ${EndIf}
 
   Sleep 2000
 
@@ -455,7 +495,9 @@ Section Uninstall
 
   ${RefreshShellIcons}
 
-  Call un.deleteCyfsData
+  ${if} $DeleteUserData == 1
+    RMDir /r "$APPDATA\cyfs"
+  ${EndIf}
 
   SetOutPath "$LOCALAPPDATA\${PRODUCT_NAME}"
   RMDir /r "$LOCALAPPDATA\${PRODUCT_NAME}\Application"
@@ -467,4 +509,3 @@ Section Uninstall
   Sleep 4000
   SetAutoClose true
 SectionEnd
-

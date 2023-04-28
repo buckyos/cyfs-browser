@@ -1,5 +1,5 @@
 diff --git a/content/browser/browser_url_handler_impl.cc b/content/browser/browser_url_handler_impl.cc
-index b5517a45e5d7b31e2b920374cfa5680657a21c7b..3fec30142c97770e59e4a687ac66a9d86f70a0ed 100644
+index b5517a45e5d7b31e2b920374cfa5680657a21c7b..75d4447425aab0bca9313abb75e41c45370ec90c 100644
 --- a/content/browser/browser_url_handler_impl.cc
 +++ b/content/browser/browser_url_handler_impl.cc
 @@ -5,9 +5,12 @@
@@ -222,7 +222,24 @@ index b5517a45e5d7b31e2b920374cfa5680657a21c7b..3fec30142c97770e59e4a687ac66a9d8
  // Handles rewriting view-source URLs for what we'll actually load.
  static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
    if (url->SchemeIs(kViewSourceScheme)) {
-@@ -99,6 +302,17 @@ BrowserURLHandlerImpl::BrowserURLHandlerImpl() {
+@@ -76,6 +279,16 @@ static bool DebugURLHandler(GURL* url, BrowserContext* browser_context) {
+   return blink::IsRendererDebugURL(*url);
+ }
+ 
++static bool ReverseCyfsInit(GURL* url, BrowserContext* browser_context) {
++  VLOG(1) << "Before reverse cyfs init url - " << url->spec();
++  if (url->SchemeIs(content::kChromeUIScheme) && url->host_piece() == "cyfs-init") {
++    *url = GURL("");
++    VLOG(1) << "after reverse cyfs init url - " << url->spec();
++    return true;
++  }
++  return false;
++}
++
+ // static
+ BrowserURLHandler* BrowserURLHandler::GetInstance() {
+   return BrowserURLHandlerImpl::GetInstance();
+@@ -99,6 +312,17 @@ BrowserURLHandlerImpl::BrowserURLHandlerImpl() {
    // important to add it before calling up to the content client.
    AddHandlerPair(&HandleViewSource, &ReverseViewSource);
  
@@ -234,13 +251,13 @@ index b5517a45e5d7b31e2b920374cfa5680657a21c7b..3fec30142c97770e59e4a687ac66a9d8
 +  // handle for .eth domain url 
 +  AddHandlerPair(&ipfs::HandleENSURLRewrite, &ipfs::HandleENSURLReverseRewrite);
 +
-+  // AddHandlerPair(&ipfs::HandleENSURLRewrite, BrowserURLHandlerImpl::null_handler());
++  AddHandlerPair(BrowserURLHandlerImpl::null_handler(), &ReverseCyfsInit);
 +
 +  
    GetContentClient()->browser()->BrowserURLHandlerCreated(this);
  }
  
-@@ -152,6 +366,7 @@ void BrowserURLHandlerImpl::RewriteURLIfNecessary(
+@@ -152,6 +376,7 @@ void BrowserURLHandlerImpl::RewriteURLIfNecessary(
    for (const auto& it : url_handlers_) {
      const URLHandler& handler = it.first;
      bool has_reverse_rewriter = it.second;

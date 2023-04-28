@@ -12,7 +12,9 @@ not_patched_end_path = []
 not_patched_file = []
 
 update_suffix = ['.xtb', '.grd', '.grdp']
-root_update_files = ['chrome/browser/resources/cyfs_init/starting.png']
+# root_update_files = ['chrome/browser/resources/cyfs_init/starting.png']
+root_update_files = []
+
 update_files = []
 not_update_suffix = ['.log']
 
@@ -277,8 +279,6 @@ def main(args):
 
     root_patch_path = os.path.join(root, 'patch_code')
     root_resource_path = os.path.join(root, 'resource')
-    # change_record_file = os.path.join(root_resource_path, 'change_files.json')
-
 
     ### Create patch for chromium src
     print('Begin create patch for chromium src')
