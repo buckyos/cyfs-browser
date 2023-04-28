@@ -1,6 +1,6 @@
 {
     "Add": {
-        "update_time": "2023-03-09 10:25:52.018360",
+        "update_time": "2023-04-28 12:41:30.612461",
         "files": [
             "chrome/CYFS_VERSION",
             "chrome/app/Extensions/cyfs_extension.gni",
@@ -8,9 +8,9 @@
             "chrome/browser/cyfs_init/DIR_METADATA",
             "chrome/browser/cyfs_init/cyfs_init_service_factory.cc",
             "chrome/browser/cyfs_init/cyfs_init_service_factory.h",
-            "chrome/browser/resources/cyfs_init/cyfs_init.css",
-            "chrome/browser/resources/cyfs_init/cyfs_init.html",
+            "chrome/browser/resources/cyfs_init/bundle.js",
             "chrome/browser/resources/cyfs_init/cyfs_init.js",
+            "chrome/browser/resources/cyfs_init/index.html",
             "chrome/browser/ui/webui/cyfs_init_ui.cc",
             "chrome/browser/ui/webui/cyfs_init_ui.h",
             "components/api_request_helper/BUILD.gn",
@@ -24,12 +24,11 @@
             "components/omnibox/browser/ens_lookup_provider.cc",
             "components/omnibox/browser/ens_lookup_provider.h",
             "content/app/monitor_cyfs_runtime.cc",
-            "content/app/monitor_cyfs_runtime.h",
-            "chrome/browser/resources/cyfs_init/starting.png"
+            "content/app/monitor_cyfs_runtime.h"
         ]
     },
     "Update": {
-        "update_time": "2023-03-09 10:25:52.018360",
+        "update_time": "2023-04-28 12:41:30.612461",
         "files": [
             "chrome/app/chromium_strings.grd",
             "chrome/app/generated_resources.grd",
