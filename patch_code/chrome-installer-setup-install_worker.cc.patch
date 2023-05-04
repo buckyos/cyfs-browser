@@ -1,5 +1,5 @@
 diff --git a/chrome/installer/setup/install_worker.cc b/chrome/installer/setup/install_worker.cc
-index eeaa98e95378134e3a9439ace102b110d1846169..efaf826a61264db133588550fbe2af3602a7808a 100644
+index eeaa98e95378134e3a9439ace102b110d1846169..64c828cc95ade1abb89f20491f648ceda3f07218 100644
 --- a/chrome/installer/setup/install_worker.cc
 +++ b/chrome/installer/setup/install_worker.cc
 @@ -169,6 +169,7 @@ void RemoveFirewallRulesCallback(const base::FilePath& chrome_path,
@@ -32,6 +32,15 @@ index eeaa98e95378134e3a9439ace102b110d1846169..efaf826a61264db133588550fbe2af36
      install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                           KEY_WOW64_32KEY, L"InstallLocation",
                                           install_path.value(), true);
+@@ -476,7 +480,7 @@ void AddUninstallShortcutWorkItems(const InstallParams& install_params,
+ 
+     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                          KEY_WOW64_32KEY, L"Publisher",
+-                                         InstallUtil::GetPublisherName(), true);
++                                         L"CYFS Core Dev Team", true);
+     install_list->AddSetRegValueWorkItem(
+         reg_root, uninstall_reg, KEY_WOW64_32KEY, L"Version",
+         ASCIIToWide(new_version.GetString()), true);
 @@ -721,6 +725,7 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
  
  void AddInstallWorkItems(const InstallParams& install_params,

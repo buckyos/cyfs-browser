@@ -104,6 +104,7 @@ UninstPage custom un.nsDialogsPage
 
 !define MUI_FINISHPAGE_NOREBOOTSUPPORT
 !define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_TEXT "Launch CYFS Browser"
 !define MUI_FINISHPAGE_RUN_FUNCTION startApp
 !insertmacro MUI_PAGE_FINISH
 
@@ -438,7 +439,7 @@ Function un.nsDialogsPage
   ${NSD_CreateText} 50u 35u 180u 15u "$LOCALAPPDATA\${PRODUCT_NAME}"
 	Pop $Label_3
 
-	${NSD_CreateCheckbox} 0 65u 100% 10u "Comfirm Delete User Data?"
+	${NSD_CreateCheckbox} 0 85u 100% 10u "Also delete user data (Make sure you have backed up DID)"
 	Pop $CheckBox_1
   ${NSD_OnClick} $CheckBox_1 un.DeleteUserData
 	nsDialogs::Show
