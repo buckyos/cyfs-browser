@@ -210,7 +210,8 @@ Function checkNeedUpgrade
   ${VersionCompare} $0 ${PRODUCT_VERSION} $R0
   ${if} $R0 == 1
     LogText " cannot downgrade install browser"
-    MessageBox MB_ICONSTOP " old browser version $0 NEWER than curent version ${PRODUCT_VERSION}, cannot downgrade install browser"
+    ; MessageBox MB_ICONSTOP " Unable to install.  A newer version of CYFS Browser is already installed."
+    MessageBox MB_ICONSTOP " Unable to install.  A newer version ($0) of CYFS Browser is already installed."
     Quit
   ${EndIf}
 FunctionEnd
@@ -271,6 +272,8 @@ old_browser_not_exist:
 FunctionEnd
 
 Section "preparation" 1
+  Call checkNeedUpgrade
+
   Call checkOtherBrowserRunning
   Call killBrowserComponmentProcess
   Call deleteOldBrowserFiles
@@ -284,7 +287,7 @@ Section "main" 2
   File "mini_installer.exe"
   Exec `"$INSTDIR\mini_installer.exe"`
 
-  Call checkNeedUpgrade
+  ; Call checkNeedUpgrade
 
   Call killBrowserComponmentProcess
 

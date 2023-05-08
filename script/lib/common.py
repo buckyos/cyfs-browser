@@ -111,6 +111,10 @@ def remote_extensions_path(remote_base_path, channel):
     path = os.path.join(remote_base_path, "chromium_extensions", "Extensions", channel)
     return os.path.normpath(path)
 
+def ci_extensions_path(remote_base_path, extension_name, channel):
+    path = os.path.join(remote_base_path, os.pardir, "browser_extension", extension_name, channel)
+    return os.path.normpath(path)
+
 def remote_code_path(remote_base_path):
     if IS_MAC:
         return os.path.normpath(os.path.join(remote_base_path, "chromium_code_mac"))

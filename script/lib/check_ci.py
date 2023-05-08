@@ -9,7 +9,7 @@ import zipfile
 import urllib.request
 from common import local_extension_path, static_page_path, ts_sdk_path, application_name, code_zip_name
 from common import src_path, build_target, pack_app_path, build_app_path, pack_base_path
-from common import remote_extensions_path, remote_cache_path, remote_code_path
+from common import remote_extensions_path, remote_cache_path, remote_code_path, ci_extensions_path
 from util import make_dir_exist, is_dir_exists, make_file_not_exist, clean_dir
 
 def download_file(remote_path, local_path, is_dir=False):
@@ -156,10 +156,44 @@ class CheckForCIBuild:
         clean_dir(self.local_extension_path)
         if download_crx(self.local_extension_path, self._channel) == False:
             download_file(remote_extensions_path(self.remote_base_path, self._channel), self.local_extension_path, True)
+            self.download_ci_extensions()
         old_extensions = [ os.path.join(self.local_extension_path, x) 
             for x in os.listdir(self.local_extension_path) if x.endswith('.zip') ]
         for filename in old_extensions:
             os.remove(filename)
+
+    def download_ci_extensions(self, extension_name="cc"):
+        remote_path = ci_extensions_path(self.remote_base_path, extension_name,  self._channel)
+        version_file = "%s_version" % extension_name
+        local_version_file = os.path.join(self.local_extension_path, version_file)
+
+        download_file(os.path.join(remote_path, version_file), local_version_file)
+        with open(local_version_file, 'r') as f:
+            extension_name = f.read().strip()
+        if not extension_name:
+            return
+        [crx_id, version] = os.path.splitext(os.path.basename(extension_name))[0].split('-')
+        crx_name = '%s.crx' % crx_id
+        local_extension = os.path.join(self.local_extension_path, crx_name)
+        download_file(os.path.join(remote_path, extension_name), local_extension)
+        if os.path.exists(local_extension):
+            print('Download crx %s success, version %s' %(crx_name, version))
+            self.update_extension_infos(crx_id, version)
+
+        if os.path.exists(local_version_file):
+            os.unlink(local_version_file)
+        
+
+    def update_extension_infos(self, crx_id, version):
+        print('Update crx info, crx %s version %s' %(crx_id, version))
+        json_file = os.path.join(self.local_extension_path, 'default_extensions.json')
+        json_data = {}
+        with open(json_file, 'r') as f:
+            json_data = json.load(f)
+        
+        json_data[crx_id] = { "default_version": version }
+        with open(json_file, 'w') as f:
+            json.dump(json_data, f, indent=4, ensure_ascii=False)
 
 
     def update_default_extensions(self):
