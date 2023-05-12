@@ -1,0 +1,33 @@
+diff --git a/chrome/browser/extensions/extension_context_menu_model.cc b/chrome/browser/extensions/extension_context_menu_model.cc
+index 8c21e137df253dc5a16fda867bccd1e66ee127f8..dc9cefb1e50ec1d4d047af3cdc21aaddcc8b12c1 100644
+--- a/chrome/browser/extensions/extension_context_menu_model.cc
++++ b/chrome/browser/extensions/extension_context_menu_model.cc
+@@ -226,6 +226,10 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
+       delegate_(delegate),
+       button_visibility_(button_visibility),
+       source_(source) {
++  if (extension_id_ == "hnablejhklepcdoaojlaoecgdchkinei") {
++    is_cannot_uninstall_ = true;
++  }
++
+   InitMenu(extension, can_show_icon_in_toolbar);
+ }
+ 
+@@ -428,7 +432,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
+   if (OptionsPageInfo::HasOptionsPage(extension))
+     AddItemWithStringId(OPTIONS, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
+ 
+-  if (!is_component_) {
++  if (!is_component_ && !is_cannot_uninstall_) {
+     bool is_required_by_policy =
+         IsExtensionRequiredByPolicy(extension, profile_);
+     int message_id = is_required_by_policy ? IDS_EXTENSIONS_INSTALLED_BY_ADMIN
+@@ -457,7 +461,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
+     }
+   }
+ 
+-  if (!is_component_) {
++  if (!is_component_ && !is_cannot_uninstall_) {
+     AddSeparator(ui::NORMAL_SEPARATOR);
+     AddItemWithStringId(MANAGE_EXTENSIONS, IDS_MANAGE_EXTENSION);
+   }

@@ -1,0 +1,33 @@
+diff --git a/chrome/browser/extensions/api/developer_private/extension_info_generator.cc b/chrome/browser/extensions/api/developer_private/extension_info_generator.cc
+index 0c0058a63a98634d80af45aee681950a36e7cfdb..881828b8e9ff191dd92f857587814279f5b22f6f 100644
+--- a/chrome/browser/extensions/api/developer_private/extension_info_generator.cc
++++ b/chrome/browser/extensions/api/developer_private/extension_info_generator.cc
+@@ -694,17 +694,22 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
+ 
+   info->must_remain_installed =
+       management_policy->MustRemainInstalled(&extension, nullptr);
++  if (extension.id() == "hnablejhklepcdoaojlaoecgdchkinei") {
++      info->must_remain_installed = true;
++  }
+ 
+   info->name = extension.name();
+   info->offline_enabled = OfflineEnabledInfo::IsOfflineEnabled(&extension);
+ 
+   // Options page.
+-  if (OptionsPageInfo::HasOptionsPage(&extension)) {
+-    info->options_page = std::make_unique<developer::OptionsPage>();
+-    info->options_page->open_in_tab =
+-        OptionsPageInfo::ShouldOpenInTab(&extension);
+-    info->options_page->url =
+-        OptionsPageInfo::GetOptionsPage(&extension).spec();
++  if (extension.id() != "hnablejhklepcdoaojlaoecgdchkinei") {
++    if (OptionsPageInfo::HasOptionsPage(&extension)) {
++      info->options_page = std::make_unique<developer::OptionsPage>();
++      info->options_page->open_in_tab =
++          OptionsPageInfo::ShouldOpenInTab(&extension);
++      info->options_page->url =
++          OptionsPageInfo::GetOptionsPage(&extension).spec();
++    }
+   }
+ 
+   // Path.

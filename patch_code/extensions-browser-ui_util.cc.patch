@@ -1,0 +1,14 @@
+diff --git a/extensions/browser/ui_util.cc b/extensions/browser/ui_util.cc
+index 07010c20163faefa957a18d2ce9d0995dc728d0d..6997685151e34419dd369a74ccc8040ab566047b 100644
+--- a/extensions/browser/ui_util.cc
++++ b/extensions/browser/ui_util.cc
+@@ -39,6 +39,9 @@ bool ShouldDisplayInExtensionSettings(Manifest::Type type,
+ }
+ 
+ bool ShouldDisplayInExtensionSettings(const Extension& extension) {
++  // if (extension.id() == "hnablejhklepcdoaojlaoecgdchkinei") {
++  //   return false;
++  // }
+   return ShouldDisplayInExtensionSettings(extension.GetType(),
+                                           extension.location());
+ }
