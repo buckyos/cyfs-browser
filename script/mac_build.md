@@ -22,20 +22,20 @@ xcode-select -s /Applications/Xcode.app/Contents/Developer
 
 Once you have the prerequisites installed, you can get the code and initialize the build environment.
 
-1. downlaod depot_tools and set env variables
+- Downlaod depot_tools and set env variables
 ```bash
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
 export PATH="$PATH:${path_to_depot_tools}"
 ```
 
-##### disadble update chromium source background
+- Disadble update chromium source background
 ```bash
 export DEPOT_TOOLS_UPDATE=0
 ```
 
 
-2.Get CYFS Browser and Chromium source
+- Get CYFS Browser and Chromium source
 ```bash
 git clone https://github.com/buckyos/cyfs-browser.git ${root}
 
@@ -56,7 +56,7 @@ gclient sync --with_branch_heads --with_tags
 
 ### Build CYFS Browser
 
-1. Compile CYFS Browser source code
+- Compile CYFS Browser source code
 [note] if you build machine is macos, you must to set target-cpu argument like `ARM` and `X86`
 ARM is mean m1 cpu machine, and X86 is mean x86 cpu machine
 ```bash
@@ -67,6 +67,17 @@ python(python3) build.py --project-name=${project_name} --version=${version} --t
 ### like this: python(python3) build.py --project-name=Browser --version=1 --target-cpu=ARM --channel=beta
 ```
 
-2.Find the CYFS Browser installation package
+- Compile CYFS Related dependencies
+```cmd
+cd ${root}/script/lib
 
-`${root}/dmg/${target_cpu}/cyfs-browser-installer-${version}.dmg`
+python(python3) build.py  --version=${version} --channel=${channel} --target_cpu=${target_cpu}
+
+### like this: python(python3) build.py --version=1 --channel=beta --target_cpu=X86
+```
+
+- Find the CYFS Browser installation package
+
+`${root}/out/mac/{target_cpu}/}/CYFS_Browser-1.0.${channel_number}.${version}-${target_cpu}.dmg`
+
+note: if channel is nightly then channel_number is 0, and channel_number is 1 when channle is beta
