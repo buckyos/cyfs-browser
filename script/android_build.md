@@ -5,12 +5,9 @@
 
 Follow the instructions for your platform:
 
-- Windows 10  
-- rust 1.57+  
-- node 14+  
-- [Windows SDK 10.0.20348.0](https://developer.microsoft.com/zh-cn/windows/downloads/sdk-archive/)  
-- Visual Studio 2019  
-- [NSIS](https://nsis.sourceforge.io/Download)  
+- Debian 10+  
+- python3  
+  
 
 
 ### Clone and initialize the repo  
@@ -20,14 +17,12 @@ Once you have the prerequisites installed, you can get the code and initialize t
 - Downlaod depot_tools and set env variables
 ```cmd
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-set DEPOT_TOOLS_PATH={you_depot_tools_path}
-set path=%path%;%DEPOT_TOOLS_PATH%
-```
 
-- Disadble update chromium source background
-```cmd
-set DEPOT_TOOLS_UPDATE=0
-set DEPOT_TOOLS_WIN_TOOLCHAIN=0
+export PATH="{you_depot_tools_path}:$PATH"
+
+source {you_depot_tools_path}/cipd_bin_setup.sh
+
+cipd_bin_setup
 ```
 
 - Get CYFS Browser and Chromium source
@@ -36,9 +31,9 @@ git clone https://github.com/buckyos/cyfs-browser.git ${root}
 
 cd ${root}
 
-fetch chromium
+fetch --nohooks android
 
-gclient sync --force --nohooks --with_branch_heads
+gclient sync
 
 cd ${root}/src
 
@@ -47,9 +42,18 @@ git fetch --tags
 git checkout -b cyfs_branch 103.0.5047.0
 
 gclient sync --with_branch_heads --with_tags
+
+cd src
+./build/install-build-deps-android.sh
+
+sudo apt-get install ninja-build
 ```
 
+
+--------------------------
 ### Build CYFS Browser
+
+
 
 - Compile CYFS Browser source code
 ```cmd
@@ -71,6 +75,6 @@ python(python3) build.py  --version=${version} --channel=${channel}
 
 - Find the CYFS Browser installation package
 
-`${root}/out/win/X86/CYFS_Browser_${1.0.channel_number.version}-channel.exe`
+`${root}/out/android/X86/CYFS_Browser_${1.0.channel_number.version}-channel.apk`
 
 note: if channel is nightly then channel_number is 0, and channel_number is 1 when channle is beta
