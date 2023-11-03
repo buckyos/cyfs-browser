@@ -1,0 +1,1 @@
+cd ../src && go build -o ../bin/win/ -ldflags "-s -w"

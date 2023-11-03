@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+
+members = [
+	"./src/ipfs-proxy",
+	"./src/async-h1"
+]
+
+[profile.release]
+opt-level = 3
+debug = false
+debug-assertions = false
+overflow-checks = false
+lto = false
+panic = 'unwind'
+incremental = false
+codegen-units = 16
+rpath = false

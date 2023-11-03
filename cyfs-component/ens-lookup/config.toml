@@ -1,0 +1,6 @@
+log_level = "debug"
+listen_port = 38098
+
+[eth]
+providers = [
+]
